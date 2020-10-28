@@ -1,0 +1,99 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "functionName": {
+            "value": "func-blog-engine-we-prod-001"
+        },
+        "profileProperties": {
+            "value": {}
+        },
+        "aadClientId": {
+            "value": "4d459e38-e3e7-4aec-808e-d5961cf821b2"
+        },
+        "aadTenant": {
+            "value": "hueppauff.com"
+        },
+        "endpointProperties": {
+            "value": {
+                "isHttpAllowed": true,
+                "isHttpsAllowed": true,
+                "originHostHeader": "stblogstaticweprod001.z6.web.core.windows.net",
+                "origins": [{
+                    "name": "stblogstaticweprod001-z6-web-core-windows-net",
+                    "properties": {
+                        "hostName": "stblogstaticweprod001.z6.web.core.windows.net",
+                        "httpPort": 80,
+                        "httpsPort": 443
+                    }
+                }],
+                "isCompressionEnabled": true,
+                "contentTypesToCompress": [
+                    "text/plain",
+                    "text/html",
+                    "text/css",
+                    "text/javascript",
+                    "application/x-javascript",
+                    "application/javascript",
+                    "application/json",
+                    "application/xml"
+                ],
+                "deliveryPolicy": {
+                    "rules": [
+                        {
+                            "name": "forceHttps",
+                            "order": 1,
+                            "conditions": [
+                                {
+                                    "name": "RequestScheme",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleRequestSchemeConditionParameters",
+                                        "operator": "Equal",
+                                        "negateCondition": false,
+                                        "matchValues": [
+                                            "HTTP"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "actions": [
+                                {
+                                    "name": "UrlRedirect",
+                                    "parameters": {
+                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlRedirectActionParameters",
+                                        "redirectType": "Found",
+                                        "destinationProtocol": "Https"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "cacheControl",
+                            "order": 2,
+                            "conditions": [{
+                                "name": "RequestHeader",
+                                "parameters": {
+                                    "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleRequestHeaderConditionParameters",
+                                    "operator": "Any",
+                                    "selector": "Cache-Control",
+                                    "negateCondition": true,
+                                    "matchValues": [],
+                                    "transforms": []
+                                }
+                            }],
+                            "actions": [{
+                                "name": "CacheExpiration",
+                                "parameters": {
+                                    "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleCacheExpirationActionParameters",
+                                    "cacheBehavior": "SetIfMissing",
+                                    "cacheDuration": "01:00:00",
+                                    "cacheType": "All"
+                                }
+                            }]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

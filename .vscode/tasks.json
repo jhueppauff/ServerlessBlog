@@ -1,0 +1,109 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "clean",
+			"command": "dotnet",
+			"args": [
+				"clean",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/Engine"
+			}
+		},
+		{
+			"label": "build",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"dependsOn": "clean",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/Engine"
+			}
+		},
+		{
+			"label": "clean release",
+			"command": "dotnet",
+			"args": [
+				"clean",
+				"--configuration",
+				"Release",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/Engine"
+			}
+		},
+		{
+			"label": "publish",
+			"command": "dotnet",
+			"args": [
+				"publish",
+				"--configuration",
+				"Release",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"dependsOn": "clean release",
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/Engine"
+			}
+		},
+		{
+			"type": "func",
+			"command": "host start",
+			"problemMatcher": "$func-node-watch",
+			"isBackground": true,
+			"dependsOn": "npm build",
+			"options": {
+				"cwd": "${workspaceFolder}/MetadataService"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "npm build",
+			"command": "npm run build",
+			"dependsOn": "npm install",
+			"problemMatcher": "$tsc",
+			"options": {
+				"cwd": "${workspaceFolder}/MetadataService"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "npm install",
+			"command": "npm install",
+			"options": {
+				"cwd": "${workspaceFolder}/MetadataService"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "npm prune",
+			"command": "npm prune --production",
+			"dependsOn": "npm build",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/MetadataService"
+			}
+		}
+	]
+}
