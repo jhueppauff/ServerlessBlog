@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json.schemastore.org/proxies",
+    "proxies": {
+      "Index": {
+        "matchCondition": {
+          "route": "/",
+          "methods": ["GET"]
+        },
+        "backendUri": "http://%WEBSITE_HOSTNAME%/api/static/Index"
+      },
+      "Post": {
+        "matchCondition": {
+          "route": "Post",
+          "methods": ["GET"]
+        },
+        "backendUri": "http://%WEBSITE_HOSTNAME%/api/static/Post"
+      }
+    }
+  }

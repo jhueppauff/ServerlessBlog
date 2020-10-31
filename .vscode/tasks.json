@@ -2,6 +2,34 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"type": "shell",
+			"label": "npm build",
+			"command": "npm run build",
+			"dependsOn": "npm install",
+			"problemMatcher": "$tsc",
+			"options": {
+				"cwd": "${workspaceFolder}/Frontend"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "npm install",
+			"command": "npm install",
+			"options": {
+				"cwd": "${workspaceFolder}/Frontend"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "npm prune",
+			"command": "npm prune --production",
+			"dependsOn": "npm build",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/Frontend"
+			}
+		},
+		{
 			"label": "clean",
 			"command": "dotnet",
 			"args": [
@@ -12,7 +40,7 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/Engine"
+				"cwd": "${workspaceFolder}/Frontend"
 			}
 		},
 		{
@@ -31,7 +59,7 @@
 			},
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/Engine"
+				"cwd": "${workspaceFolder}/Frontend"
 			}
 		},
 		{
@@ -47,7 +75,7 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/Engine"
+				"cwd": "${workspaceFolder}/Frontend"
 			}
 		},
 		{
@@ -64,46 +92,18 @@
 			"dependsOn": "clean release",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/Engine"
+				"cwd": "${workspaceFolder}/Frontend"
 			}
 		},
 		{
 			"type": "func",
+			"dependsOn": "build",
+			"options": {
+				"cwd": "${workspaceFolder}/Frontend/bin/Debug/netcoreapp3.1"
+			},
 			"command": "host start",
-			"problemMatcher": "$func-node-watch",
 			"isBackground": true,
-			"dependsOn": "npm build",
-			"options": {
-				"cwd": "${workspaceFolder}/MetadataService"
-			}
-		},
-		{
-			"type": "shell",
-			"label": "npm build",
-			"command": "npm run build",
-			"dependsOn": "npm install",
-			"problemMatcher": "$tsc",
-			"options": {
-				"cwd": "${workspaceFolder}/MetadataService"
-			}
-		},
-		{
-			"type": "shell",
-			"label": "npm install",
-			"command": "npm install",
-			"options": {
-				"cwd": "${workspaceFolder}/MetadataService"
-			}
-		},
-		{
-			"type": "shell",
-			"label": "npm prune",
-			"command": "npm prune --production",
-			"dependsOn": "npm build",
-			"problemMatcher": [],
-			"options": {
-				"cwd": "${workspaceFolder}/MetadataService"
-			}
+			"problemMatcher": "$func-dotnet-watch"
 		}
 	]
 }
