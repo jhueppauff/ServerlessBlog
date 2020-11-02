@@ -27,8 +27,7 @@ namespace ServerlessBlog.Engine
         [FunctionName(nameof(List))]
         public static IActionResult List(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
-            [Blob("posts/index.json", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] string index,
-            [Table("metadata", Connection = "AzureStorageConnection")] CloudTableClient tableClient)
+            [Blob("posts/index.json", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] string index)
         {
             return new JsonResult(index);
         }
