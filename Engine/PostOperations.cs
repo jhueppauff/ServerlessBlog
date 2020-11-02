@@ -66,7 +66,7 @@ namespace ServerlessBlog.Engine
             }
 
             PostMetadata metadata = JsonConvert.DeserializeObject<PostMetadata>(requestBody);
-            metadata.Published = System.DateTime.Now;
+            metadata.Published = System.DateTime.Now.Date.ToShortDateString();
 
             TableOperation insertOrMergeOperation = TableOperation.InsertOrMerge(metadata);
 

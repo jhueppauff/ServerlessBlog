@@ -24,12 +24,5 @@ namespace Engine
             blobRef.Properties.ContentType = "text/html";
             await blobRef.SetPropertiesAsync().ConfigureAwait(false);
         }
-
-        [FunctionName("PostPublish")]
-        public static async Task PostPublish([BlobTrigger("$web/{name}.html", Connection = "AzureStorageConnection")] string post, string name,
-        [Blob("posts", FileAccess.Write)] CloudBlobContainer container, ILogger log)
-        {
-            log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {post.Length} Bytes");
-        }
     }
 }

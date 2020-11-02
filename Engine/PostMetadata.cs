@@ -22,7 +22,7 @@ namespace Engine
 
         public string Slug { get { return this.PartitionKey; } set { this.PartitionKey = value; this.RowKey = value; } }
 
-        public Date Published { get; set; }
+        public string Published { get; set; }
 
         public List<string> Tags { get; set; }
     }
