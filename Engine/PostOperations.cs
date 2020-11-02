@@ -5,10 +5,13 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Storage.Blob;
+using Engine;
+using Newtonsoft.Json;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace ServerlessBlog.Engine
 {
-    public static class GetBlogPost
+    public static class PostOperations
     {
         [FunctionName(nameof(Get))]
         public static async Task<IActionResult> Get(
@@ -24,7 +27,8 @@ namespace ServerlessBlog.Engine
         [FunctionName(nameof(List))]
         public static IActionResult List(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
-            [Blob("posts/index.json", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] string index)
+            [Blob("posts/index.json", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] string index,
+            [Table("metadata", Connection = "AzureStorageConnection")] CloudTableClient tableClient)
         {
             return new JsonResult(index);
         }
@@ -47,6 +51,28 @@ namespace ServerlessBlog.Engine
             await blobRef.SetPropertiesAsync();
 
             return new OkObjectResult(slug);
+        }
+
+        [FunctionName(nameof(SetPostMetadata))]
+        public static async Task<IActionResult> SetPostMetadata(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
+            [Table("metadata", Connection = "AzureStorageConnection")] CloudTable client)
+        {
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            if (string.IsNullOrWhiteSpace(requestBody))
+            {
+                return new BadRequestObjectResult("missing request body");
+            }
+
+            PostMetadata metadata = JsonConvert.DeserializeObject<PostMetadata>(requestBody);
+            metadata.Published = System.DateTime.Now;
+
+            TableOperation insertOrMergeOperation = TableOperation.InsertOrMerge(metadata);
+
+            await client.ExecuteAsync(insertOrMergeOperation);
+
+            return new OkResult();
         }
     }
 }
