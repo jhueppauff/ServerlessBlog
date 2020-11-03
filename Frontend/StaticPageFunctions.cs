@@ -31,7 +31,7 @@ namespace ServerlessBlog.Frontend
         [FunctionName("PostPage")]
         public async Task<IActionResult> Post(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/Post/{slug}")] HttpRequest req,
-            [Blob("$web/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
+            [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
             [Table("metadata", "{slug}", "{slug}", Connection = "AzureStorageConnection")] PostMetadata postMetadata,
             ILogger log)
         {

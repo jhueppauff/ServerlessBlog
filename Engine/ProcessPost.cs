@@ -10,7 +10,7 @@ namespace Engine
     {
         [FunctionName("RenderPost")]
         public static async Task RenderPost([BlobTrigger("posts/{name}.md", Connection = "AzureStorageConnection")]string post, string name,
-        [Blob("$web", FileAccess.Write, Connection = "AzureStorageConnection")]CloudBlobContainer container, ILogger log)
+        [Blob("published", FileAccess.Write, Connection = "AzureStorageConnection")]CloudBlobContainer container, ILogger log)
         {
             log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {post.Length} Bytes");
 

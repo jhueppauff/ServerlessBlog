@@ -16,7 +16,7 @@ namespace ServerlessBlog.Frontend
         [FunctionName("GetPost")]
         public static IActionResult GetPost(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPost/{slug}")] HttpRequest req,
-            [Blob("$web/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
+            [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
@@ -27,7 +27,7 @@ namespace ServerlessBlog.Frontend
         [FunctionName("GetPostMetadata")]
         public static IActionResult GetPostMetadata(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPostMetadata/{slug}")] HttpRequest req,
-            [Blob("$web/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
+            [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
             [Table("metadata", "{slug}", "{slug}", Connection = "AzureStorageConnection")] PostMetadata data,
             ILogger log)
         {
