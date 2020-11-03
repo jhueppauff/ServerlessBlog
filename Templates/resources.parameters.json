@@ -21,11 +21,11 @@
             "value": {
                 "isHttpAllowed": true,
                 "isHttpsAllowed": true,
-                "originHostHeader": "stblogstaticweprod001.z6.web.core.windows.net",
+                "originHostHeader": "func-blog-frontend-we-prod-001.azurewebsites.net",
                 "origins": [{
-                    "name": "stblogstaticweprod001-z6-web-core-windows-net",
+                    "name": "func-blog-frontend-we-prod-001.azurewebsites.net",
                     "properties": {
-                        "hostName": "stblogstaticweprod001.z6.web.core.windows.net",
+                        "hostName": "https://func-blog-frontend-we-prod-001.azurewebsites.net",
                         "httpPort": 80,
                         "httpsPort": 443
                     }
