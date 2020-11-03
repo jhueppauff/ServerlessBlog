@@ -2,8 +2,11 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "functionName": {
+        "functionEngineName": {
             "value": "func-blog-engine-we-prod-001"
+        },
+        "functionFrontendName": {
+            "value": "func-blog-frontend-we-prod-001"
         },
         "profileProperties": {
             "value": {}

@@ -2,7 +2,11 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "functionName": {
+        "functionEngineName": {
+            "type": "string",
+            "defaultValue": "func-blog-engine-we-prod-001"
+        },
+        "functionFrontendName": {
             "type": "string",
             "defaultValue": "func-blog-engine-we-prod-001"
         },
@@ -21,13 +25,12 @@
     },
     "functions": [],
     "variables": {
-        "appInsightName": "[replace(parameters('functionName'), 'func', 'appi')]",
-        "appPlanName": "[replace(parameters('functionName'), 'func', 'plan')]",
-        "eventGridName": "[replace(parameters('functionName'), 'func', 'evg')]",
+        "appInsightName": "[replace(parameters('functionEngineName'), 'func', 'appi')]",
+        "appPlanName": "[replace(parameters('functionEngineName'), 'func', 'plan')]",
         "storageNameWeb": "stblogstaticweprod001",
         "storageFunction": "stblogfuncweprod001",
-        "cdnProfileName": "[replace(parameters('functionName'), 'func', 'cdn')]",
-        "cdnEndpointName": "[replace(parameters('functionName'), 'func', 'cdnedp')]"
+        "cdnProfileName": "[replace(parameters('functionEngineName'), 'func', 'cdn')]",
+        "cdnEndpointName": "[replace(parameters('functionEngineName'), 'func', 'cdnedp')]"
     },
     "resources": [
         {
@@ -98,7 +101,7 @@
         {
             "apiVersion": "2015-08-01",
             "type": "Microsoft.Web/sites",
-            "name": "[parameters('functionName')]",
+            "name": "[parameters('functionEngineName')]",
             "location": "[resourceGroup().location]",
             "kind": "functionapp",
             "dependsOn": [
@@ -107,12 +110,12 @@
             ],
             "resources": [
                 {
-                    "name": "[concat(parameters('functionName'), '/authsettings')]",
+                    "name": "[concat(parameters('functionEngineName'), '/authsettings')]",
                     "apiVersion": "2016-08-01",
                     "type": "Microsoft.Web/sites/config",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', parameters('functionName'))]"
+                        "[resourceId('Microsoft.Web/sites', parameters('functionEngineName'))]"
                     ],
                     "properties": {
                         "enabled": true,
@@ -142,7 +145,53 @@
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(parameters('functionName'))]"
+                            "value": "[toLower(parameters('functionEngineName'))]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightName')), '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet"
+                        }
+                    ]
+                }
+            }
+        },
+                {
+            "apiVersion": "2015-08-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('functionFrontendName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "functionapp",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageFunction'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+                        },
+                        {
+                            "name": "AzureStorageConnection",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageNameWeb'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageFunction'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(parameters('functionFrontendName'))]"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
