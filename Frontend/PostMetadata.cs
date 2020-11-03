@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Frontend
+namespace ServerlessBlog.Frontend
 {
     public class PostMetadata : TableEntity
     {

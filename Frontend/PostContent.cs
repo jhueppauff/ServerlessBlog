@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Microsoft.Azure.Cosmos.Table;
 
-namespace Frontend
+namespace ServerlessBlog.Frontend
 {
     public static class PostContent
     {
