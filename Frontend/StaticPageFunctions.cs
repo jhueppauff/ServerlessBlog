@@ -28,7 +28,7 @@ namespace ServerlessBlog.Frontend
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string content = await System.IO.File.ReadAllTextAsync("./Statics/index.html", System.Text.Encoding.UTF8).ConfigureAwait(false);
+            string content = await System.IO.File.ReadAllTextAsync("./statics/index.html", System.Text.Encoding.UTF8).ConfigureAwait(false);
 
             TableQuery<PostMetadata> query = new TableQuery<PostMetadata>();
 
@@ -67,7 +67,7 @@ namespace ServerlessBlog.Frontend
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string content = await System.IO.File.ReadAllTextAsync("./Statics/post.html", System.Text.Encoding.UTF8).ConfigureAwait(false);
+            string content = await System.IO.File.ReadAllTextAsync("./statics/post.html", System.Text.Encoding.UTF8).ConfigureAwait(false);
             content = content.Replace("$content$", postContent);
             content = content.Replace("$date$", postMetadata.Published);
             content = content.Replace("$titel$", postMetadata.Title);
