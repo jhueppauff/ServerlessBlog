@@ -13,3 +13,7 @@ Components used
 ## How to run
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fjhueppauff%2FServerlessBlog%2Fblob%2Fmain%2FTemplates%2Fresources.json)
+
+## How to customize
+
+Currently the Blog has some static assets sitting in the Frontend and Engine Function. If you like to change HTML, CSS you need to update the html files in the statics Folder.
