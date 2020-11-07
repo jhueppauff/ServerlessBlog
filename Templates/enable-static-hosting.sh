@@ -1,1 +1,0 @@
-az storage blob service-properties update --account-name stblogstaticweprod001 --static-website  --index-document index.html --auth-mode login
