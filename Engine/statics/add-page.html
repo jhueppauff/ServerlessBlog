@@ -57,10 +57,12 @@
             <div class="col-lg-12">
                 <br />
                 <form>
-                    <input name="title" class="form-control" type="text" placeholder="Title?" />
-                    <textarea name="content" class="md-input" data-provide="markdown" data-iconlibrary="fa" rows="10"></textarea>
+                    <input name="title" class="form-control" type="text" placeholder="Title?" id="title" />
+                    <textarea id="postcontent" name="content" class="md-input" data-provide="markdown" data-iconlibrary="fa" rows="10"></textarea>
+                    <input name="preview" class="form-control" type="text" placeholder="Preview" id="preview" />
+                    <input name="tags" class="form-control" type="text" placeholder="Tags" id="title" />
                     <hr />
-                    <a href="#" class="btn btn-primary btn-success"><span class="glyphicon glyphicon-cloud-upload"></span> Publish</a>
+                    <a onclick="save()" class="btn btn-primary btn-success"><span class="glyphicon glyphicon-cloud-upload"></span> Publish</a>
                 </form>
             </div>
         </div>
@@ -81,5 +83,72 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.2.1/js/bootstrap-markdown.js" integrity="sha384-W6XhT23Kc4N1XueLHKRqgcnHkfE+gDxE74itB2XNoO1ip7hvlY33ZslReX0OA1Ug" crossorigin="anonymous"></script>
     <script src="https://cdn.hueppauff.com/cdn/bootstrap-markdown/2.10.0/css/markdown.min.js" integrity="sha384-XaqsZIi0uuSvd8WP2oQ2jhsPU46KsovwDEvpjCaBR02GWqJb/RxYg7xHoZICBR0m" crossorigin="anonymous"></script>
     <script src="https://cdn.hueppauff.com/cdn/bootstrap-markdown/2.10.0/css/to-markdown.min.js" integrity="sha384-Ps56D6b7Huf/bX7XpOwM8Cr2ml0RHFiAFKBxWGhq8sOWoio/8/kH2ONK1flkBKqZ" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        function save() {
+            savePost();
+            saveMetadata();
+        }
+
+        function savePost() {
+            let backendSaveUrl = window.location.protocol + "//" + window.location.host + "/api/Save?slug=" + createSlug();
+
+            let body = document.getElementById('postcontent').value;
+
+            let request = {
+                headers: {
+                    "content-type": "text/plain; charset=UTF-8"
+                },
+                body: body,
+                method: "POST"
+            };
+
+            fetch(backendSaveUrl, request)
+                .then(res => { console.log(res) })
+                .catch(error => console.log(error));
+                
+        }
+
+        function saveMetadata() {
+            let backendSaveUrl = window.location.protocol + "//" + window.location.host + "/api/SetPostMetadata";
+            let headers = new Headers();
+            headers.append("Content-Type", "application/json");
+
+
+            let body = JSON.stringify({
+                Title : document.getElementById('title').value,
+                Preview: document.getElementById('preview').value,
+                Slug: createSlug()
+            });
+
+            let request = {
+                headers: headers,
+                body: body,
+                method: "POST"
+            };
+
+            fetch(backendSaveUrl, request)
+                .then(res => { console.log(res) })
+                .catch(error => console.log(error));
+        }
+
+        function createSlug() {
+            let title = document.getElementById("title").value;
+            title = title.replace(/\s/g, '-');
+            title = cleanString(title);
+
+            return title;
+        }
+
+        function cleanString(input) {
+            var output = "";
+            for (var i = 0; i < input.length; i++) {
+                if (input.charCodeAt(i) <= 127) {
+                    output += input.charAt(i);
+                }
+            }
+            return output;
+        }
+
+    </script>
 </body>
 </html>
