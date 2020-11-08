@@ -19,7 +19,7 @@ variables:
   vmImageName: 'vs2017-win2016'
 
   # Working Directory
-  workingDirectory: '$(System.DefaultWorkingDirectory)/Templates'
+  workingDirectory: '$(System.SourcesDirectory)/Templates'
 
 stages:
 - stage: Deploy
