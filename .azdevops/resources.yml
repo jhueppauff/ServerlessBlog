@@ -18,9 +18,6 @@ variables:
   # Agent VM image name
   vmImageName: 'vs2017-win2016'
 
-  # Working Directory
-  workingDirectory: '$(System.SourcesDirectory)/Templates'
-
 stages:
 - stage: Deploy
   displayName: Deploy stage
@@ -45,6 +42,6 @@ stages:
               resourceGroupName: '$(rgName)'
               location: 'West Europe'
               templateLocation: 'Linked artifact'
-              csmFile: '$(workingDirectory)/resources.json'
-              csmParametersFile: '$(workingDirectory)/resources.parameters.json'
+              csmFile: '$(System.SourcesDirectory)/Templates/resources.json'
+              csmParametersFile: '$(System.SourcesDirectory)/Templates/resources.parameters.json'
               deploymentMode: 'Incremental'
