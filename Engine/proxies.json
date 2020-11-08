@@ -9,3 +9,4 @@
         "backendUri": "http://%WEBSITE_HOSTNAME%/api/static/GetAddPostPage"
       }
   }
+}
