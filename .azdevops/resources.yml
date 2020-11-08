@@ -29,6 +29,6 @@ steps:
       resourceGroupName: '$(rgName)'
       location: 'West Europe'
       templateLocation: 'Linked artifact'
-      csmFile: '$(System.SourcesDirectory)Templates/resources.json'
-      csmParametersFile: '$(System.SourcesDirectory)Templates/resources.parameters.json'
+      csmFile: '$(Build.SourcesDirectory)/Templates/resources.json'
+      csmParametersFile: '$(Build.SourcesDirectory)/Templates/resources.parameters.json'
       deploymentMode: 'Incremental'
