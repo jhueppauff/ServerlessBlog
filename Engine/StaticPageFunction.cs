@@ -4,6 +4,9 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Azure.WebJobs.Extensions.HttpApi;
+using System.IO;
+using System.Threading.Tasks;
+using System;
 
 namespace Engine
 {
@@ -15,13 +18,27 @@ namespace Engine
         }
 
         [FunctionName(nameof(GetAddPostPage))]
-        public IActionResult GetAddPostPage(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+        public async Task<IActionResult> GetAddPostPage(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ExecutionContext context,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            if (!IsEasyAuthEnabled || !User.Identity.IsAuthenticated)
+            {
+                return Forbid();
+            }
 
-            return File("/statics/add-page.html");
+            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, "../statics/add-page.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
+            content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
+
+            var result = new ContentResult
+            {
+                Content = content,
+                ContentType = "text/html"
+            };
+
+            return result;
         }
+
+        private static bool IsEasyAuthEnabled => bool.TryParse(Environment.GetEnvironmentVariable("WEBSITE_AUTH_ENABLED"), out var result) && result;
     }
 }
