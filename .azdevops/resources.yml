@@ -1,0 +1,50 @@
+# .NET Core Function App to Windows on Azure
+# Build a .NET Core function app and deploy it to Azure as a Windows function App.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+      - Templates/*
+
+variables:
+  # Azure Resource Manager connection created during pipeline creation
+  azureSubscription: 'blogEngine - GitHub'
+
+  # Agent VM image name
+  vmImageName: 'vs2017-win2016'
+
+  # Working Directory
+  workingDirectory: '$(System.DefaultWorkingDirectory)/Templates'
+
+stages:
+- stage: Deploy
+  displayName: Deploy stage
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: 'development'
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureResourceManagerTemplateDeployment@3
+            inputs:
+              deploymentScope: 'Resource Group'
+              azureResourceManagerConnection: '$(azureSubscription)'
+              subscriptionId: '$(subscriptionId)'
+              action: 'Create Or Update Resource Group'
+              resourceGroupName: '$(rgName)'
+              location: 'West Europe'
+              templateLocation: 'Linked artifact'
+              csmFile: '$(workingDirectory)/resources.json'
+              csmParametersFile: '$(workingDirectory)/resources.parameters.json'
+              deploymentMode: 'Incremental'
