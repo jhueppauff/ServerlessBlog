@@ -10,6 +10,7 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace ServerlessBlog.Frontend
 {
@@ -34,7 +35,7 @@ namespace ServerlessBlog.Frontend
 
             StringBuilder indexContent = new StringBuilder();
 
-            foreach (var entity in await cloudTableClient.ExecuteQuerySegmentedAsync(query, null).ConfigureAwait(false))
+            foreach (var entity in (await cloudTableClient.ExecuteQuerySegmentedAsync(query, null).ConfigureAwait(false)).OrderByDescending(o => o.Published))
             {                
                 string html = @$"<div class='card mb-4'>
                                     <div class='card-body'>
