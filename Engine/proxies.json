@@ -1,0 +1,11 @@
+{
+    "$schema": "http://json.schemastore.org/proxies",
+    "proxies": {
+      "AddPage": {
+        "matchCondition": {
+          "route": "/Add",
+          "methods": [ "GET" ]
+        },
+        "backendUri": "http://%WEBSITE_HOSTNAME%/api/static/GetAddPostPage"
+      }
+  }
