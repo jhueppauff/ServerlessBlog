@@ -22,8 +22,9 @@ namespace Engine
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "static/GetAddPostPage")] HttpRequest req, ExecutionContext context,
             ILogger log)
         {
-            if (!IsEasyAuthEnabled || !User.Identity.IsAuthenticated)
+            if (!User.Identity.IsAuthenticated)
             {
+                log.LogInformation($"Forbidden - Easy Auth : {IsEasyAuthEnabled}, Authenticated : {User.Identity.IsAuthenticated}");
                 return Forbid();
             }
 
