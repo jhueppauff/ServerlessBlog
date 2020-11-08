@@ -19,12 +19,11 @@ namespace Engine
 
         [FunctionName(nameof(GetAddPostPage))]
         public async Task<IActionResult> GetAddPostPage(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "static/GetAddPostPage")] HttpRequest req, ExecutionContext context,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetAddPostPage")] HttpRequest req, ExecutionContext context,
             ILogger log)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (!IsEasyAuthEnabled || !User.Identity.IsAuthenticated)
             {
-                log.LogInformation($"Forbidden - Easy Auth : {IsEasyAuthEnabled}, Authenticated : {User.Identity.IsAuthenticated}");
                 return Forbid();
             }
 
