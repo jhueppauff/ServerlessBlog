@@ -25,5 +25,7 @@ namespace ServerlessBlog.Frontend
         public List<string> Tags { get; set; }
 
         public string Preview { get; set; }
+
+        public string ImageUrl { get; set; }
     }
 }
