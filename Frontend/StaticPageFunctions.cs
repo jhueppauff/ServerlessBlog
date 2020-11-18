@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.WebJobs.Extensions.HttpApi;
@@ -39,7 +38,8 @@ namespace ServerlessBlog.Frontend
             {                
                 string html = @$"<div class='card mb-4'>
                                     <div class='card-body'>
-                                        <img src='{entity.ImageUrl}' class='rounded mx-auto d-block' style='height: 250px;'/>
+                                        <div style='height: 250px; width: 100%; background-size: cover; background-image: url({entity.ImageUrl}); background-repeat: no-repeat; heigth: 250px;'>
+                                        </div>
                                         <h2 class='card-title'><a href='Post/{entity.PartitionKey}'>{entity.Title}</a></h2>
                                         <p class='card-text'>{entity.Preview}</p>
                                         <a href='Post/{entity.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>
