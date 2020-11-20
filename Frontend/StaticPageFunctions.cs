@@ -36,12 +36,12 @@ namespace ServerlessBlog.Frontend
 
             foreach (var entity in (await cloudTableClient.ExecuteQuerySegmentedAsync(query, null).ConfigureAwait(false)).OrderByDescending(o => o.Published))
             {                
-                string html = @$"<div class='card mb-4'>
+                string html = @$"<div class='card mb-4 shadow-lg' style='background-color: #303030;'>
                                     <div class='card-body'>
-                                        <div style='height: 250px; width: 100%; background-size: cover; background-image: url({entity.ImageUrl}); background-repeat: no-repeat; heigth: 250px;'>
+                                        <div style='opacity: 0.8; height: 250px; width: 100%; background-size: cover; background-image: url({entity.ImageUrl}); background-repeat: no-repeat; heigth: 250px;'>
                                         </div>
                                         <h2 class='card-title'><a href='Post/{entity.PartitionKey}'>{entity.Title}</a></h2>
-                                        <p class='card-text'>{entity.Preview}</p>
+                                        <p class='card-text' style='color: white;'>{entity.Preview}</p>
                                         <a href='Post/{entity.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>
                                    </div>
                                 </div>";
