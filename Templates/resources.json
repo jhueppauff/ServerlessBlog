@@ -16,6 +16,9 @@
         "endpointProperties": {
             "type": "object"
         },
+        "engineEndpointProperties": {
+            "type": "object"
+        },
         "aadClientId": {
             "type": "string"
         },
@@ -30,7 +33,8 @@
         "storageNameWeb": "stblogstaticweprod001",
         "storageFunction": "stblogfuncweprod001",
         "cdnProfileName": "[replace(parameters('functionEngineName'), 'func', 'cdn')]",
-        "cdnEndpointName": "[replace(parameters('functionEngineName'), 'func', 'cdnedp')]"
+        "cdnEndpointName": "[replace(parameters('functionFrontendName'), 'func', 'cdnedp')]",
+        "cdnEngineEndpointName": "[replace(parameters('functionEngineName'), 'func', 'cdnedp')]"
     },
     "resources": [
         {
@@ -227,6 +231,16 @@
             "name": "[concat(variables('cdnProfileName'),'/',variables('cdnEndpointName'))]",
             "location": "[resourceGroup().location]",
             "properties": "[parameters('endpointProperties')]",
+            "type": "microsoft.cdn/profiles/endpoints"
+        },
+        {
+            "apiVersion": "2019-04-15",
+            "dependsOn": [
+                "[concat('Microsoft.Cdn/profiles/', variables('cdnProfileName'))]"
+            ],
+            "name": "[concat(variables('cdnProfileName'),'/',variables('cdnEngineEndpointName'))]",
+            "location": "[resourceGroup().location]",
+            "properties": "[parameters('engineEndpointProperties')]",
             "type": "microsoft.cdn/profiles/endpoints"
         },
         {
