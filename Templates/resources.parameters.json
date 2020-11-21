@@ -23,7 +23,7 @@
                 "isHttpsAllowed": true,
                 "originHostHeader": "func-blog-frontend-we-prod-001.azurewebsites.net",
                 "origins": [{
-                    "name": "func-blog-frontend-we-prod-001.azurewebsites.net",
+                    "name": "frontend",
                     "properties": {
                         "hostName": "func-blog-frontend-we-prod-001.azurewebsites.net",
                         "httpPort": 80,
