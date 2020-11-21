@@ -1,0 +1,41 @@
+trigger:
+- master
+
+variables: 
+  buildConfiguration: 'Release'
+  functionName: 'func-blog-frontend-we-prod-001'
+  serviceConnection: 'ServerlessBlog'
+  vmImageName: 'windows-latest'
+
+pool:
+  vmImage: $(vmImageName)
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'Restore project'
+  inputs:
+    command: restore
+    projects: '**/*.csproj'
+    restoreArguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build project'
+  inputs:
+    projects: '**/*.csproj'
+    arguments: '--output publish_output --configuration $(buildConfiguration)'
+
+- task: ArchiveFiles@2
+  displayName: 'Archive files'
+  inputs:
+    rootFolderOrFile: 'publish_output/'
+    includeRootFolder: false
+
+- task: AzureFunctionApp@1
+  displayName: 'Azure Function App Deploy: $(functionName)'
+  inputs:
+    azureSubscription: $(serviceConnection)
+    appType: functionApp
+    appName: '$(functionName)'
+    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
