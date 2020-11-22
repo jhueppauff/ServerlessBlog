@@ -8,6 +8,7 @@ using Microsoft.Azure.Storage.Blob;
 using Engine;
 using Newtonsoft.Json;
 using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Azure.Storage.Queue;
 
 namespace ServerlessBlog.Engine
 {
@@ -35,6 +36,7 @@ namespace ServerlessBlog.Engine
         [FunctionName(nameof(Save))]
         public static async Task<IActionResult> Save(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
+        [Queue("created", Connection = "AzureStorageConnection")] CloudQueue queue,
         [Blob("posts", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlobContainer container)
         {
             string slug = req.Query["slug"];
@@ -48,6 +50,8 @@ namespace ServerlessBlog.Engine
             await blobRef.UploadFromStreamAsync(req.Body);
             blobRef.Properties.ContentType = "text/markdown";
             await blobRef.SetPropertiesAsync();
+
+            await queue.AddMessageAsync(new CloudQueueMessage(slug));
 
             return new OkObjectResult(slug);
         }

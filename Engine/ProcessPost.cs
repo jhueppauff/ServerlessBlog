@@ -9,15 +9,16 @@ namespace Engine
     public static class ProcessPost
     {
         [FunctionName("RenderPost")]
-        public static async Task RenderPost([BlobTrigger("posts/{name}.md", Connection = "AzureStorageConnection")]string post, string name,
+        public static async Task RenderPost([QueueTrigger("created", Connection = "AzureStorageConnection")] string slug,
+        [Blob("posts/{queueTrigger}.md", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
         [Blob("published", FileAccess.Write, Connection = "AzureStorageConnection")]CloudBlobContainer container, ILogger log)
         {
-            log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {post.Length} Bytes");
+            log.LogInformation($"Processed blob\n Name:{slug}");
 
             MarkdownSharp.Markdown markdown = new MarkdownSharp.Markdown();
-            string html = markdown.Transform(post);
+            string html = markdown.Transform(postContent);
 
-            var blobRef = container.GetBlockBlobReference(name + ".html");
+            var blobRef = container.GetBlockBlobReference(slug + ".html");
 
             await blobRef.UploadTextAsync(html).ConfigureAwait(false);
             
