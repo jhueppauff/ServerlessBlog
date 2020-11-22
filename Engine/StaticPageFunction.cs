@@ -7,6 +7,7 @@ using Azure.WebJobs.Extensions.HttpApi;
 using System.IO;
 using System.Threading.Tasks;
 using System;
+using HtmlAgilityPack;
 
 namespace Engine
 {
@@ -41,8 +42,8 @@ namespace Engine
 
         [FunctionName(nameof(GetEditPostPage))]
         public async Task<IActionResult> GetEditPostPage(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetEditPostPage/{slug}")] string slug, ExecutionContext context,
-        [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetEditPostPage/{slug}")] HttpRequest req, ExecutionContext context,
+        [Blob("posts/{slug}.md", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
         [Table("metadata", "{slug}", "{slug}", Connection = "AzureStorageConnection")] PostMetadata postMetadata,
         ILogger log)
         {
@@ -54,9 +55,21 @@ namespace Engine
             string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, "../statics/add-page.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
             content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
 
+            HtmlDocument document = new HtmlDocument();
+            document.LoadHtml(content);
+
+            HtmlNode textArea = document.DocumentNode.SelectSingleNode("//*[@id=\"postcontent\"]");
+            textArea.InnerHtml = postContent;
+
+            HtmlNode title = document.DocumentNode.SelectSingleNode("//*[@id=\"title\"]");
+            title.SetAttributeValue("value", postMetadata.Title);
+
+            HtmlNode preview = document.DocumentNode.SelectSingleNode("//*[@id=\"preview\"]");
+            preview.SetAttributeValue("value", postMetadata.Preview);
+
             var result = new ContentResult
             {
-                Content = content,
+                Content = document.DocumentNode.OuterHtml,
                 ContentType = "text/html"
             };
 
