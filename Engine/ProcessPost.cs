@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Markdig;
 
 namespace Engine
 {
@@ -15,8 +16,9 @@ namespace Engine
         {
             log.LogInformation($"Processed blob\n Name:{slug}");
 
-            MarkdownSharp.Markdown markdown = new MarkdownSharp.Markdown();
-            string html = markdown.Transform(postContent);
+            MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UseBootstrap().Build();
+
+            string html = Markdown.ToHtml(postContent);
 
             var blobRef = container.GetBlockBlobReference(slug + ".html");
 
