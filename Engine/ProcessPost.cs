@@ -16,7 +16,7 @@ namespace Engine
         {
             log.LogInformation($"Processed blob\n Name:{slug}");
 
-            MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UseBootstrap().Build();
+            MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UsePipeTables().UseBootstrap().Build();
             string html = Markdown.ToHtml(postContent, pipeline);
 
             var blobRef = container.GetBlockBlobReference(slug + ".html");
