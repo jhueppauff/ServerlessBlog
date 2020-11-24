@@ -4,6 +4,7 @@ using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Markdig;
+using Markdig.Prism;
 
 namespace Engine
 {
@@ -16,7 +17,7 @@ namespace Engine
         {
             log.LogInformation($"Processed blob\n Name:{slug}");
 
-            MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UsePipeTables().UseBootstrap().Build();
+            MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UsePipeTables().UseBootstrap().UsePrism().Build();
             string html = Markdown.ToHtml(postContent, pipeline);
 
             var blobRef = container.GetBlockBlobReference(slug + ".html");
