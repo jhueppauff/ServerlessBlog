@@ -61,6 +61,12 @@ namespace ServerlessBlog.Frontend
             return result;
         }
 
+        [FunctionName(nameof(GetLicense))]
+        public IActionResult GetLicense([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/license")] HttpRequest req)
+        {
+            return File("statics/license.html");
+        }
+
         [FunctionName(nameof(PostPage))]
         public async Task<IActionResult> PostPage(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/Post/{slug}")] HttpRequest req,

@@ -27,6 +27,9 @@
     <None Update="statics\index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="statics\license.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="statics\post.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
