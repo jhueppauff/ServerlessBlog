@@ -80,6 +80,7 @@ namespace ServerlessBlog.Frontend
             content = content.Replace("$content$", postContent);
             content = content.Replace("$date$", postMetadata.Published);
             content = content.Replace("$titel$", postMetadata.Title);
+            content = content.Replace("$description$", postMetadata.Preview)
             content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
 
             var result = new ContentResult
