@@ -11,6 +11,8 @@ trigger:
     include:
       - Frontend/*
 
+pr: none
+
 variables:
   # Azure Resource Manager connection created during pipeline creation
   azureSubscription: 'blogEngine - GitHub'
