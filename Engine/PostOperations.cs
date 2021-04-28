@@ -9,6 +9,8 @@ using Engine;
 using Newtonsoft.Json;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.Storage.Queue;
+using System.Text;
+using System.Web;
 
 namespace ServerlessBlog.Engine
 {
@@ -47,7 +49,19 @@ namespace ServerlessBlog.Engine
 
             var blobRef = container.GetBlockBlobReference(slug + ".md");
 
-            await blobRef.UploadFromStreamAsync(req.Body);
+            string content = string.Empty;
+
+            using (Stream stream = req.Body)
+            {
+                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    content = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+            }
+
+            content = HttpUtility.HtmlEncode(content);
+
+            await blobRef.UploadTextAsync(content);
             blobRef.Properties.ContentType = "text/markdown";
             await blobRef.SetPropertiesAsync();
 
