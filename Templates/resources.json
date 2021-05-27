@@ -122,7 +122,8 @@
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction'))]",
+                "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName'))]"
             ],
             "resources": [
                 {
@@ -157,7 +158,7 @@
                         },
                         {
                             "name": "CosmosDBConnection",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=https://', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).tableEndpoint)]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=https://', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).tableEndpoint,';')]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
@@ -199,7 +200,8 @@
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction'))]",
+                "[resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName'))]"
             ],
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
@@ -215,7 +217,7 @@
                         },
                         {
                             "name": "CosmosDBConnection",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=https://', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).tableEndpoint)]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=https://', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).tableEndpoint,';')]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
