@@ -158,7 +158,7 @@
                         },
                         {
                             "name": "CosmosDBConnection",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=https://', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).tableEndpoint,';')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).tableEndpoint,';')]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
@@ -217,7 +217,7 @@
                         },
                         {
                             "name": "CosmosDBConnection",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=https://', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).tableEndpoint,';')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).tableEndpoint,';')]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
