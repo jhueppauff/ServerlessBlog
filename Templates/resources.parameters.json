@@ -26,6 +26,19 @@
         "cosmosDbisZoneRedundant": {
             "value": "true"
         },
+        "cosmosDbLocations": {
+            "value": [{
+                    "locationName": "West Europe",
+                    "failoverPriority": 0,
+                    "isZoneRedundant": true
+                },
+                {
+                    "locationName": "Germany West Central",
+                    "failoverPriority": 1,
+                    "isZoneRedundant": true
+                }
+            ]
+        },
         "endpointProperties": {
             "value": {
                 "isHttpAllowed": true,

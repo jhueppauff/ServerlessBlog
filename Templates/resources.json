@@ -33,6 +33,9 @@
         },
         "cosmosDbName": {
             "type": "string"
+        },
+        "cosmosDbLocations" : {
+            "type" : "array"
         }
     },
     "functions": [],
@@ -289,15 +292,6 @@
             }
         },
         {
-            "name": "[concat(parameters('cosmosDbName'), '/default')]",
-            "type": "Microsoft.DocumentDB/databaseAccounts/notebookWorkspaces",
-            "properties": {},
-            "dependsOn": [
-                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName'))]"
-            ],
-            "apiVersion": "2020-04-01"
-        },
-        {
             "apiVersion": "2020-04-01",
             "kind": "GlobalDocumentDB",
             "type": "Microsoft.DocumentDb/databaseAccounts",
@@ -332,10 +326,19 @@
                     }
                 ],
                 "enableFreeTier": true
-            },
-            "tags": {
-                "defaultExperience": "[parameters('cosmosDbdefaultExperience')]",
-                "hidden-cosmos-mmspecial": ""
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts/tables",
+            "apiVersion": "2021-04-15",
+            "name": "[concat(parameters('cosmosDbName'), '/metadata')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName'))]"
+            ],
+            "properties": {
+                "resource": {
+                    "id": "metadata"
+                }
             }
         }
     ]
