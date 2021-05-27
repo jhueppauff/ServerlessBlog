@@ -44,7 +44,7 @@ namespace Engine
         public async Task<IActionResult> GetEditPostPage(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetEditPostPage/{slug}")] HttpRequest req, ExecutionContext context,
         [Blob("posts/{slug}.md", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
-        [Table("metadata", "{slug}", "{slug}", Connection = "AzureStorageConnection")] PostMetadata postMetadata,
+        [Table("metadata", "{slug}", "{slug}", Connection = "CosmosDBConnection")] PostMetadata postMetadata,
         ILogger log)
         {
             if (!IsEasyAuthEnabled || !User.Identity.IsAuthenticated)

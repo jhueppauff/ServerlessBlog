@@ -22,17 +22,17 @@
         "aadClientId": {
             "type": "string"
         },
-        "aadTenant" : {
-            "type" : "string"
+        "aadTenant": {
+            "type": "string"
         },
         "cosmosDbisZoneRedundant": {
             "type": "string"
         },
-        "cosmosDbdefaultExperience" : {
-            "type" : "string"
+        "cosmosDbdefaultExperience": {
+            "type": "string"
         },
-        "cosmosDbName" : {
-            "type" : "string"
+        "cosmosDbName": {
+            "type": "string"
         }
     },
     "functions": [],
@@ -153,6 +153,10 @@
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageNameWeb'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
                         },
                         {
+                            "name": "CosmosDBConnection",
+                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName')), '2019-12-12').connectionStrings[0].connectionString]"
+                        },
+                        {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageFunction'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
                         },
@@ -173,18 +177,18 @@
                             "value": "dotnet"
                         },
                         {
-                            "name" : "WEBSITE_RUN_FROM_PACKAGE",
-                            "value" : 1
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": 1
                         },
                         {
-                            "name" : "WEBSITE_ENABLE_SYNC_UPDATE_SITE",
-                            "value" : true
+                            "name": "WEBSITE_ENABLE_SYNC_UPDATE_SITE",
+                            "value": true
                         }
                     ]
                 }
             }
         },
-                {
+        {
             "apiVersion": "2015-08-01",
             "type": "Microsoft.Web/sites",
             "name": "[parameters('functionFrontendName')]",
@@ -207,6 +211,10 @@
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageNameWeb'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
                         },
                         {
+                            "name": "CosmosDBConnection",
+                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName')), '2019-12-12').connectionStrings[0].connectionString]"
+                        },
+                        {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageFunction'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunction')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
                         },
@@ -227,12 +235,12 @@
                             "value": "dotnet"
                         },
                         {
-                            "name" : "WEBSITE_RUN_FROM_PACKAGE",
-                            "value" : 1
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": 1
                         },
                         {
-                            "name" : "WEBSITE_ENABLE_SYNC_UPDATE_SITE",
-                            "value" : true
+                            "name": "WEBSITE_ENABLE_SYNC_UPDATE_SITE",
+                            "value": true
                         }
                     ]
                 }

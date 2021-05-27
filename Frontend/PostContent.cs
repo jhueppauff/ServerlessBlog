@@ -24,7 +24,7 @@ namespace ServerlessBlog.Frontend
         public static IActionResult GetPostMetadata(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPostMetadata/{slug}")] HttpRequest req,
             [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
-            [Table("metadata", "{slug}", "{slug}", Connection = "AzureStorageConnection")] PostMetadata data,
+            [Table("metadata", "{slug}", "{slug}", Connection = "CosmosDBConnection")] PostMetadata data,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");

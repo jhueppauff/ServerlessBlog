@@ -23,7 +23,7 @@ namespace ServerlessBlog.Frontend
         [FunctionName(nameof(IndexPage))]
         public async Task<IActionResult> IndexPage(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/Index")] HttpRequest req,
-            [Table("metadata", Connection = "AzureStorageConnection")] CloudTable cloudTableClient,
+            [Table("metadata", Connection = "CosmosDBConnection")] CloudTable cloudTableClient,
             ILogger log, ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
@@ -71,7 +71,7 @@ namespace ServerlessBlog.Frontend
         public async Task<IActionResult> PostPage(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/Post/{slug}")] HttpRequest req,
             [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
-            [Table("metadata", "{slug}", "{slug}", Connection = "AzureStorageConnection")] PostMetadata postMetadata, 
+            [Table("metadata", "{slug}", "{slug}", Connection = "CosmosDBConnection")] PostMetadata postMetadata, 
             ILogger log, ExecutionContext context)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");

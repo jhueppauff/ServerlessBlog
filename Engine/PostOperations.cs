@@ -73,7 +73,7 @@ namespace ServerlessBlog.Engine
         [FunctionName(nameof(SetPostMetadata))]
         public static async Task<IActionResult> SetPostMetadata(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
-            [Table("metadata", Connection = "AzureStorageConnection")] CloudTable client)
+            [Table("metadata", Connection = "CosmosDBConnection")] CloudTable client)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
