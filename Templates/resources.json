@@ -157,7 +157,7 @@
                         },
                         {
                             "name": "CosmosDBConnection",
-                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName')), '2019-12-12').connectionStrings[0].connectionString]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=https://', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, '.table.cosmos.azure.com:443/;')]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
@@ -215,7 +215,7 @@
                         },
                         {
                             "name": "CosmosDBConnection",
-                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName')), '2019-12-12').connectionStrings[0].connectionString]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, ';TableEndpoint=https://', reference(resourceId('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbName'))).documentEndpoint, '.table.cosmos.azure.com:443/;')]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
