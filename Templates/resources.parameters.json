@@ -17,6 +17,15 @@
         "aadTenant": {
             "value": "hueppauff.com"
         },
+        "cosmosDbName": {
+            "value": "cosmos-blog-we-prod-001"
+        },
+        "cosmosDbdefaultExperience": {
+            "value": "Azure Table"
+        },
+        "cosmosDbisZoneRedundant": {
+            "value": "true"
+        },
         "endpointProperties": {
             "value": {
                 "isHttpAllowed": true,
@@ -42,33 +51,28 @@
                     "application/xml"
                 ],
                 "deliveryPolicy": {
-                    "rules": [
-                        {
+                    "rules": [{
                             "name": "forceHttps",
                             "order": 1,
-                            "conditions": [
-                                {
-                                    "name": "RequestScheme",
-                                    "parameters": {
-                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleRequestSchemeConditionParameters",
-                                        "operator": "Equal",
-                                        "negateCondition": false,
-                                        "matchValues": [
-                                            "HTTP"
-                                        ]
-                                    }
+                            "conditions": [{
+                                "name": "RequestScheme",
+                                "parameters": {
+                                    "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleRequestSchemeConditionParameters",
+                                    "operator": "Equal",
+                                    "negateCondition": false,
+                                    "matchValues": [
+                                        "HTTP"
+                                    ]
                                 }
-                            ],
-                            "actions": [
-                                {
-                                    "name": "UrlRedirect",
-                                    "parameters": {
-                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlRedirectActionParameters",
-                                        "redirectType": "Found",
-                                        "destinationProtocol": "Https"
-                                    }
+                            }],
+                            "actions": [{
+                                "name": "UrlRedirect",
+                                "parameters": {
+                                    "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlRedirectActionParameters",
+                                    "redirectType": "Found",
+                                    "destinationProtocol": "Https"
                                 }
-                            ]
+                            }]
                         },
                         {
                             "name": "cacheControl",
@@ -123,33 +127,28 @@
                     "application/xml"
                 ],
                 "deliveryPolicy": {
-                    "rules": [
-                        {
+                    "rules": [{
                             "name": "forceHttps",
                             "order": 1,
-                            "conditions": [
-                                {
-                                    "name": "RequestScheme",
-                                    "parameters": {
-                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleRequestSchemeConditionParameters",
-                                        "operator": "Equal",
-                                        "negateCondition": false,
-                                        "matchValues": [
-                                            "HTTP"
-                                        ]
-                                    }
+                            "conditions": [{
+                                "name": "RequestScheme",
+                                "parameters": {
+                                    "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleRequestSchemeConditionParameters",
+                                    "operator": "Equal",
+                                    "negateCondition": false,
+                                    "matchValues": [
+                                        "HTTP"
+                                    ]
                                 }
-                            ],
-                            "actions": [
-                                {
-                                    "name": "UrlRedirect",
-                                    "parameters": {
-                                        "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlRedirectActionParameters",
-                                        "redirectType": "Found",
-                                        "destinationProtocol": "Https"
-                                    }
+                            }],
+                            "actions": [{
+                                "name": "UrlRedirect",
+                                "parameters": {
+                                    "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlRedirectActionParameters",
+                                    "redirectType": "Found",
+                                    "destinationProtocol": "Https"
                                 }
-                            ]
+                            }]
                         },
                         {
                             "name": "cacheControl",

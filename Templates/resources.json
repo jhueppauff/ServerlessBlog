@@ -24,6 +24,15 @@
         },
         "aadTenant" : {
             "type" : "string"
+        },
+        "cosmosDbisZoneRedundant": {
+            "type": "string"
+        },
+        "cosmosDbdefaultExperience" : {
+            "type" : "string"
+        },
+        "cosmosDbName" : {
+            "type" : "string"
         }
     },
     "functions": [],
@@ -270,7 +279,56 @@
                 "Flow_Type": "Redfield",
                 "Request_Source": "IbizaAIExtension"
             }
+        },
+        {
+            "name": "[concat(parameters('cosmosDbName'), '/default')]",
+            "type": "Microsoft.DocumentDB/databaseAccounts/notebookWorkspaces",
+            "properties": {},
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName'))]"
+            ],
+            "apiVersion": "2020-04-01"
+        },
+        {
+            "apiVersion": "2020-04-01",
+            "kind": "GlobalDocumentDB",
+            "type": "Microsoft.DocumentDb/databaseAccounts",
+            "name": "[parameters('cosmosDbName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "databaseAccountOfferType": "Standard",
+                "locations": [
+                    {
+                        "id": "[concat(parameters('cosmosDbName'), '-', resourceGroup().location)]",
+                        "failoverPriority": 0,
+                        "locationName": "[resourceGroup().location]",
+                        "isZoneRedundant": "[parameters('cosmosDbisZoneRedundant')]"
+                    }
+                ],
+                "backupPolicy": {
+                    "type": "Periodic",
+                    "periodicModeProperties": {
+                        "backupIntervalInMinutes": 1440,
+                        "backupRetentionIntervalInHours": 48,
+                        "backupStorageRedundancy": "Local"
+                    }
+                },
+                "isVirtualNetworkFilterEnabled": false,
+                "virtualNetworkRules": [],
+                "ipRules": [],
+                "dependsOn": [],
+                "enableMultipleWriteLocations": false,
+                "capabilities": [
+                    {
+                        "name": "EnableTable"
+                    }
+                ],
+                "enableFreeTier": true
+            },
+            "tags": {
+                "defaultExperience": "[parameters('cosmosDbdefaultExperience')]",
+                "hidden-cosmos-mmspecial": ""
+            }
         }
-    ],
-    "outputs": {}
+    ]
 }
