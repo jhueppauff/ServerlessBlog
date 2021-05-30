@@ -10,6 +10,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Globalization;
 
 namespace ServerlessBlog.Frontend
 {
@@ -33,8 +34,9 @@ namespace ServerlessBlog.Frontend
             TableQuery<PostMetadata> query = new TableQuery<PostMetadata>();
 
             StringBuilder indexContent = new StringBuilder();
+            CultureInfo cultureInfo = new CultureInfo("en-us");
 
-            foreach (var entity in (await cloudTableClient.ExecuteQuerySegmentedAsync(query, null).ConfigureAwait(false)).OrderByDescending(o => o.Published))
+            foreach (var entity in (await cloudTableClient.ExecuteQuerySegmentedAsync(query, null).ConfigureAwait(false)).OrderByDescending(o => DateTime.Parse(o.Published, cultureInfo, DateTimeStyles.NoCurrentDateDefault)))
             {                
                 string html = @$"<div class='card mb-4 shadow-lg' style='background-color: #303030;'>
                                     <div class='card-body'>
