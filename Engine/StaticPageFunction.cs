@@ -40,6 +40,42 @@ namespace Engine
             return result;
         }
 
+        [FunctionName(nameof(GetIndexPage))]
+        public async Task<IActionResult> GetIndexPage(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetIndexPage/")] HttpRequest req, ExecutionContext context,
+        [Blob("posts/{slug}.md", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
+        [Table("metadata", "{slug}", "{slug}", Connection = "CosmosDBConnection")] PostMetadata postMetadata,
+        ILogger log)
+        {
+            if (!IsEasyAuthEnabled || !User.Identity.IsAuthenticated)
+            {
+                return Forbid();
+            }
+
+            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, "../statics/index.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
+            content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
+
+            HtmlDocument document = new HtmlDocument();
+            document.LoadHtml(content);
+
+            HtmlNode textArea = document.DocumentNode.SelectSingleNode("//*[@id=\"postcontent\"]");
+            textArea.InnerHtml = postContent;
+
+            HtmlNode title = document.DocumentNode.SelectSingleNode("//*[@id=\"title\"]");
+            title.SetAttributeValue("value", postMetadata.Title);
+
+            HtmlNode preview = document.DocumentNode.SelectSingleNode("//*[@id=\"preview\"]");
+            preview.SetAttributeValue("value", postMetadata.Preview);
+
+            var result = new ContentResult
+            {
+                Content = document.DocumentNode.OuterHtml,
+                ContentType = "text/html"
+            };
+
+            return result;
+        }
+
         [FunctionName(nameof(GetEditPostPage))]
         public async Task<IActionResult> GetEditPostPage(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetEditPostPage/{slug}")] HttpRequest req, ExecutionContext context,

@@ -1,19 +1,19 @@
 {
     "$schema": "http://json.schemastore.org/proxies",
-  "proxies": {
-    "AddPage": {
-      "matchCondition": {
-        "route": "/Add",
-        "methods": [ "GET" ]
-      },
-      "backendUri": "http://%WEBSITE_HOSTNAME%/api/static/GetAddPostPage"
-    },
-    "EditPage": {
-      "matchCondition": {
-        "route": "/Edit/{slug}",
-        "methods": [ "GET" ]
-      },
-      "backendUri": "http://%WEBSITE_HOSTNAME%/api/static/GetEditPostPage/{slug}"
+    "proxies": {
+        "AddPage": {
+            "matchCondition": {
+                "route": "/Add",
+                "methods": ["GET"]
+            },
+            "backendUri": "http://%WEBSITE_HOSTNAME%/api/static/GetAddPostPage"
+        },
+        "EditPage": {
+            "matchCondition": {
+                "route": "/Edit/{slug}",
+                "methods": ["GET"]
+            },
+            "backendUri": "http://%WEBSITE_HOSTNAME%/api/static/GetEditPostPage/{slug}"
+        }
     }
-  }
 }
