@@ -31,7 +31,7 @@ namespace ServerlessBlog.Engine
         [FunctionName(nameof(List))]
         public static async Task<IActionResult> List(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
-            [Table("metadata", Connection = "AzureStorageConnection")] CloudTable cloudTableClient)
+            [Table("metadata", Connection = "CosmosDBConnection")] CloudTable cloudTableClient)
         {
             TableQuery<PostMetadata> query = new TableQuery<PostMetadata>();
             List<PostMetadata> postMetadata = new List<PostMetadata>();
