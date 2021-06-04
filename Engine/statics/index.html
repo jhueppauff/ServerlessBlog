@@ -100,7 +100,7 @@
             integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous">
     </script>
     <script type="text/javascript">
-        function loadPosts(params) {
+        async function loadPosts(params) {
             let backendUrl = window.location.protocol + "//" + window.location.host + "/api/List";
             let headers = new Headers();
             headers.append("Content-Type", "application/json");
