@@ -40,6 +40,28 @@ namespace Engine
             return result;
         }
 
+        [FunctionName(nameof(GetIndexPage))]
+        public async Task<IActionResult> GetIndexPage(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetIndexPage/")] HttpRequest req, ExecutionContext context,
+        ILogger log)
+        {
+            if (!IsEasyAuthEnabled || !User.Identity.IsAuthenticated)
+            {
+                return Forbid();
+            }
+
+            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, "../statics/index.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
+            content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
+
+            var result = new ContentResult
+            {
+                Content = content,
+                ContentType = "text/html"
+            };
+
+            return result;
+        }
+
         [FunctionName(nameof(GetEditPostPage))]
         public async Task<IActionResult> GetEditPostPage(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetEditPostPage/{slug}")] HttpRequest req, ExecutionContext context,
