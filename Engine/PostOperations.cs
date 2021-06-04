@@ -11,6 +11,7 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.Storage.Queue;
 using System.Text;
 using System.Web;
+using System.Collections.Generic;
 
 namespace ServerlessBlog.Engine
 {
@@ -28,11 +29,19 @@ namespace ServerlessBlog.Engine
         }
 
         [FunctionName(nameof(List))]
-        public static IActionResult List(
+        public static async Task<IActionResult> List(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
-            [Blob("posts/index.json", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] string index)
+            [Table("metadata", Connection = "AzureStorageConnection")] CloudTable cloudTableClient)
         {
-            return new JsonResult(index);
+            TableQuery<PostMetadata> query = new TableQuery<PostMetadata>();
+            List<PostMetadata> postMetadata = new List<PostMetadata>();
+
+            foreach (var item in await cloudTableClient.ExecuteQuerySegmentedAsync(query, null).ConfigureAwait(false))
+            {
+                postMetadata.Add(item);
+            } 
+
+            return new JsonResult(postMetadata);
         }
 
         [FunctionName(nameof(Save))]

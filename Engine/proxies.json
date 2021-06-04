@@ -1,6 +1,12 @@
 {
     "$schema": "http://json.schemastore.org/proxies",
     "proxies": {
+        "IndexPage": {
+            "matchCondition": {
+                "route": "/",
+                "methods": ["GET"]
+            }
+        },
         "AddPage": {
             "matchCondition": {
                 "route": "/Add",
