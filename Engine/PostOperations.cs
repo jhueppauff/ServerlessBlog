@@ -32,11 +32,12 @@ namespace ServerlessBlog.Engine
         [FunctionName(nameof(Delete))]
         public static async Task<IActionResult> Delete(
             [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "Posts/{slug}")] string slug,
-            [Blob("posts/{slug}", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlob postBlob,
-            [Blob("published/{slug}", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlob publishedBlob,
+            [Blob("posts/{slug}.md", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlob postBlob,
+            [Blob("published/{slug}.html", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlob publishedBlob,
             [Table("metadata", Connection = "CosmosDBConnection")] CloudTable cloudTable, ILogger logger)
         {
             logger.LogInformation($"Delete Post {slug}");
+
             if (string.IsNullOrWhiteSpace(slug))
             {
                 return new BadRequestObjectResult("slug cannot be empty");
