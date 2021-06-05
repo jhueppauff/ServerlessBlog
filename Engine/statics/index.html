@@ -232,7 +232,7 @@ hr {
                     console.log(res) 
                     let parsedJson = await res.json();
                     parsedJson.forEach(element => {
-                        let row = '<tr><td>' + element.slug + '</td><td>' + element.title + '</td><td>' + element.published + '</td><td>' + element.preview + '</td><td><a class="btn btn-info btn-xs" href="/edit/' + element.slug + '"><span class="glyphicon glyphicon-edit"></span> Edit</a> <a onclick="showDeleteModal('+ element.slug +');" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-remove"></span> Delete</a></td></tr>';
+                        let row = '<tr><td>' + element.slug + '</td><td>' + element.title + '</td><td>' + element.published + '</td><td>' + element.preview + '</td><td><a class="btn btn-info btn-xs" href="/edit/' + element.slug + '"><span class="glyphicon glyphicon-edit"></span> Edit</a> <a onclick="showDeleteModal("'+ element.slug +'"");" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-remove"></span> Delete</a></td></tr>';
                         $('#postTable').append(row);
                     });
 
