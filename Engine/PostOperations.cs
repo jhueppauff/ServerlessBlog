@@ -28,6 +28,34 @@ namespace ServerlessBlog.Engine
             return new OkObjectResult(markdownText);
         }
 
+        [FunctionName(nameof(Delete))]
+        public static async Task<IActionResult> Delete(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "api/Posts/{slug}")] string slug,
+            [Blob("posts", FileAccess.Read, Connection = "AzureStorageConnection")] CloudBlob postBlob,
+            [Blob("published", FileAccess.Read, Connection = "AzureStorageConnection")] CloudBlob publishedBlob,
+            [Table("metadata", Connection = "CosmosDBConnection")] CloudTable cloudTable)
+        {
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                return new BadRequestObjectResult("slug cannot be empty");
+            }
+
+            await postBlob.DeleteIfExistsAsync().ConfigureAwait(false);
+            await publishedBlob.DeleteIfExistsAsync().ConfigureAwait(false);
+
+            var entity = new PostMetadata
+            {
+                PartitionKey = slug,
+                RowKey = slug,
+                ETag = "*"
+            };
+
+            TableOperation deleteOperation = TableOperation.Delete(entity);
+            await cloudTable.ExecuteAsync(deleteOperation).ConfigureAwait(false);
+
+            return new OkResult();
+        }
+
         [FunctionName(nameof(List))]
         public static async Task<IActionResult> List(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
@@ -39,7 +67,7 @@ namespace ServerlessBlog.Engine
             foreach (var item in await cloudTableClient.ExecuteQuerySegmentedAsync(query, null).ConfigureAwait(false))
             {
                 postMetadata.Add(item);
-            } 
+            }
 
             return new JsonResult(postMetadata);
         }
