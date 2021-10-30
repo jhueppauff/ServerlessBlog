@@ -13,17 +13,18 @@ using System.Text;
 using System.Web;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace ServerlessBlog.Engine
 {
     public static class PostOperations
     {
-        [FunctionName(nameof(Get))]
-        public static async Task<IActionResult> Get(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get/{slug}", Route = null)] HttpRequest req, string slug,
+        [FunctionName(nameof(GetMarkdown))]
+        public static async Task<IActionResult> GetMarkdown(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post/{slug}/markdown")] HttpRequest req, string slug,
             [Blob("posts", FileAccess.Read, Connection = "AzureStorageConnection")] CloudBlobContainer container)
         {
-            if(string.IsNullOrEmpty(slug))
+            if(String.IsNullOrEmpty(slug))
             {
                 slug = req.Query["slug"];
             }
@@ -35,7 +36,7 @@ namespace ServerlessBlog.Engine
 
         [FunctionName(nameof(Delete))]
         public static async Task<IActionResult> Delete(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "Posts/{slug}")] HttpRequest request, string slug,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "post/{slug}")] HttpRequest request, string slug,
             [Blob("posts/{slug}.md", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlob postBlob,
             [Blob("published/{slug}.html", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlob publishedBlob,
             [Table("metadata", Connection = "CosmosDBConnection")] CloudTable cloudTable, ILogger logger)
@@ -63,9 +64,9 @@ namespace ServerlessBlog.Engine
             return new OkResult();
         }
 
-        [FunctionName(nameof(List))]
-        public static async Task<IActionResult> List(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+        [FunctionName(nameof(GetPosts))]
+        public static async Task<IActionResult> GetPosts(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post")] HttpRequest req,
             [Table("metadata", Connection = "CosmosDBConnection")] CloudTable cloudTableClient)
         {
             TableQuery<PostMetadata> query = new TableQuery<PostMetadata>();
@@ -79,16 +80,31 @@ namespace ServerlessBlog.Engine
             return new JsonResult(postMetadata);
         }
 
+        [FunctionName(nameof(GetPost))]
+        public static async Task<IActionResult> GetPost(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post/{slug}")] HttpRequest req, string slug,
+            [Table("metadata", Connection = "CosmosDBConnection")] CloudTable cloudTableClient)
+        {
+            TableQuery<PostMetadata> query = new TableQuery<PostMetadata>().Where(
+                TableQuery.CombineFilters(
+                TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, slug),
+                TableOperators.And,
+                TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, slug)));
+
+            var result = await cloudTableClient.ExecuteQuerySegmentedAsync<PostMetadata>(query, null);
+
+            return new JsonResult(result);
+        }
+
         [FunctionName(nameof(Save))]
         public static async Task<IActionResult> Save(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "post/{slug}")] HttpRequest req, string slug,
         [Queue("created", Connection = "AzureStorageConnection")] CloudQueue queue,
         [Blob("posts", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlobContainer container)
         {
-            string slug = req.Query["slug"];
             if (string.IsNullOrWhiteSpace(slug))
             {
-                return new BadRequestObjectResult("slug cannot be empty");
+                slug = req.Query["slug"];
             }
 
             var blobRef = container.GetBlockBlobReference(slug + ".md");
@@ -116,7 +132,7 @@ namespace ServerlessBlog.Engine
 
         [FunctionName(nameof(SetPostMetadata))]
         public static async Task<IActionResult> SetPostMetadata(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "post")] HttpRequest req,
             [Table("metadata", Connection = "CosmosDBConnection")] CloudTable client)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();

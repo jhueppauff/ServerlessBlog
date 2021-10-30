@@ -20,7 +20,7 @@ namespace Engine
 
         [FunctionName(nameof(GetAddPostPage))]
         public async Task<IActionResult> GetAddPostPage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetAddPostPage")] HttpRequest req, ExecutionContext context,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetAddPostPage"), Disable()] HttpRequest req, ExecutionContext context,
             ILogger log)
         {
             if (!IsEasyAuthEnabled || !User.Identity.IsAuthenticated)
@@ -42,7 +42,7 @@ namespace Engine
 
         [FunctionName(nameof(GetIndexPage))]
         public async Task<IActionResult> GetIndexPage(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetIndexPage/")] HttpRequest req, ExecutionContext context,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetIndexPage/"), Disable()] HttpRequest req, ExecutionContext context,
         ILogger log)
         {
             if (!IsEasyAuthEnabled || !User.Identity.IsAuthenticated)
@@ -64,7 +64,7 @@ namespace Engine
 
         [FunctionName(nameof(GetEditPostPage))]
         public async Task<IActionResult> GetEditPostPage(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetEditPostPage/{slug}")] HttpRequest req, ExecutionContext context,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "static/GetEditPostPage/{slug}"), Disable()] HttpRequest req, ExecutionContext context,
         [Blob("posts/{slug}.md", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
         [Table("metadata", "{slug}", "{slug}", Connection = "CosmosDBConnection")] PostMetadata postMetadata,
         ILogger log)
