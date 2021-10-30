@@ -23,7 +23,7 @@ namespace ServerlessBlog.Engine
             [HttpTrigger(AuthorizationLevel.Anonymous, "get/{slug}", Route = null)] HttpRequest req, string slug,
             [Blob("posts", FileAccess.Read, Connection = "AzureStorageConnection")] CloudBlobContainer container)
         {
-            if(String.IsNullOrEmpty(slug))
+            if(string.IsNullOrEmpty.IsNullOrEmpty(slug))
             {
                 slug = req.Query["slug"];
             }
