@@ -14,6 +14,7 @@ using System.Web;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 
 namespace ServerlessBlog.Engine
 {
@@ -93,7 +94,7 @@ namespace ServerlessBlog.Engine
 
             var result = await cloudTableClient.ExecuteQuerySegmentedAsync<PostMetadata>(query, null);
 
-            return new JsonResult(result);
+            return new JsonResult(result.FirstOrDefault());
         }
 
         [FunctionName(nameof(Save))]
@@ -132,7 +133,7 @@ namespace ServerlessBlog.Engine
 
         [FunctionName(nameof(SetPostMetadata))]
         public static async Task<IActionResult> SetPostMetadata(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "post")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "post  ")] HttpRequest req,
             [Table("metadata", Connection = "CosmosDBConnection")] CloudTable client)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
