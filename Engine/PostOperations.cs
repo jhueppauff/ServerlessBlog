@@ -97,8 +97,8 @@ namespace ServerlessBlog.Engine
             return new JsonResult(result.FirstOrDefault());
         }
 
-        [FunctionName(nameof(Save))]
-        public static async Task<IActionResult> Save(
+        [FunctionName(nameof(SavePostContent))]
+        public static async Task<IActionResult> SavePostContent(
         [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "post/{slug}")] HttpRequest req, string slug,
         [Queue("created", Connection = "AzureStorageConnection")] CloudQueue queue,
         [Blob("posts", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] CloudBlobContainer container)
@@ -131,9 +131,9 @@ namespace ServerlessBlog.Engine
             return new OkObjectResult(slug);
         }
 
-        [FunctionName(nameof(SetPostMetadata))]
-        public static async Task<IActionResult> SetPostMetadata(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "post  ")] HttpRequest req,
+        [FunctionName(nameof(SavePostMetadata))]
+        public static async Task<IActionResult> SavePostMetadata(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "post")] HttpRequest req,
             [Table("metadata", Connection = "CosmosDBConnection")] CloudTable client)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
