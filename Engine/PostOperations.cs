@@ -20,10 +20,14 @@ namespace ServerlessBlog.Engine
     {
         [FunctionName(nameof(Get))]
         public static async Task<IActionResult> Get(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get/{slug}", Route = null)] HttpRequest req, string slug,
             [Blob("posts", FileAccess.Read, Connection = "AzureStorageConnection")] CloudBlobContainer container)
         {
-            string slug = req.Query["slug"];
+            if(String.IsNullOrEmpty(slug))
+            {
+                slug = req.Query["slug"];
+            }
+
             var blobRef = container.GetBlockBlobReference(slug + ".md");
             string markdownText = await blobRef.DownloadTextAsync();
             return new OkObjectResult(markdownText);
