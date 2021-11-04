@@ -2,12 +2,18 @@
 @page "/edit/{Slug}"
 
 @using EditorNG.Models;
+@using System.Web
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.RegularExpressions
+
 @inject BlogClient client;
 
 @code{
     [Parameter]
     public string Slug { get; set; }
 }
+
+@attribute [Authorize]
 
 <h1>@Slug</h1>
 
@@ -41,7 +47,7 @@ else
     {
         if (Slug != null)
         {
-            markdown = await client.GetBlogPostMarkdown(Slug);
+            markdown =  HttpUtility.HtmlDecode(await client.GetBlogPostMarkdown(Slug));
             post = await client.GetBlogPost(Slug); 
         }
         else
