@@ -34,8 +34,11 @@
         "cosmosDbName": {
             "type": "string"
         },
-        "cosmosDbLocations" : {
-            "type" : "array"
+        "cosmosDbLocations": {
+            "type": "array"
+        },
+        "staticWebAppName": {
+            "type": "string"
         }
     },
     "functions": [],
@@ -49,6 +52,26 @@
         "cdnEngineEndpointName": "[replace(parameters('functionEngineName'), 'func', 'cdnedp')]"
     },
     "resources": [
+        {
+            "apiVersion": "2019-12-01-preview",
+            "name": "[parameters('staticWebAppName')]",
+            "type": "Microsoft.Web/staticSites",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "properties": {
+                "repositoryUrl": "https://github.com/jhueppauff/ServerlessBlog",
+                "branch": "main",
+                "buildProperties": {
+                    "appLocation": "EditorNG",
+                    "apiLocation": "",
+                    "appArtifactLocation": "wwwroot"
+                }
+            },
+            "sku": {
+                "Tier": "Free",
+                "Name": "Free"
+            }
+        },
         {
             "name": "[variables('storageNameWeb')]",
             "type": "Microsoft.Storage/storageAccounts",

@@ -26,6 +26,9 @@
         "cosmosDbisZoneRedundant": {
             "value": "true"
         },
+        "staticWebAppName": {
+            "value": "sapp-blobeditor-we-prod-001"
+        },
         "cosmosDbLocations": {
             "value": [{
                     "locationName": "West Europe",
