@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Cosmos.Table;
-using System.Collections.Generic;
 
 namespace Engine
 {
@@ -21,7 +20,7 @@ namespace Engine
 
         public string Published { get; set; }
 
-        public List<string> Tags { get; set; }
+        public string Tags { get; set; }
 
         public string Preview { get; set; }
 
