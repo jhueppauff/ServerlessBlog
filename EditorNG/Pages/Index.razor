@@ -5,6 +5,8 @@
 @using EditorNG.Models;
 
 @inject BlogClient blogClient;
+@inject IJSRuntime JSRuntime
+
 @attribute [Authorize]
 
 <a href="/add" class="btn btn-success"><span class="glyphicon glyphicon-plus-sign"></span> Add</a>
@@ -51,8 +53,10 @@ else
 }
 
 
+
+
 @code {
-    List<PostMetadata> posts;
+    private List<PostMetadata> posts;
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,11 +67,13 @@ else
     {
         posts = await blogClient.GetBlogPosts();
     }
-
     private async Task Delete(PostMetadata post)
     {
-        Console.WriteLine($"Delete {post.PartitionKey}");
 
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the post '{post.Title}'?"))
+            return;
+
+        await blogClient.DeleteBlogPost(post);
         await Refresh();
     }
 }

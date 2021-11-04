@@ -31,6 +31,7 @@ namespace EditorNG
         public async Task<PostMetadata> GetBlogPost(string slug)
         {
             var response = await client.GetAsync($"/api/post/{slug}");
+            response.EnsureSuccessStatusCode();
 
             PostMetadata post = JsonConvert.DeserializeObject<PostMetadata>(await response.Content.ReadAsStringAsync());
 
@@ -41,6 +42,7 @@ namespace EditorNG
         {
             
             var response = await client.GetAsync($"/api/post/{slug}/markdown");
+            response.EnsureSuccessStatusCode();
 
             string markdown = await response.Content.ReadAsStringAsync();
 
@@ -65,6 +67,12 @@ namespace EditorNG
             {
                 task.Result.EnsureSuccessStatusCode();
             }
+        }
+
+        public async Task DeleteBlogPost(PostMetadata post)
+        {
+            var response = await client.DeleteAsync($"/api/post/{post.Slug}");
+            response.EnsureSuccessStatusCode();
         }
     }
 }
