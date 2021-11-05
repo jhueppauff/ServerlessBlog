@@ -5,10 +5,11 @@
 @using System.Web
 @using Microsoft.AspNetCore.Authorization
 @using System.Text.RegularExpressions
+@using EditorNG.Components;
 
 @inject BlogClient client;
 
-@code{
+@code {
     [Parameter]
     public string Slug { get; set; }
 }
@@ -21,14 +22,42 @@
 {
     <div class="row">
         <div class="col-lg-12">
-        <br />
-            <input name="title" class="form-control" type="text" placeholder="Title?" id="title" @bind="@post.Title"/>
-            <textarea id="postcontent" name="content" class="form-control" data-provide="markdown" data-iconlibrary="fa" rows="10" @bind="@markdown"></textarea>
-            <input name="preview" class="form-control" type="text" placeholder="Preview" id="preview" @bind="@post.Preview" />
-            <input name="tags" class="form-control" type="text" placeholder="Tags" id="tags" @bind="@post.Tags" />
-            <input name="imageUrl" class="form-control" type="text" placeholder="https://blogimage" @bind="@post.ImageUrl"/>
+            <br />
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="title">Title</label>
+                <input name="title" class="form-control" type="text" placeholder="Title?" id="title" @bind="@post.Title" />
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <textarea id="postcontent" name="content" class="form-control" data-provide="markdown"
+                    @bind-value="editorBase.Body" @bind-value:event="oninput" data-iconlibrary="fa"
+                    rows="10"></textarea>
+                </div>
+                <div class="col-6">
+                    @((MarkupString) editorBase.Preview)
+                </div>
+            </div>
+
             <hr />
-            <button @onclick="@Save" class="btn btn-primary btn-success"><span class="glyphicon glyphicon-cloud-upload"></span>Publish</button>
+
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="preview">Preview Text</label>
+                <input name="preview" class="form-control" type="text" placeholder="Preview" id="preview"
+                @bind="@post.Preview" />
+            </div>
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="tags">Tags</label>
+                <input name="tags" class="form-control" type="text" placeholder="Tags" id="tags" @bind="@post.Tags" />
+            </div>
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="imageUrl">Image Url</label>
+                <input name="imageUrl" class="form-control" type="text" placeholder="https://blogimage"
+                @bind="@post.ImageUrl" />
+            </div>
+            <hr />
+            <button @onclick="@Save" class="btn btn-primary btn-success"><span
+                class="glyphicon glyphicon-cloud-upload"></span>Publish</button>
         </div>
     </div>
 }
@@ -38,21 +67,25 @@ else
 }
 
 
-@code{
+@code {
     private PostMetadata post;
 
     private string markdown;
 
+    private MarkdownEditorBase editorBase;
+
     protected override async Task OnInitializedAsync()
     {
+        editorBase = new MarkdownEditorBase();
+
         if (Slug != null)
         {
-            markdown =  HttpUtility.HtmlDecode(await client.GetBlogPostMarkdown(Slug));
-            post = await client.GetBlogPost(Slug); 
+            editorBase.Body = HttpUtility.HtmlDecode(await client.GetBlogPostMarkdown(Slug));
+            post = await client.GetBlogPost(Slug);
         }
         else
         {
-            markdown = string.Empty;
+            editorBase.Body = string.Empty;
             post = new PostMetadata();
         }
     }
@@ -69,7 +102,7 @@ else
             post.RowKey = slug;
         }
 
-        await client.SaveBlogPost(post, markdown);
+        await client.SaveBlogPost(post, editorBase.Body);
     }
 
     private string createSlug()
