@@ -43,17 +43,23 @@
 
             <div class="form-group">
                 <label class="col-md-4 control-label" for="preview">Preview Text</label>
-                <input name="preview" class="form-control" type="text" placeholder="Preview" id="preview"
-                @bind="@post.Preview" />
+                <textarea name="preview" class="form-control" type="text" placeholder="Preview" id="preview"
+                @bind="@post.Preview"></textarea>
             </div>
-            <div class="form-group">
-                <label class="col-md-4 control-label" for="tags">Tags</label>
-                <input name="tags" class="form-control" type="text" placeholder="Tags" id="tags" @bind="@post.Tags" />
-            </div>
-            <div class="form-group">
-                <label class="col-md-4 control-label" for="imageUrl">Image Url</label>
-                <input name="imageUrl" class="form-control" type="text" placeholder="https://blogimage"
-                @bind="@post.ImageUrl" />
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="tags">Tags</label>
+                        <input name="tags" class="form-control" type="text" placeholder="Tags" id="tags" @bind="@post.Tags" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="imageUrl">Image Url</label>
+                        <input name="imageUrl" class="form-control" type="text" placeholder="https://blogimage"
+                        @bind="@post.ImageUrl" />
+                    </div>
+                </div>
             </div>
             <hr />
             <button @onclick="@Save" class="btn btn-primary btn-success"><span
