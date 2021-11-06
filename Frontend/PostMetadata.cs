@@ -19,7 +19,7 @@ namespace ServerlessBlog.Frontend
 
         public string Published { get; set; }
 
-        public List<string> Tags { get; set; }
+        public string Tags { get; set; }
 
         public string Preview { get; set; }
 
