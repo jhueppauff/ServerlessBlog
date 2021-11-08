@@ -57,6 +57,7 @@ namespace ServerlessBlog.Frontend
                                         <div class='tags'>
                                             {tags}
                                         </div>
+                                        </br>
                                         <a href='Post/{entity.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>
                                    </div>
                                 </div>";
