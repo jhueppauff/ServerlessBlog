@@ -20,20 +20,19 @@ variables:
   # Agent VM image name
   vmImageName: 'windows-latest'
 
-jobs:
- - job:
-   pool:
-    vmImage: $(vmImageName)
-    steps:
-      - task: AzureResourceManagerTemplateDeployment@3
-        inputs:
-          deploymentScope: 'Resource Group'
-          azureResourceManagerConnection: '$(azureSubscription)'
-          subscriptionId: '$(subscriptionId)'
-          action: 'Create Or Update Resource Group'
-          resourceGroupName: '$(rgName)'
-          location: 'West Europe'
-          templateLocation: 'Linked artifact'
-          csmFile: '$(Build.SourcesDirectory)/Templates/resources.json'
-          csmParametersFile: '$(Build.SourcesDirectory)/Templates/resources.parameters.json'
-          deploymentMode: 'Incremental'
+pool:
+  vmImage: $(vmImageName)
+  
+steps:
+  - task: AzureResourceManagerTemplateDeployment@3
+    inputs:
+      deploymentScope: 'Resource Group'
+      azureResourceManagerConnection: '$(azureSubscription)'
+      subscriptionId: '$(subscriptionId)'
+      action: 'Create Or Update Resource Group'
+      resourceGroupName: '$(rgName)'
+      location: 'West Europe'
+      templateLocation: 'Linked artifact'
+      csmFile: '$(Build.SourcesDirectory)/Templates/resources.json'
+      csmParametersFile: '$(Build.SourcesDirectory)/Templates/resources.parameters.json'
+      deploymentMode: 'Incremental'
