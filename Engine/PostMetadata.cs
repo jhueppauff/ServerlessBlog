@@ -1,8 +1,7 @@
-﻿using Microsoft.Azure.Cosmos.Table;
-
+﻿
 namespace Engine
 {
-    public class PostMetadata : TableEntity
+    public class PostMetadata
     {
         public PostMetadata()
         {
@@ -13,6 +12,10 @@ namespace Engine
             PartitionKey = Title;
             RowKey = Title;
         }
+
+        public string PartitionKey { get; set; }
+
+        public string RowKey { get; set; }
 
         public string Title { get; set; }
 
