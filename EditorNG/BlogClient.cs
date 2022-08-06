@@ -74,5 +74,26 @@ namespace EditorNG
             var response = await client.DeleteAsync($"/api/post/{post.Slug}");
             response.EnsureSuccessStatusCode();
         }
+
+        public async Task<HttpResponseMessage> UploadFileAsync(IBrowserFile file, string extentsion)
+        {
+            long maxFileSize = 1024 * 1024 * 200;
+            
+            using MultipartFormDataContent content = new();
+
+            StreamContent fileContent = new(file.OpenReadStream(maxFileSize));
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+            content.Add(
+                content: fileContent,
+                name: "\"files\"",
+                fileName: file.Name
+            );
+
+            HttpResponseMessage responseMessage = await client.PutAsync($"/api/image/upload/{extentsion}", content).ConfigureAwait(false);
+            responseMessage.EnsureSuccessStatusCode();
+
+            return responseMessage;
+        }
     }
 }

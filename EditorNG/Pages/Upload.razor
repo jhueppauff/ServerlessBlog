@@ -1,0 +1,65 @@
+@page "/upload"
+
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Reflection;
+@using EditorNG.Models;
+@using System.Net
+@using System.IO
+
+@inject BlogClient blogClient;
+@inject IJSRuntime JSRuntime
+
+@attribute [Authorize]
+
+<h1>Upload your File:</h1>
+
+<div class="drag-drop-zone">
+    <InputFile OnChange="@UploadFile" multiple />
+    @status
+</div>
+
+<a href="@link" target="_blank" rel="noopener noreferrer">@link</a>
+
+@code {
+    string link = string.Empty;
+    string encodedLink = string.Empty;
+    const string DefaultStatus = "Drop a file here to upload it, or click to choose a file";
+    const int MaxFileSize = 200 * 1024 * 1024;
+    string status = DefaultStatus;
+
+    string linkStyle = "display:none";
+
+    async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        using var content = new MultipartFormDataContent();
+
+        var file = e.GetMultipleFiles(1)[0];
+
+        if (file == null)
+        {
+            return;
+        }
+        else if (file.Size > MaxFileSize)
+        {
+            status = $"That's too big. Max size: {MaxFileSize} bytes.";
+        }
+        else
+        {
+            var response = await blogClient.UploadFileAsync(file, Path.GetExtension(file.Name).Replace(".", string.Empty));
+
+            link = (await response.Content.ReadAsStringAsync()).TrimStart('"').TrimEnd('"');
+
+            if (response.IsSuccessStatusCode)
+            {
+                encodedLink = WebUtility.UrlEncode(link);
+                status = "Uploaded";
+                linkStyle = "display:block";
+            }
+            else
+            {
+                status = $"Error: {await response.Content.ReadAsStringAsync()}";
+            }
+        }
+    }
+}
