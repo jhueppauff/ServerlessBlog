@@ -56,6 +56,7 @@ namespace Engine
             return new OkObjectResult(blobs);
         }
 
+        [FunctionName(nameof(DeleteBlob))]
         public static async Task DeleteBlob([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Delete", Route = "Image/{blobName}")] HttpRequest request, string blobName,
         [Blob("public", FileAccess.Write, Connection = "AzureStorageConnection")] BlobContainerClient container, ILogger log)
         {
