@@ -18,7 +18,7 @@ namespace Engine
     {
 
         [FunctionName(nameof(UploadImage))]
-        public static async Task UploadImage([HttpTrigger(AuthorizationLevel.Anonymous, Route = "Image/Upload/{extension}")] HttpRequest request, string extension,
+        public static async Task UploadImage([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Post", Route = "Image/Upload/{extension}")] HttpRequest request, string extension,
         [Blob("public", FileAccess.Write, Connection = "AzureStorageConnection")] BlobContainerClient container, ILogger log)
         {
             log.LogInformation("Triggered Upload Function");
@@ -32,7 +32,7 @@ namespace Engine
         }
 
         [FunctionName(nameof(GetBlobs))]
-        public static async Task<IActionResult> GetBlobs([HttpTrigger(AuthorizationLevel.Anonymous, Route = "Image")] HttpRequest request,
+        public static async Task<IActionResult> GetBlobs([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Get", Route = "Image")] HttpRequest request,
         [Blob("public", FileAccess.Write, Connection = "AzureStorageConnection")] BlobContainerClient container, ILogger log)
         {
             log.LogInformation("Triggered GetBlobs Function");
@@ -54,6 +54,12 @@ namespace Engine
             }
 
             return new OkObjectResult(blobs);
+        }
+
+        public static async Task DeleteBlob([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Delete", Route = "Image/{blobName}")] HttpRequest request, string blobName,
+        [Blob("public", FileAccess.Write, Connection = "AzureStorageConnection")] BlobContainerClient container, ILogger log)
+        {
+            await container.DeleteBlobIfExistsAsync(blobName);
         }
     }
 }
