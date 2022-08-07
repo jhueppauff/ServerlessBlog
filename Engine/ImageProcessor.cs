@@ -31,7 +31,7 @@ namespace Engine
             using Stream stream = request.Form.Files[0].OpenReadStream();
             await blobClient.UploadAsync(stream, new BlobHttpHeaders { ContentType = contentType });
 
-            return new OkObjectResult($"{blobClient.Uri}/{filename}");
+            return new OkObjectResult($"{blobClient.Uri}");
         }
 
         [FunctionName(nameof(GetBlobs))]
