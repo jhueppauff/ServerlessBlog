@@ -18,7 +18,7 @@ namespace Engine
     {
 
         [FunctionName(nameof(UploadImage))]
-        public static async Task<IActionResult> UploadImage([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Post", Route = "Image/Upload/{extension}")] HttpRequest request, string extension,
+        public static async Task<IActionResult> UploadImage([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Put", Route = "Image/Upload/{extension}")] HttpRequest request, string extension,
         [Blob("public", FileAccess.Write, Connection = "AzureStorageConnection")] BlobContainerClient container, ILogger log)
         {
             log.LogInformation("Triggered Upload Function");
