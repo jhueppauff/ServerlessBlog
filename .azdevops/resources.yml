@@ -20,7 +20,9 @@ variables:
   # Agent VM image name
   vmImageName: 'windows-latest'
 
-
+pool:
+  vmImage: $(vmImageName)
+  
 steps:
   - task: AzureResourceManagerTemplateDeployment@3
     inputs:
