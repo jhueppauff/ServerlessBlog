@@ -20,7 +20,7 @@ namespace EditorNG
             client = factory.CreateClient(nameof(BlogClient));
         }
 
-        public async Task<List<PostMetadata>> GetBlogPosts()
+        public async Task<List<PostMetadata>> GetBlogPostsAsync()
         {
             var response = await client.GetAsync("/api/post");
             List<PostMetadata> posts = JsonConvert.DeserializeObject<List<PostMetadata>>(await response.Content.ReadAsStringAsync());
@@ -28,7 +28,7 @@ namespace EditorNG
             return posts;
         }
 
-        public async Task<PostMetadata> GetBlogPost(string slug)
+        public async Task<PostMetadata> GetBlogPostAsync(string slug)
         {
             var response = await client.GetAsync($"/api/post/{slug}");
             response.EnsureSuccessStatusCode();
@@ -38,7 +38,7 @@ namespace EditorNG
             return post;
         }
 
-        public async Task<string> GetBlogPostMarkdown(string slug)
+        public async Task<string> GetBlogPostMarkdownAsync(string slug)
         {
             
             var response = await client.GetAsync($"/api/post/{slug}/markdown");
@@ -49,7 +49,7 @@ namespace EditorNG
             return markdown;
         }
 
-        public async Task SaveBlogPost(PostMetadata post, string markdown)
+        public async Task SaveBlogPostAsync(PostMetadata post, string markdown)
         {
             List<Task<HttpResponseMessage>> tasks = new List<Task<HttpResponseMessage>>();
 
@@ -69,9 +69,23 @@ namespace EditorNG
             }
         }
 
-        public async Task DeleteBlogPost(PostMetadata post)
+        public async Task DeleteBlogPostAsync(PostMetadata post)
         {
             var response = await client.DeleteAsync($"/api/post/{post.Slug}");
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<List<Blob>> GetBlobsAsync()
+        {
+            var response = await client.GetAsync("/api/image");
+            response.EnsureSuccessStatusCode();
+            List<Blob> blobs = JsonConvert.DeserializeObject<List<Blob>>(await response.Content.ReadAsStringAsync());
+            return blobs;
+        }
+
+        public async Task DeleteBlobAsync(Blob blob)
+        {
+            var response = await client.DeleteAsync($"/api/image/{blob.Name}");
             response.EnsureSuccessStatusCode();
         }
 

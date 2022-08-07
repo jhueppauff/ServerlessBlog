@@ -76,8 +76,6 @@ else
 @code {
     private PostMetadata post;
 
-    private string markdown;
-
     private MarkdownEditorBase editorBase;
 
     protected override async Task OnInitializedAsync()
@@ -86,8 +84,8 @@ else
 
         if (Slug != null)
         {
-            editorBase.Body = HttpUtility.HtmlDecode(await client.GetBlogPostMarkdown(Slug));
-            post = await client.GetBlogPost(Slug);
+            editorBase.Body = HttpUtility.HtmlDecode(await client.GetBlogPostMarkdownAsync(Slug));
+            post = await client.GetBlogPostAsync(Slug);
         }
         else
         {
@@ -108,7 +106,7 @@ else
             post.RowKey = slug;
         }
 
-        await client.SaveBlogPost(post, editorBase.Body);
+        await client.SaveBlogPostAsync(post, editorBase.Body);
     }
 
     private string createSlug()

@@ -1,6 +1,3 @@
-@page "/upload"
-
-@using Microsoft.AspNetCore.Authorization;
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Reflection;
 @using EditorNG.Models;
@@ -10,12 +7,11 @@
 @inject BlogClient blogClient;
 @inject IJSRuntime JSRuntime
 
-@attribute [Authorize]
-
 <h1>Upload your File:</h1>
 
 <div class="drag-drop-zone">
     <InputFile OnChange="@UploadFile" multiple />
+    <br />
     @status
 </div>
 

@@ -1,0 +1,143 @@
+@page "/images"
+
+@using Microsoft.AspNetCore.Authorization;
+@using System.Reflection;
+@using EditorNG.Models;
+@using System.IO
+@using System.Net
+
+@inject BlogClient blogClient;
+@inject IJSRuntime JSRuntime
+
+@attribute [Authorize]
+
+<!-- List all blobs -->
+<h1>List all Images</h1>
+
+<button class="btn btn-primary" @onclick="() => modal.Open()">Upload new image</button>
+
+<Modal @ref="modal">
+    <Title>This is a <em>Title!</em></Title>
+    <Body>
+        <div class="drag-drop-zone">
+            <InputFile OnChange="@OnInputFileChange" multiple />
+            <br />
+            @status
+        </div>
+
+        <a href="@link" target="_blank" rel="noopener noreferrer">@link</a>
+    </Body>
+    <Footer>
+        <button type="button" class="btn btn-primary" @onclick="@UploadFile">Upload</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => modal.Close()">Close</button>
+    </Footer>
+</Modal>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Url</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (blobs != null)
+                {
+                    @foreach (var blob in blobs)
+                    {
+                        <tr>
+                            <td>@blob.Name</td>
+                            <td><a href="@blob.Url">@blob.Url</a></td>
+                            <td>
+                                <button class="btn btn-danger" @onclick="@(() => DeleteBlob(blob))">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td>loading ...</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private Modal modal { get; set; }
+    private List<Blob> blobs;
+
+    private string link = string.Empty;
+    private string encodedLink = string.Empty;
+    private const string DefaultStatus = "Drop a file here to upload it, or click to choose a file";
+    private const int MaxFileSize = 200 * 1024 * 1024;
+    private string status = DefaultStatus;
+    private InputFileChangeEventArgs inputFileChangeEventArgs;
+
+    private string linkStyle = "display:none";
+
+    private void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        if (e != null)
+        {
+            inputFileChangeEventArgs = e;   
+        }
+    }
+
+    private async Task UploadFile()
+    {
+        using var content = new MultipartFormDataContent();
+
+        var file = inputFileChangeEventArgs.GetMultipleFiles(1)[0];
+
+        if (file == null)
+        {
+            return;
+        }
+        else if (file.Size > MaxFileSize)
+        {
+            status = $"That's too big. Max size: {MaxFileSize} bytes.";
+        }
+        else
+        {
+            var response = await blogClient.UploadFileAsync(file, Path.GetExtension(file.Name).Replace(".", string.Empty));
+
+            link = (await response.Content.ReadAsStringAsync()).TrimStart('"').TrimEnd('"');
+
+            if (response.IsSuccessStatusCode)
+            {
+                encodedLink = WebUtility.UrlEncode(link);
+                status = "Uploaded";
+                linkStyle = "display:block";
+            }
+            else
+            {
+                status = $"Error: {await response.Content.ReadAsStringAsync()}";
+            }
+        }
+    }
+
+    private async Task<List<Blob>> GetBlobs()
+    {
+        blobs = await blogClient.GetBlobsAsync();
+        return blobs;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetBlobs();
+    }
+
+    private async Task DeleteBlob(Blob blob)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the post '{blob.Name}'?"))
+            return;
+
+        await blogClient.DeleteBlobAsync(blob);
+    }
+}

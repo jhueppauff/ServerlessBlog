@@ -1,0 +1,59 @@
+@page "/list"
+
+@using Microsoft.AspNetCore.Authorization;
+@using System.Reflection;
+@using EditorNG.Models;
+
+@inject BlogClient blogClient;
+@inject IJSRuntime JSRuntime
+
+@attribute [Authorize]
+
+<!-- List all blobs -->
+<h1>List all Images</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Url</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var blob in blobs) {
+                    <tr>
+                        <td>@blob.Name</td>
+                        <td>@blob.Url</td>
+                        <td>
+                            <button class="btn btn-danger" @click="DeleteBlob(blob)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    List<Blob> blobs = new();
+
+    private async Task<List<Blob>> GetBlobs()
+    {
+        blobs = await blogClient.GetBlobsAsync();
+        return blobs;
+    }
+
+    private async Task DeleteBlob(Blob blob)
+    {
+        await blogClient.DeleteBlobAsync(blob);
+        await GetBlobs();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetBlobs();
+    }
+}
