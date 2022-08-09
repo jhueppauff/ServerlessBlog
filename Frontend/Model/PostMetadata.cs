@@ -1,9 +1,8 @@
-﻿using Microsoft.Azure.Cosmos.Table;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ServerlessBlog.Frontend
 {
-    public class PostMetadata : TableEntity
+    public class PostMetadata
     {
         public PostMetadata()
         {
@@ -14,6 +13,10 @@ namespace ServerlessBlog.Frontend
             PartitionKey = Title;
             RowKey = Title;
         }
+
+        public string PartitionKey { get; set; }
+
+        public string RowKey { get; set; }
 
         public string Title { get; set; }
 

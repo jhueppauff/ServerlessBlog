@@ -4,13 +4,23 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System;
+using Azure.Data.Tables;
+using System.Threading.Tasks;
 
 namespace ServerlessBlog.Frontend
 {
-    public static class PostContent
+    public class PostContent
     {
+        private readonly TableClient tableClient;
+
+        public PostContent()
+        {
+            tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
+        }
+        
         [FunctionName("GetPost")]
-        public static IActionResult GetPost(
+        public IActionResult GetPost(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPost/{slug}")] HttpRequest req,
             [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
             ILogger log)
@@ -21,15 +31,20 @@ namespace ServerlessBlog.Frontend
         }
 
         [FunctionName("GetPostMetadata")]
-        public static IActionResult GetPostMetadata(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPostMetadata/{slug}")] HttpRequest req,
-            [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
-            [Table("metadata", "{slug}", "{slug}", Connection = "CosmosDBConnection")] PostMetadata data,
+        public async Task<IActionResult> GetPostMetadata(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPostMetadata/{slug}")] HttpRequest req, string slug,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogInformation("Get PostMetadata was triggered");
 
-            return new OkObjectResult(data);
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                return new BadRequestObjectResult("slug cannot be empty");
+            }
+
+            var result = await tableClient.GetEntityAsync<TableEntity>(slug, slug);
+
+            return new OkObjectResult(result.Value);
         }
     }
 }

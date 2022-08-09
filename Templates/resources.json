@@ -239,6 +239,11 @@
                         {
                             "name": "WEBSITE_ENABLE_SYNC_UPDATE_SITE",
                             "value": true
+                        },
+                        ,
+                        {
+                            "name": "AzureWebJobsDisableHomepage",
+                            "value": "true"
                         }
                     ]
                 }
@@ -281,7 +286,7 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~3"
+                            "value": "~4"
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
@@ -298,6 +303,10 @@
                         {
                             "name": "WEBSITE_ENABLE_SYNC_UPDATE_SITE",
                             "value": true
+                        },
+                        {
+                            "name": "AzureWebJobsDisableHomepage",
+                            "value": "true"
                         }
                     ]
                 }
