@@ -12,7 +12,6 @@ using System.Web;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Linq;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
