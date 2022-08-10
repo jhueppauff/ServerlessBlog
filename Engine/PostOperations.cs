@@ -133,7 +133,7 @@ namespace ServerlessBlog.Engine
 
             using (MemoryStream mstream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
             {
-                await blob.UploadAsync(mstream);
+                await blob.UploadAsync(mstream, overwrite: true);
             }
 
             await blob.SetHttpHeadersAsync(new Azure.Storage.Blobs.Models.BlobHttpHeaders()
