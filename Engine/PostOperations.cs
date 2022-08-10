@@ -161,7 +161,7 @@ namespace ServerlessBlog.Engine
             PostMetadata metadata = JsonConvert.DeserializeObject<PostMetadata>(requestBody);
             metadata.Published = System.DateTime.Now.Date.ToShortDateString();
 
-            await tableClient.AddEntityAsync<TableEntity>(new TableEntity()
+            await tableClient.UpsertEntityAsync<TableEntity>(new TableEntity()
             {
                 PartitionKey = metadata.Slug,
                 RowKey = metadata.Slug,
