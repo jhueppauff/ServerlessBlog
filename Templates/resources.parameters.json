@@ -20,27 +20,11 @@
         "cosmosDbName": {
             "value": "cosmos-blog-we-prod-001"
         },
-        "cosmosDbdefaultExperience": {
-            "value": "Azure Table"
-        },
         "cosmosDbisZoneRedundant": {
             "value": "true"
         },
         "staticWebAppName": {
             "value": "sapp-blobeditor-we-prod-001"
-        },
-        "cosmosDbLocations": {
-            "value": [{
-                    "locationName": "West Europe",
-                    "failoverPriority": 0,
-                    "isZoneRedundant": true
-                },
-                {
-                    "locationName": "Germany West Central",
-                    "failoverPriority": 1,
-                    "isZoneRedundant": true
-                }
-            ]
         },
         "endpointProperties": {
             "value": {
