@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ServerlessBlog.Frontend
+namespace ServerlessBlog.Frontend.Model
 {
     public class PostMetadata
     {

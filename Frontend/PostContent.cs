@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using Azure.Data.Tables;
 using System.Threading.Tasks;
+using ServerlessBlog.Frontend.Model;
 
 namespace ServerlessBlog.Frontend
 {
@@ -20,12 +21,12 @@ namespace ServerlessBlog.Frontend
         }
         
         [FunctionName("GetPost")]
-        public IActionResult GetPost(
+        public static IActionResult GetPost(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPost/{slug}")] HttpRequest req,
             [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogInformation("Get Post was triggered.");
 
             return new OkObjectResult(content);
         }

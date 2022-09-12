@@ -13,6 +13,7 @@ using System.Globalization;
 using Azure.Data.Tables;
 using System.Collections.Generic;
 using Azure;
+using ServerlessBlog.Frontend.Model;
 
 namespace ServerlessBlog.Frontend
 {
@@ -20,10 +21,9 @@ namespace ServerlessBlog.Frontend
     {
         private readonly TableClient tableClient;
 
-        public StaticPageFunctions(IHttpContextAccessor httpContextAccessor)
-            : base(httpContextAccessor)
+        public StaticPageFunctions(IHttpContextAccessor httpContextAccessor): base(httpContextAccessor)
         {
-            tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
+            this.tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
         }
 
         [FunctionName(nameof(IndexPage))]
