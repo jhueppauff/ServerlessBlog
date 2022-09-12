@@ -19,5 +19,7 @@ namespace EditorNG.Models
         public string Preview { get; set; }
 
         public string ImageUrl{ get; set; }
+
+        public int Views { get; set; }
     }
 }

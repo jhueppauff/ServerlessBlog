@@ -52,15 +52,32 @@ else
     <p>Loading ...</p>
 }
 
-
-
-
 @code {
     private List<PostMetadata> posts;
 
     protected override async Task OnInitializedAsync()
     {
         await Refresh();
+
+        List<Task> tasks = new();
+
+        foreach (var post in posts)
+        {
+            tasks.Add(blogClient.GetPageViewAsync(post.Slug));
+        }
+
+        await Task.WhenAll(tasks);
+
+        foreach (var task in tasks)
+        {
+            var result = ((Task<PageMetric>)task).Result;
+            var post = posts.FirstOrDefault(x => x.PartitionKey == result.Slug);
+
+            if (post != null)
+            {
+                post.Views = result.Views;
+            }
+        }
     }
 
     private async Task Refresh() 
