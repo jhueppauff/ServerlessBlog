@@ -59,6 +59,16 @@ namespace EditorNG
             return metric;
         }
 
+        public async Task<List<PageMetric>> GetPageViewsAsync()
+        {
+            var response = await client.GetAsync($"/api/metric");
+            response.EnsureSuccessStatusCode();
+
+            List<PageMetric> metric = JsonConvert.DeserializeObject<List<PageMetric>>(await response.Content.ReadAsStringAsync());
+
+            return metric;
+        }
+
         public int GetPageView(string slug)
         {
             var task = Task.Run(() => client.GetAsync($"/api/metric/{slug}"));

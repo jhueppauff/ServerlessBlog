@@ -59,23 +59,15 @@ else
     {
         await Refresh();
 
-        List<Task> tasks = new();
+        var pageViews = await blogClient.GetPageViewsAsync();
 
-        foreach (var post in posts)
+        foreach (var pageView in pageViews)
         {
-            tasks.Add(blogClient.GetPageViewAsync(post.Slug));
-        }
-
-        await Task.WhenAll(tasks);
-
-        foreach (var task in tasks)
-        {
-            var result = ((Task<PageMetric>)task).Result;
-            var post = posts.FirstOrDefault(x => x.PartitionKey == result.Slug);
+            var post = posts.FirstOrDefault(x => x.PartitionKey == pageView.Slug);
 
             if (post != null)
             {
-                post.Views = result.Views;
+                post.Views = pageView.Views;
             }
         }
     }
