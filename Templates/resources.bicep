@@ -316,12 +316,22 @@ resource cosmosDbName_resource 'Microsoft.DocumentDb/databaseAccounts@2020-04-01
   }
 }
 
-resource cosmosDbName_metadata 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15' = {
+resource metadataTable 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15' = {
   parent: cosmosDbName_resource
   name: 'metadata'
   properties: {
     resource: {
       id: 'metadata'
+    }
+  }
+}
+
+resource metricTable 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15' = {
+  parent: cosmosDbName_resource
+  name: 'metrics'
+  properties: {
+    resource: {
+      id: 'metrics'
     }
   }
 }
