@@ -6,10 +6,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Azure.Data.Tables;
 using Azure.WebJobs.Extensions.HttpApi;
-using ServerlessBlog.Engine.Model;
 using Azure;
 using Newtonsoft.Json.Linq;
 
