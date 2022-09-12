@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -10,6 +10,8 @@ using Azure.Data.Tables;
 using Azure.WebJobs.Extensions.HttpApi;
 using Azure;
 using Newtonsoft.Json.Linq;
+using System.Linq;
+using Engine.Model;
 
 namespace Engine
 {
@@ -22,12 +24,12 @@ namespace Engine
             this.tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metrics");
         }
 
-        [FunctionName(nameof(GetPageViews))]
-        public async Task<IActionResult> GetPageViews(
+        [FunctionName(nameof(GetPageView))]
+        public async Task<IActionResult> GetPageView(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric/{slug}")] HttpRequest request, string slug,
             ILogger log)
         {
-            log.LogInformation($"Function {nameof(GetPageViews)} was triggered");
+            log.LogInformation($"Function {nameof(GetPageView)} was triggered");
 
             AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: $"PartitionKey eq '{slug}'", maxPerPage: 500);
 
@@ -46,6 +48,42 @@ namespace Engine
                 { "Views", views },
                 { "Slug", slug }
             };
+
+            return new OkObjectResult(response);
+        }
+
+        [FunctionName(nameof(GetPageViews))]
+        public async Task<IActionResult> GetPageViews(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric")] HttpRequest request,
+            ILogger log)
+        {
+            log.LogInformation($"Function {nameof(GetPageViews)} was triggered");
+
+            AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: $"", maxPerPage: 500);
+
+            List<PageView> response = new();
+
+            await foreach (Page<TableEntity> page in queryResultsMaxPerPage.AsPages())
+            {
+                var grouped = page.Values.GroupBy(x => x.PartitionKey);
+
+                foreach (var item in grouped)
+                {
+                    if (response.Where(x => x.Slug == item.Key).Any())
+                    {
+                        var entry = response.FirstOrDefault(x => x.Slug == item.Key);
+                        entry.Views = +item.Count();
+                    }
+                    else
+                    {
+                        response.Add(new PageView()
+                        {
+                            Slug = item.Key,
+                            Views = item.Count()
+                        });
+                    }
+                }
+            }
 
             return new OkObjectResult(response);
         }
