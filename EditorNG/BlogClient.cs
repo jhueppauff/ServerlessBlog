@@ -59,6 +59,16 @@ namespace EditorNG
             return metric;
         }
 
+        public async Task<List<PageMetric>> GetPageViewHistoryAsync(string slug)
+        {
+            var response = await client.GetAsync($"/api/metric/{slug}/history");
+            response.EnsureSuccessStatusCode();
+
+            List<PageMetric> metrics = JsonConvert.DeserializeObject<List<PageMetric>>(await response.Content.ReadAsStringAsync());
+
+            return metrics;
+        }
+
         public async Task<List<PageMetric>> GetPageViewsAsync()
         {
             var response = await client.GetAsync($"/api/metric");

@@ -14,9 +14,9 @@
 <!-- List all blobs -->
 <h1>List all Images</h1>
 
-<button class="btn btn-primary" @onclick="() => modal.Open()">Upload new image</button>
-
-<Modal @ref="modal">
+<button class="btn btn-primary" @onclick="() => modalDialog.Open()">Upload new image</button>
+<br />
+<ModalDialog @ref="modalDialog">
     <Title>This is a <em>Title!</em></Title>
     <Body>
         <div class="drag-drop-zone">
@@ -29,47 +29,43 @@
     </Body>
     <Footer>
         <button type="button" class="btn btn-primary" @onclick="@UploadFile">Upload</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => modal.Close()">Close</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => modalDialog.Close()">Close</button>
     </Footer>
-</Modal>
+</ModalDialog>
 
-<div class="row">
-    <div class="col-md-12">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Url</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (blobs != null)
-                {
-                    @foreach (var blob in blobs)
-                    {
-                        <tr>
-                            <td>@blob.Name</td>
-                            <td><a href="@blob.Url">@blob.Url</a></td>
-                            <td>
-                                <button class="btn btn-danger" @onclick="@(() => DeleteBlob(blob))">Delete</button>
-                            </td>
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td>loading ...</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+<Table>
+    <TableHeader ThemeContrast="ThemeContrast.Light">
+        <TableRow>
+            <TableHeaderCell>Name</TableHeaderCell>
+            <TableHeaderCell>Url</TableHeaderCell>
+            <TableHeaderCell>Action</TableHeaderCell>
+        </TableRow>
+    </TableHeader>
+    <TableBody>
+        @if (blobs != null)
+        {
+            @foreach (var blob in blobs)
+            {
+                <TableRow>
+                    <TableRowHeader>@blob.Name</TableRowHeader>
+                    <TableRowCell><a href="@blob.Url">@blob.Url</a></TableRowCell>
+                    <TableRowCell>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteBlob(blob))">Delete</button>
+                    </TableRowCell>
+                </TableRow>
+            }
+        }
+        else
+        {
+            <tr>
+                <td>loading ...</td>
+            </tr>
+        }
+    </TableBody>
+</Table>
 
 @code {
-    private Modal modal { get; set; }
+    private ModalDialog modalDialog { get; set; }
     private List<Blob> blobs;
 
     private string link = string.Empty;
@@ -85,7 +81,7 @@
     {
         if (e != null)
         {
-            inputFileChangeEventArgs = e;   
+            inputFileChangeEventArgs = e;
         }
     }
 

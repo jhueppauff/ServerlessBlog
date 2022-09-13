@@ -1,0 +1,82 @@
+﻿@page "/metrics"
+
+@using Blazorise.Charts
+@using Microsoft.AspNetCore.Authorization;
+@using System.Reflection;
+@using EditorNG.Models;
+@using System.Net
+
+@inject BlogClient blogClient;
+@inject IJSRuntime JSRuntime
+
+@attribute [Authorize]
+
+<Select TValue="int" @onchange="LoadGraph">
+    @if (posts != null)
+    {
+        @foreach (var post in posts)
+        {
+            <SelectItem Value="@post.Slug">@post.Slug</SelectItem>
+        }
+    }
+</Select>
+
+<LineChart @ref="lineChart" TItem="int" />
+
+@code {
+    private List<PostMetadata> posts;
+    private string selectedPost;
+
+    string[] Labels;
+    LineChartDataset<int> dataset;
+
+    private List<int> metrics;
+    LineChart<int> lineChart;
+
+    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
+    List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await blogClient.GetBlogPostsAsync();
+
+
+        Labels = new string[31];
+
+        for (int i = 0; i < 31; i++)
+        {
+            Labels[i] = DateTime.Now.AddDays(-i).ToShortDateString();
+        }
+
+        Labels = Labels.Reverse().ToArray();
+    }
+
+    private async Task LoadGraph(ChangeEventArgs e)
+    {
+        await lineChart.Clear();
+        metrics = new();
+
+        selectedPost = e.Value.ToString();
+        var response = await blogClient.GetPageViewHistoryAsync(selectedPost);
+
+        for (int i = 0; i < Labels.Length; i++)
+        {
+            var metricDay = response.FirstOrDefault(x => x.Timestamp == Convert.ToDateTime(Labels[i]));
+            metrics.Add(metricDay != null ? metricDay.Views : 0);
+        }
+             
+        dataset = new()
+            {
+                Label = "Number of Page visits",
+                Data = metrics,
+                BackgroundColor = backgroundColors,
+                BorderColor = borderColors,
+                Fill = true,
+                PointRadius = 3,
+                CubicInterpolationMode = "monotone"
+            };
+
+        await lineChart.AddLabelsDatasetsAndUpdate(Labels, dataset);
+    }
+}
