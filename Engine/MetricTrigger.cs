@@ -87,5 +87,42 @@ namespace Engine
 
             return new OkObjectResult(response);
         }
+
+        [FunctionName(nameof(GetPageHistory))]
+        public async Task<IActionResult> GetPageHistory(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric/{slug}/history")] HttpRequest request, string slug,
+            ILogger log)
+        {
+            log.LogInformation($"Function {nameof(GetPageHistory)} was triggered");
+
+            AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: $"PartitionKey eq '{slug}'", maxPerPage: 500);
+
+            List<PageView> response = new();
+
+            await foreach (Page<TableEntity> page in queryResultsMaxPerPage.AsPages())
+            {
+                var grouped = page.Values.GroupBy(x => x.Timestamp.Value.Date);
+
+                foreach (var item in grouped)
+                {
+                    if (response.Where(x => x.Timestamp == item.Key).Any())
+                    {
+                        var entry = response.FirstOrDefault(x => x.Timestamp == item.Key);
+                        entry.Views = +item.Count();
+                    }
+                    else
+                    {
+                        response.Add(new PageView()
+                        {
+                            Timestamp = item.Key,
+                            Views = item.Count(),
+                            Slug = slug
+                        });
+                    }
+                }
+            }
+
+            return new OkObjectResult(response);
+        }
     }
 }
