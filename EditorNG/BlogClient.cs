@@ -69,22 +69,6 @@ namespace EditorNG
             return metric;
         }
 
-        public int GetPageView(string slug)
-        {
-            var task = Task.Run(() => client.GetAsync($"/api/metric/{slug}"));
-            task.Wait();
-
-            var response = task.Result;
-            response.EnsureSuccessStatusCode();
-
-            var task2 = Task.Run(() => response.Content.ReadAsStringAsync());
-            task2.Wait();
-            string content = task2.Result;
-            PageMetric metric = JsonConvert.DeserializeObject<PageMetric>(content);
-
-            return metric.Views;
-        }
-
         public async Task SaveBlogPostAsync(PostMetadata post, string markdown)
         {
             List<Task<HttpResponseMessage>> tasks = new List<Task<HttpResponseMessage>>();
