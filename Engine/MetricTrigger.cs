@@ -12,6 +12,7 @@ using Azure;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using Engine.Model;
+using System.Globalization;
 
 namespace Engine
 {
@@ -95,7 +96,9 @@ namespace Engine
         {
             log.LogInformation($"Function {nameof(GetPageHistory)} was triggered");
 
-            AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: $"PartitionKey eq '{slug}'", maxPerPage: 500);
+            string queryDate = DateTime.UtcNow.AddDays(-31).ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ", CultureInfo.InvariantCulture);
+            string query = $"PartitionKey eq '{slug}' and Timestamp ge datetime'{queryDate}'";
+            AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: query, maxPerPage: 500);
 
             List<PageView> response = new();
 

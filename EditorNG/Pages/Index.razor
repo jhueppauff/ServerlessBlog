@@ -11,42 +11,41 @@
 
 <a href="/add" class="btn btn-success"><span class="glyphicon glyphicon-plus-sign"></span> Add</a>
 <button @onclick="@Refresh" class="btn btn-success"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
-<br />
 
 @if (posts != null)
 {
-    <Table>
-        <TableHeader ThemeContrast="ThemeContrast.Light">
-            <TableRow>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
                 @foreach (PropertyInfo propertyInfo in posts[0].GetType().GetProperties())
                 {
                     @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name != "ImageUrl")
                     {
-                        <TableHeaderCell>@propertyInfo.Name</TableHeaderCell>
+                        <th>@propertyInfo.Name</th>
                     }
                 }
-                <TableHeaderCell>Actions</TableHeaderCell>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
             @foreach (PostMetadata post in posts)
             {
-                <TableRow>
+                <tr>
                     @foreach (PropertyInfo propertyInfo in post.GetType().GetProperties())
                     {
                         @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name != "ImageUrl")
                         {
-                            <TableRowCell>@propertyInfo.GetValue(post)</TableRowCell>
+                            <td>@propertyInfo.GetValue(post)</td>
                         }
                     }
-                    <TableRowCell>
+                    <td>
                         <button @onclick="@(() => Delete(post))" class="btn btn-danger"><span class="glyphicon glyphicon-remove-sign"></span> Delete</button>
                         <a href=@($"/Edit/{post.Slug}") Match="NavLinkMatch.All" class="btn btn-info"><span class="glyphicon glyphicon-edit"></span> Edit</a>
-                    </TableRowCell>
-                </TableRow>
+                    </td>
+                </tr>
             }
-        </TableBody>
-    </Table>
+        </tbody>
+    </table>
 }
 else
 {
@@ -73,11 +72,11 @@ else
         }
     }
 
-    private async Task Refresh()
+    private async Task Refresh() 
     {
         posts = await blogClient.GetBlogPostsAsync();
     }
-
+    
     private async Task Delete(PostMetadata post)
     {
         if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the post '{post.Title}'?"))

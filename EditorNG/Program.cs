@@ -7,9 +7,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Blazorise;
-using Blazorise.Bootstrap;
-using Blazorise.Icons.FontAwesome;
 
 namespace EditorNG
 {
@@ -21,14 +18,6 @@ namespace EditorNG
             builder.RootComponents.Add<App>("#app");
 
             string endpoint = builder.Configuration.GetSection("Backend").GetValue<string>("Endpoint");
-
-            builder.Services
-              .AddBlazorise(options =>
-              {
-                  options.Immediate = true;
-              })
-              .AddBootstrapProviders()
-              .AddFontAwesomeIcons();
 
             builder.Services.AddMsalAuthentication(options =>
             {
