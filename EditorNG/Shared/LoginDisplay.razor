@@ -6,17 +6,15 @@
 
 <AuthorizeView>
     <Authorized>
-        <BarItem>
-            Hello, @context.User.Identity.Name!
-            <Button Color="Color.Primary" @onclick="BeginLogout">Log out</Button>
-        </BarItem>
+        Hello, @context.User.Identity.Name!
+        <button class="nav-link btn btn-link" @onclick="BeginLogout">Log out</button>
     </Authorized>
     <NotAuthorized>
-        <Button Color="Color.Secondary" To="authentication/login">Log in</Button>
+        <a href="authentication/login">Log in</a>
     </NotAuthorized>
 </AuthorizeView>
 
-@code{
+@code {
     private async Task BeginLogout(MouseEventArgs args)
     {
         await SignOutManager.SetSignOutState();

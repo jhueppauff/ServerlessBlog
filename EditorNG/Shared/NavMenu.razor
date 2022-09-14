@@ -1,44 +1,17 @@
-﻿<Bar Mode="BarMode.VerticalInline"
-     CollapseMode="BarCollapseMode.Small"
-     Breakpoint="Breakpoint.Desktop"
-     NavigationBreakpoint="Breakpoint.Tablet"
-     ThemeContrast="ThemeContrast.Dark">
-    <BarBrand>
-        <BarItem>
-            <BarLink To="#">
-                <BarIcon IconName="IconName.Dashboard" />
-                Blog Editor
-            </BarLink>
-        </BarItem>
-    </BarBrand>
-    <BarMenu>
-        <BarStart>
-            <BarItem>
-                <BarLink To="">
-                    <BarIcon IconName="IconName.Edit" />
-                    Home
-                </BarLink>
-            </BarItem>
-            <BarItem>
-                <BarLink To="/images">
-                    <BarIcon IconName="IconName.Image" />
-                    Images
-                </BarLink>
-            </BarItem>
-            <BarItem>
-                <BarDropdown>
-                    <BarDropdownToggle>
-                        <BarIcon IconName="IconName.Dashboard" />
-                        Metrics
-                    </BarDropdownToggle>
-                    <BarDropdownMenu>
-                        <BarDropdownItem To="/metrics">Page Metric</BarDropdownItem>
-                    </BarDropdownMenu>
-                </BarDropdown>
-            </BarItem>
-        </BarStart>
-        <BarEnd>
-            <LoginDisplay/>
-        </BarEnd>
-    </BarMenu>
-</Bar>
+﻿<MudDrawer @bind-Open="SideBarOpen" Elevation="1">
+	<MudDrawerHeader>
+		<MudText Typo="Typo.h5" Color="Color.Primary" Style="margin-top:10px; margin-left:15px;">Blog Editor</MudText>
+	</MudDrawerHeader>
+	<MudNavMenu>
+		<MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Filled.Home">Home</MudNavLink>
+		<MudNavLink Href="/images" Icon="@Icons.Filled.Storage">Images</MudNavLink>
+		<MudNavGroup Title="Analytics" Icon="@Icons.Filled.DashboardCustomize" Expanded="true">
+			<MudNavLink Href="/metrics" Icon="@Icons.Filled.Camera">Metrics</MudNavLink>
+		</MudNavGroup>
+	</MudNavMenu>
+</MudDrawer>
+
+@code {
+	[Parameter]
+	public bool SideBarOpen { get; set; }
+}

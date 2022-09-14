@@ -1,49 +1,62 @@
 ﻿@page "/metrics"
 
-@using Blazorise.Charts
 @using Microsoft.AspNetCore.Authorization;
 @using System.Reflection;
 @using EditorNG.Models;
-@using System.Net
+@using System.Net;
+
+@using Plotly.Blazor;
+@using Plotly.Blazor.Traces;
+@using Plotly.Blazor.LayoutLib;
 
 @inject BlogClient blogClient;
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JSRuntime;
 
 @attribute [Authorize]
 
-<Select TValue="int" @onchange="LoadGraph">
+<select class="form-select form-select-lg mb-3" @onchange="LoadGraph">
     @if (posts != null)
     {
         @foreach (var post in posts)
         {
-            <SelectItem Value="@post.Slug">@post.Slug</SelectItem>
+            <option value="@post.Slug">@post.Slug</option>
         }
     }
-</Select>
+</select>
 
-<LineChart @ref="lineChart" TItem="int" />
+<PlotlyChart @bind-Config="config" @bind-Layout="layout" @bind-Data="data" @ref="chart" />
 
 @code {
     private List<PostMetadata> posts;
     private string selectedPost;
-
     string[] Labels;
-    LineChartDataset<int> dataset;
 
-    private List<int> metrics;
-    LineChart<int> lineChart;
+    Config config = new Config()
+        {
+            Responsive = true
+        };
 
-    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
-    List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
+    Layout layout = new Layout()
+        {
+            Title = new Title { Text = "Page Views in the last 31 days" },
+            YAxis = new List<YAxis>
+        {
+            new()
+            {
+                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Page Views" }
+            }
+        }
+        };
+
+    PlotlyChart chart;
+    IList<ITrace> data;
 
 
     protected override async Task OnInitializedAsync()
     {
         posts = await blogClient.GetBlogPostsAsync();
 
-
         Labels = new string[31];
-
         for (int i = 0; i < 31; i++)
         {
             Labels[i] = DateTime.Now.AddDays(-i).ToShortDateString();
@@ -54,29 +67,42 @@
 
     private async Task LoadGraph(ChangeEventArgs e)
     {
-        await lineChart.Clear();
-        metrics = new();
-
         selectedPost = e.Value.ToString();
         var response = await blogClient.GetPageViewHistoryAsync(selectedPost);
+        
+        await chart.Clear();
+        data.Clear();
+        var x = new List<DateOnly>();
+        var y = new List<int>();
 
         for (int i = 0; i < Labels.Length; i++)
         {
             var metricDay = response.FirstOrDefault(x => x.Timestamp == Convert.ToDateTime(Labels[i]));
-            metrics.Add(metricDay != null ? metricDay.Views : 0);
-        }
-             
-        dataset = new()
-            {
-                Label = "Number of Page visits",
-                Data = metrics,
-                BackgroundColor = backgroundColors,
-                BorderColor = borderColors,
-                Fill = true,
-                PointRadius = 3,
-                CubicInterpolationMode = "monotone"
-            };
+            int views = metricDay != null ? metricDay.Views : 0;
 
-        await lineChart.AddLabelsDatasetsAndUpdate(Labels, dataset);
+            if (i == 0)
+            {
+                var scatter = new ScatterGl
+                    {
+                        Name = $"{views} Views",
+                        X = new List<object> { Labels[i] },
+                        Y = new List<object> { views },
+                        Fill = Plotly.Blazor.Traces.ScatterGlLib.FillEnum.ToZeroY,
+                        FillColor = true,
+                        ShowLegend = false,
+                        Mode = Plotly.Blazor.Traces.ScatterGlLib.ModeFlag.Lines | Plotly.Blazor.Traces.ScatterGlLib.ModeFlag.Markers
+                    };
+
+                await chart.AddTrace(scatter);
+                await chart.React();
+            }
+            else
+            {
+                string date = Labels[i];
+                await chart.ExtendTrace(date, views, -1);
+            }
+        }
+
+        await chart.React();
     }
 }
