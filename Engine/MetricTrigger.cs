@@ -97,7 +97,7 @@ namespace Engine
             log.LogInformation($"Function {nameof(GetPageHistory)} was triggered");
 
             string queryDate = DateTime.UtcNow.AddDays(-31).ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ", CultureInfo.InvariantCulture);
-            string query = $"PartitionKey eq '{slug}''"; //and Timestamp ge datetime'{queryDate}
+            string query = $"PartitionKey eq '{slug}'"; //and Timestamp ge datetime'{queryDate}'
             AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: query, maxPerPage: 500);
 
             List<PageView> response = new();
