@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MudBlazor.Services;
 
 namespace EditorNG
 {
@@ -35,6 +36,8 @@ namespace EditorNG
                 }).AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
             builder.Services.AddTransient<BlogClient>();
+
+            builder.Services.AddMudServices();
 
             builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
             .CreateClient(nameof(BlogClient)));

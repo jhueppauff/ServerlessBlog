@@ -1,17 +1,25 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudLayout>
+	<AppBar OnSidebarToggled="ToggleSidebar" OnThemeToggled="ToggleTheme" />
 
-    <div class="main">
-        <div class="top-row px-4 auth">
-            <LoginDisplay />
-        </div>
+	<NavMenu SideBarOpen="_sidebarOpen" />
 
-        <div class="content px-4">
-            @Body
-        </div>
-    </div>
-</div>
+	<MudMainContent Class="pt-16 px-16">
+		<MudContainer Class="mt-6">
+			@Body
+		</MudContainer>
+	</MudMainContent>
+</MudLayout>
+
+<MudThemeProvider Theme="_currentTheme" />
+
+@code {
+    private MudTheme _currentTheme = new MudTheme();
+    private bool _sidebarOpen = true;
+
+
+    private void ToggleTheme(MudTheme changedTheme) => _currentTheme = changedTheme;
+
+    private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;
+}

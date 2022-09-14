@@ -14,7 +14,7 @@
 
 @attribute [Authorize]
 
-<select @onchange="LoadGraph">
+<select class="form-select form-select-lg mb-3" @onchange="LoadGraph">
     @if (posts != null)
     {
         @foreach (var post in posts)
@@ -67,11 +67,11 @@
 
     private async Task LoadGraph(ChangeEventArgs e)
     {
-        await chart.Clear();
-        data.Clear();
-
         selectedPost = e.Value.ToString();
         var response = await blogClient.GetPageViewHistoryAsync(selectedPost);
+        
+        await chart.Clear();
+        data.Clear();
         var x = new List<DateOnly>();
         var y = new List<int>();
 
