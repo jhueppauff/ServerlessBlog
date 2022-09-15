@@ -119,24 +119,9 @@ resource appPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   }
 }
 
-resource managedIdentityEngine 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
-  name: 'msi${functionEngineName}'
-  location: location
-}
-
-resource managedIdentityFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
-  name: 'msi${functionFrontendName}'
-  location: location
-}
-
 resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
   name: functionEngineName
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-       '${managedIdentityEngine.id}': {}
-    }
-  }
+  identity: {}
   location: location
   kind: 'functionapp'
   properties: {
@@ -209,12 +194,7 @@ resource functionEngine_authsettings 'Microsoft.Web/sites/config@2016-08-01' = {
 resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
   name: functionFrontendName
   location: location
-  identity: {
-     type: 'UserAssigned'
-     userAssignedIdentities: {
-        '${managedIdentityFrontend.id}': {}
-     }
-  }
+  identity: {}
   kind: 'functionapp'
   properties: {
     serverFarmId: appPlan.id
