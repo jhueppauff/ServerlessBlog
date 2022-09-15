@@ -4,9 +4,10 @@ param profileProperties object
 param endpointProperties object
 param aadClientId string
 param aadTenant string
-param cosmosDbisZoneRedundant string
+param cosmosDbisZoneRedundant bool
 param cosmosDbName string
 param staticWebAppName string
+param location string = 'westeurope'
 
 var appInsightName_var = replace(functionEngineName, 'func', 'appi')
 var appPlanName_var = replace(functionEngineName, 'func', 'plan')
@@ -15,9 +16,9 @@ var storageFunction_var = 'stblogfuncweprod001'
 var cdnProfileName_var = replace(functionEngineName, 'func', 'cdn')
 var cdnEndpointName = replace(functionFrontendName, 'func', 'cdnedp')
 
-resource staticWebAppName_resource 'Microsoft.Web/staticSites@2019-12-01-preview' = {
+resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   name: staticWebAppName
-  location: resourceGroup().location
+  location: location
   tags: {
   }
   properties: {
@@ -35,26 +36,23 @@ resource staticWebAppName_resource 'Microsoft.Web/staticSites@2019-12-01-preview
   }
 }
 
-resource storageNameWeb 'Microsoft.Storage/storageAccounts@2019-06-01' = {
+resource storageWeb 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: storageNameWeb_var
-  location: resourceGroup().location
+  location: location
   kind: 'StorageV2'
   sku: {
     name: 'Standard_LRS'
-    tier: 'Standard'
   }
   properties: {
-    supportsHttpsTrafficOnly: false
+    accessTier: 'Hot'
+    minimumTlsVersion: 'TLS1_2'
+    supportsHttpsTrafficOnly: true
   }
 }
 
-resource storageNameWeb_default 'Microsoft.Storage/storageAccounts/blobServices@2021-04-01' = {
-  parent: storageNameWeb
+resource storageNameWeb_default 'Microsoft.Storage/storageAccounts/blobServices@2022-05-01' = {
+  parent: storageWeb
   name: 'default'
-  sku: {
-    name: 'Standard_LRS'
-    tier: 'Standard'
-  }
   properties: {
     changeFeed: {
       enabled: true
@@ -78,13 +76,11 @@ resource storageNameWeb_default 'Microsoft.Storage/storageAccounts/blobServices@
   }
 }
 
-resource storageFunction 'Microsoft.Storage/storageAccounts@2018-07-01' = {
+resource storageFunction 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: storageFunction_var
-  location: resourceGroup().location
+  location: location
   sku: {
     name: 'Standard_LRS'
-  }
-  tags: {
   }
   kind: 'StorageV2'
   properties: {
@@ -95,8 +91,6 @@ resource storageFunction 'Microsoft.Storage/storageAccounts@2018-07-01' = {
       defaultAction: 'Allow'
     }
     supportsHttpsTrafficOnly: true
-    accountType: 'Standard_LRS'
-    tier: 'Standard'
     encryption: {
       services: {
         file: {
@@ -109,45 +103,62 @@ resource storageFunction 'Microsoft.Storage/storageAccounts@2018-07-01' = {
       keySource: 'Microsoft.Storage'
     }
     accessTier: 'Hot'
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: false
   }
 }
 
-resource appPlanName 'Microsoft.Web/serverfarms@2018-02-01' = {
+resource appPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: appPlanName_var
-  location: resourceGroup().location
+  location: location
   sku: {
     name: 'Y1'
     tier: 'Dynamic'
   }
   properties: {
-    name: appPlanName_var
-    computeMode: 'Dynamic'
   }
 }
 
-resource functionEngineName_resource 'Microsoft.Web/sites@2015-08-01' = {
+resource managedIdentityEngine 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'msi${functionEngineName}'
+  location: location
+}
+
+resource managedIdentityFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'msi${functionFrontendName}'
+  location: location
+}
+
+resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
   name: functionEngineName
-  location: resourceGroup().location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+       '${managedIdentityEngine.id}': {}
+    }
+  }
+  location: location
   kind: 'functionapp'
   properties: {
-    serverFarmId: appPlanName.id
+    serverFarmId: appPlan.id
     siteConfig: {
+      minTlsVersion: '1.2'
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${listKeys(storageFunction.id, providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'AzureStorageConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};AccountKey=${listKeys(storageNameWeb.id, providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};AccountKey=${storageWeb.listKeys().keys[0].value}'
         }
         {
           name: 'CosmosDBConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${cosmosDbName};AccountKey=${listKeys(cosmosDbName_resource.id, '2020-04-01').primaryMasterKey};TableEndpoint=${cosmosDbName_resource.properties.tableEndpoint};'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${cosmosDbName};AccountKey=${listKeys(cosmosDb.id, '2020-04-01').primaryMasterKey};TableEndpoint=https://${cosmosDbName}.table.cosmos.azure.com:443/;'
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${listKeys(storageFunction.id, providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
@@ -159,7 +170,7 @@ resource functionEngineName_resource 'Microsoft.Web/sites@2015-08-01' = {
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: reference(appInsightName.id, '2015-05-01').InstrumentationKey
+          value: reference(appInsight.id, '2015-05-01').InstrumentationKey
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
@@ -167,11 +178,11 @@ resource functionEngineName_resource 'Microsoft.Web/sites@2015-08-01' = {
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: 1
+          value: '1'
         }
         {
           name: 'WEBSITE_ENABLE_SYNC_UPDATE_SITE'
-          value: true
+          value: 'true'
         }
         {
           name: 'AzureWebJobsDisableHomepage'
@@ -182,10 +193,9 @@ resource functionEngineName_resource 'Microsoft.Web/sites@2015-08-01' = {
   }
 }
 
-resource functionEngineName_authsettings 'Microsoft.Web/sites/config@2016-08-01' = {
-  parent: functionEngineName_resource
+resource functionEngine_authsettings 'Microsoft.Web/sites/config@2016-08-01' = {
+  parent: functionEngine
   name: 'authsettings'
-  location: resourceGroup().location
   properties: {
     enabled: true
     unauthenticatedClientAction: 'RedirectToLoginPage'
@@ -196,29 +206,36 @@ resource functionEngineName_authsettings 'Microsoft.Web/sites/config@2016-08-01'
   }
 }
 
-resource functionFrontendName_resource 'Microsoft.Web/sites@2015-08-01' = {
+resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
   name: functionFrontendName
-  location: resourceGroup().location
+  location: location
+  identity: {
+     type: 'UserAssigned'
+     userAssignedIdentities: {
+        '${managedIdentityFrontend.id}': {}
+     }
+  }
   kind: 'functionapp'
   properties: {
-    serverFarmId: appPlanName.id
+    serverFarmId: appPlan.id
     siteConfig: {
+      minTlsVersion: '1.2'
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${listKeys(storageFunction.id, providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'AzureStorageConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};AccountKey=${listKeys(storageNameWeb.id, providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};AccountKey=${storageWeb.listKeys().keys[0].value}'
         }
         {
           name: 'CosmosDBConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${cosmosDbName};AccountKey=${listKeys(cosmosDbName_resource.id, '2020-04-01').primaryMasterKey};TableEndpoint=${cosmosDbName_resource.properties.tableEndpoint};'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${cosmosDbName};AccountKey=${listKeys(cosmosDb.id, '2020-04-01').primaryMasterKey};TableEndpoint=https://${cosmosDbName}.table.cosmos.azure.com:443/;'
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${listKeys(storageFunction.id, providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
@@ -230,7 +247,7 @@ resource functionFrontendName_resource 'Microsoft.Web/sites@2015-08-01' = {
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: reference(appInsightName.id, '2015-05-01').InstrumentationKey
+          value: reference(appInsight.id, '2015-05-01').InstrumentationKey
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
@@ -238,11 +255,11 @@ resource functionFrontendName_resource 'Microsoft.Web/sites@2015-08-01' = {
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: 1
+          value: '1'
         }
         {
           name: 'WEBSITE_ENABLE_SYNC_UPDATE_SITE'
-          value: true
+          value: 'true'
         }
         {
           name: 'AzureWebJobsDisableHomepage'
@@ -255,7 +272,7 @@ resource functionFrontendName_resource 'Microsoft.Web/sites@2015-08-01' = {
 
 resource cdnProfileName 'microsoft.cdn/profiles@2019-04-15' = {
   name: cdnProfileName_var
-  location: resourceGroup().location
+  location: location
   sku: {
     name: 'Standard_Microsoft'
   }
@@ -265,32 +282,48 @@ resource cdnProfileName 'microsoft.cdn/profiles@2019-04-15' = {
 resource cdnProfileName_cdnEndpointName 'microsoft.cdn/profiles/endpoints@2019-04-15' = {
   parent: cdnProfileName
   name: cdnEndpointName
-  location: resourceGroup().location
+  location: location
   properties: endpointProperties
 }
 
-resource appInsightName 'microsoft.insights/components@2014-08-01' = {
+resource appInsight 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightName_var
-  location: resourceGroup().location
+  location: location
+  kind: 'web'
   properties: {
-    ApplicationId: appInsightName_var
+    WorkspaceResourceId: logAnalytics.id
+    IngestionMode: 'LogAnalytics'
+    RetentionInDays: 30
     Application_Type: 'web'
     Flow_Type: 'Redfield'
     Request_Source: 'IbizaAIExtension'
   }
 }
 
-resource cosmosDbName_resource 'Microsoft.DocumentDb/databaseAccounts@2020-04-01' = {
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' = {
+  name: replace(appInsightName_var, 'appi', 'log')
+  location: location
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    } 
+    retentionInDays: 30
+    workspaceCapping: {
+      dailyQuotaGb: 1
+    }
+  }
+}
+
+resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
   kind: 'GlobalDocumentDB'
   name: cosmosDbName
-  location: resourceGroup().location
+  location: location
   properties: {
     databaseAccountOfferType: 'Standard'
     locations: [
       {
-        id: '${cosmosDbName}-${resourceGroup().location}'
         failoverPriority: 0
-        locationName: resourceGroup().location
+        locationName: location
         isZoneRedundant: cosmosDbisZoneRedundant
       }
     ]
@@ -305,7 +338,6 @@ resource cosmosDbName_resource 'Microsoft.DocumentDb/databaseAccounts@2020-04-01
     isVirtualNetworkFilterEnabled: false
     virtualNetworkRules: []
     ipRules: []
-    dependsOn: []
     enableMultipleWriteLocations: false
     capabilities: [
       {
@@ -317,7 +349,7 @@ resource cosmosDbName_resource 'Microsoft.DocumentDb/databaseAccounts@2020-04-01
 }
 
 resource metadataTable 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15' = {
-  parent: cosmosDbName_resource
+  parent: cosmosDb
   name: 'metadata'
   properties: {
     resource: {
@@ -327,7 +359,7 @@ resource metadataTable 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15'
 }
 
 resource metricTable 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15' = {
-  parent: cosmosDbName_resource
+  parent: cosmosDb
   name: 'metrics'
   properties: {
     resource: {

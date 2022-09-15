@@ -21,7 +21,7 @@
             "value": "cosmos-blog-we-prod-001"
         },
         "cosmosDbisZoneRedundant": {
-            "value": "true"
+            "value": true
         },
         "staticWebAppName": {
             "value": "sapp-blobeditor-we-prod-001"
