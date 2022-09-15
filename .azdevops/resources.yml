@@ -30,7 +30,7 @@ steps:
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |
-        az bicep build --file $(Build.SourcesDirectory)/Templates/resources.bicep --outfile $(Build.SourcesDirectory)/Templates/resources
+        az bicep build --file $(Build.SourcesDirectory)\Templates\resources.bicep --outfile $(Build.SourcesDirectory)\Templates\resources.json
 
   - task: AzureResourceManagerTemplateDeployment@3
     inputs:
