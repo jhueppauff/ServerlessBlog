@@ -18,7 +18,7 @@ variables:
   azureSubscription: 'blogEngine - GitHub'
 
   # Agent VM image name
-  vmImageName: 'windows-latest'
+  vmImageName: 'ubuntu-latest'
 
 pool:
   vmImage: $(vmImageName)
