@@ -24,14 +24,14 @@ pool:
   vmImage: $(vmImageName)
   
 steps:
-  - task: 
   - task: AzureCLI@2
     inputs:
       azureSubscription: $(azureSubscription)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |
-        az bicep build --file $(Build.SourcesDirectory)/Templates/resources.bicep --outfile $(Build.SourcesDirectory)/Templates/resources.
+        az bicep build --file $(Build.SourcesDirectory)/Templates/resources.bicep --outfile $(Build.SourcesDirectory)/Templates/resources
+
   - task: AzureResourceManagerTemplateDeployment@3
     inputs:
       deploymentScope: 'Resource Group'
