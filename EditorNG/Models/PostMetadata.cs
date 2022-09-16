@@ -21,5 +21,7 @@ namespace EditorNG.Models
         public string ImageUrl{ get; set; }
 
         public int Views { get; set; }
+
+        public bool IsPublic { get; set; }
     }
 }

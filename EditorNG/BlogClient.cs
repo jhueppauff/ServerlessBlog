@@ -81,14 +81,18 @@ namespace EditorNG
 
         public async Task SaveBlogPostAsync(PostMetadata post, string markdown)
         {
-            List<Task<HttpResponseMessage>> tasks = new List<Task<HttpResponseMessage>>();
+            List<Task<HttpResponseMessage>> tasks = new();
 
-            HttpRequestMessage savePostMetadataMessage = new HttpRequestMessage(HttpMethod.Post, "/api/post/");
-            savePostMetadataMessage.Content = new StringContent(JsonConvert.SerializeObject(post));
+            HttpRequestMessage savePostMetadataMessage = new(HttpMethod.Post, "/api/post/")
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(post))
+            };
             tasks.Add(client.SendAsync(savePostMetadataMessage));
 
-            HttpRequestMessage savePostMarkdownMessage = new HttpRequestMessage(HttpMethod.Put, $"/api/post/{post.Slug}");
-            savePostMarkdownMessage.Content = new StringContent(markdown);
+            HttpRequestMessage savePostMarkdownMessage = new(HttpMethod.Put, $"/api/post/{post.Slug}")
+            {
+                Content = new StringContent(markdown)
+            };
             tasks.Add(client.SendAsync(savePostMarkdownMessage));
 
             await Task.WhenAll(tasks);
@@ -138,6 +142,23 @@ namespace EditorNG
             responseMessage.EnsureSuccessStatusCode();
 
             return responseMessage;
+        }
+
+        public async Task PublishPostAsync(string slug, TimeSpan delay)
+        {
+            var publishRequest = new PublishRequest()
+            {
+                Slug = slug,
+                Delay = delay
+            };
+
+            HttpRequestMessage publishRequestMessage = new(HttpMethod.Post, "/api/publish")
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(publishRequest))
+            };
+
+            var response = await client.SendAsync(publishRequestMessage);
+            response.EnsureSuccessStatusCode();
         }
     }
 }

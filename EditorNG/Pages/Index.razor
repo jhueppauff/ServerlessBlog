@@ -19,7 +19,8 @@
             <tr>
                 @foreach (PropertyInfo propertyInfo in posts[0].GetType().GetProperties())
                 {
-                    @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name != "ImageUrl")
+                    @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name !=
+                   "ImageUrl")
                     {
                         <th>@propertyInfo.Name</th>
                     }
@@ -33,14 +34,23 @@
                 <tr>
                     @foreach (PropertyInfo propertyInfo in post.GetType().GetProperties())
                     {
-                        @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name != "ImageUrl")
+                        @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name !=
+                       "ImageUrl")
                         {
                             <td>@propertyInfo.GetValue(post)</td>
                         }
                     }
                     <td>
-                        <button @onclick="@(() => Delete(post))" class="btn btn-danger"><span class="glyphicon glyphicon-remove-sign"></span> Delete</button>
-                        <a href=@($"/Edit/{post.Slug}") Match="NavLinkMatch.All" class="btn btn-info"><span class="glyphicon glyphicon-edit"></span> Edit</a>
+                        <button @onclick="@(() => Delete(post))" class="btn btn-danger"><span
+                        class="glyphicon glyphicon-remove-sign"></span> Delete</button>
+                        @if (!post.IsPublic)
+                        {
+                            <button @onclick="() => ShowPublishOption(post)" class="btn btn-success">
+                                <span class="glyphicon glyphicon-send"></span> Publish
+                             </button>
+                        }
+                        <a href=@($"/Edit/{post.Slug}") Match="NavLinkMatch.All" class="btn btn-info"><span
+                        class="glyphicon glyphicon-edit"></span> Edit</a>
                     </td>
                 </tr>
             }
@@ -52,7 +62,38 @@ else
     <p>Loading ...</p>
 }
 
+<ModalDialog @ref="modal">
+    <Title>Publish Dialog</Title>
+
+    <Body>
+        <div class="form-group">
+            <label class="col-md-4 control-label" for="selectbasic">Delay Publish (Days)</label>
+            <div class="col-md-4">
+                <input @bind="@selectedPost" class="form-control" type="text" disabled="disabled"/>
+                <select id="selectdelay" @bind="@delay" class="form-control">
+                    <option value="0">Now</option>
+                    <option value="1">1 Day</option>
+                    <option value="2">2 Days</option>
+                    <option value="3">3 Days</option>
+                    <option value="4">4 Days</option>
+                    <option value="5">5 Days</option>
+                    <option value="6">6 Days</option>
+                    <option value="7">7 Days</option>
+                </select>
+            </div>
+        </div>
+    </Body>
+    <Footer>
+        <button type="button" class="btn btn-primary" @onclick="@(() => Publish())">Upload</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+            @onclick="() => modal.Close()">Close</button>
+    </Footer>
+</ModalDialog>
+
 @code {
+    private ModalDialog modal { get; set; }
+    private int delay = 0;
+    private string selectedPost;
     private List<PostMetadata> posts;
 
     protected override async Task OnInitializedAsync()
@@ -72,11 +113,24 @@ else
         }
     }
 
-    private async Task Refresh() 
+    private async Task Refresh()
     {
         posts = await blogClient.GetBlogPostsAsync();
     }
-    
+
+    private void ShowPublishOption(PostMetadata post)
+    {
+        selectedPost = post.Slug;
+        modal.Open();
+    }
+
+    private async Task Publish()
+    {
+        TimeSpan delaySpan = TimeSpan.FromDays(delay);
+        await blogClient.PublishPostAsync(selectedPost, delaySpan);
+        modal.Close();
+    }
+
     private async Task Delete(PostMetadata post)
     {
         if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the post '{post.Title}'?"))
