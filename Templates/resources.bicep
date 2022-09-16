@@ -36,7 +36,7 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   }
 }
 
-resource storageWeb 'Microsoft.Storage/storageAccounts@2022-05-01' = {
+resource storageWeb 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: storageNameWeb_var
   location: location
   kind: 'StorageV2'
@@ -50,7 +50,7 @@ resource storageWeb 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   }
 }
 
-resource storageWebBlobServices 'Microsoft.Storage/storageAccounts/blobServices@2022-05-01' = {
+resource storageWebBlobServices 'Microsoft.Storage/storageAccounts/blobServices@2021-09-01' = {
   parent: storageWeb
   name: 'default'
   properties: {
@@ -76,7 +76,7 @@ resource storageWebBlobServices 'Microsoft.Storage/storageAccounts/blobServices@
   }
 }
 
-resource storageFunction 'Microsoft.Storage/storageAccounts@2022-05-01' = {
+resource storageFunction 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: storageFunction_var
   location: location
   sku: {
@@ -108,17 +108,17 @@ resource storageFunction 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   }
 }
 
-resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2022-05-01' = {
+resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2021-09-01' = {
   name: 'default'
   parent: storageWeb
 }
 
-resource queueCreatedPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2022-05-01' = {
+resource queueCreatedPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = {
   name: 'created'
   parent: queueService
 }
 
-resource queueScheduledPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2022-05-01' = {
+resource queueScheduledPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = {
   name: 'scheduled'
   parent: queueService
 }
@@ -170,8 +170,8 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
           value: '~4'
         }
         {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: reference(appInsight.id, '2015-05-01').InstrumentationKey
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsight.properties.ConnectionString
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
@@ -242,8 +242,8 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
           value: '~4'
         }
         {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: reference(appInsight.id, '2015-05-01').InstrumentationKey
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsight.properties.ConnectionString
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
