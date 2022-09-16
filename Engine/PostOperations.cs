@@ -90,7 +90,8 @@ namespace ServerlessBlog.Engine
                         ImageUrl = qEntity.GetString("ImageUrl"),
                         Tags = qEntity.GetString("Tags"),
                         Published = qEntity.GetString("Published"),
-                        Preview = qEntity.GetString("Preview")
+                        Preview = qEntity.GetString("Preview"),
+                        IsPublic = qEntity.GetBoolean("IsPublic") ?? false
                     });
                 }
             }
