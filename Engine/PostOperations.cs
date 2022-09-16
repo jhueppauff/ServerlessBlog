@@ -17,6 +17,7 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Data.Tables;
 using Azure;
+using Engine.Model;
 
 namespace ServerlessBlog.Engine
 {
@@ -31,8 +32,8 @@ namespace ServerlessBlog.Engine
         
         [FunctionName(nameof(GetMarkdown))]
         public async Task<IActionResult> GetMarkdown(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post/{slug}/markdown")] HttpRequest req, string slug,
-            [Blob("posts", FileAccess.Read, Connection = "AzureStorageConnection")] BlobContainerClient container)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post/{slug}/markdown")] HttpRequest req, string slug,
+        [Blob("posts", FileAccess.Read, Connection = "AzureStorageConnection")] BlobContainerClient container)
         {
             if(String.IsNullOrEmpty(slug))
             {
@@ -48,9 +49,9 @@ namespace ServerlessBlog.Engine
 
         [FunctionName(nameof(Delete))]
         public async Task<IActionResult> Delete(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "post/{slug}")] HttpRequest request, string slug,
-            [Blob("posts/{slug}.md", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] BlobClient postBlob,
-            [Blob("published/{slug}.html", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] BlobClient publishedBlob, ILogger logger)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "post/{slug}")] HttpRequest request, string slug,
+        [Blob("posts/{slug}.md", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] BlobClient postBlob,
+        [Blob("published/{slug}.html", FileAccess.ReadWrite, Connection = "AzureStorageConnection")] BlobClient publishedBlob, ILogger logger)
         {
             logger.LogInformation($"Delete Post {slug}");
 
@@ -69,7 +70,7 @@ namespace ServerlessBlog.Engine
 
         [FunctionName(nameof(GetPosts))]
         public async Task<IActionResult> GetPosts(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post")] HttpRequest req)
         {
             // Get all entities from table storage
             AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: $"", maxPerPage: 100);
@@ -123,7 +124,7 @@ namespace ServerlessBlog.Engine
 
             using (Stream stream = req.Body)
             {
-                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                using (StreamReader reader = new(stream, Encoding.UTF8))
                 {
                     content = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
@@ -131,7 +132,7 @@ namespace ServerlessBlog.Engine
 
             content = HttpUtility.HtmlEncode(content);
 
-            using (MemoryStream mstream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
+            using (MemoryStream mstream = new(Encoding.UTF8.GetBytes(content)))
             {
                 await blob.UploadAsync(mstream, overwrite: true);
             }
@@ -145,6 +146,48 @@ namespace ServerlessBlog.Engine
             await queue.SendMessageAsync(slug);
 
             return new OkObjectResult(slug);
+        }
+
+        [FunctionName(nameof(SchedulePostPublish))]
+        public async Task<IActionResult> SchedulePostPublish(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish/schedule")] HttpRequest req,
+        [Queue("scheduled", Connection = "AzureStorageConnection")] QueueClient queue)
+        {
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            if (string.IsNullOrWhiteSpace(requestBody))
+            {
+                return new BadRequestObjectResult("missing request body");
+            }
+
+            ScheduelRequest scheduelRequest = JsonConvert.DeserializeObject<ScheduelRequest>(requestBody);
+
+            await queue.SendMessageAsync(scheduelRequest.Slug, visibilityTimeout: scheduelRequest.Delay);
+            return new OkResult();
+        }
+
+        [FunctionName(nameof(PublishPost))]
+        public async Task<IActionResult> PublishPost(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish/{slug}")] HttpRequest req, string slug)
+        {
+            await PublishPostAsync(slug);
+            return new OkResult();
+        }
+
+        [FunctionName(nameof(QueuePublishPost))]
+        public async Task<IActionResult> QueuePublishPost([QueueTrigger("created", Connection = "AzureStorageConnection")] string slug)
+        {
+            await PublishPostAsync(slug);
+            return new OkResult();
+        }
+
+        private async Task PublishPostAsync(string slug)
+        {
+            await tableClient.UpdateEntityAsync<TableEntity>(new TableEntity() {
+                PartitionKey = slug,
+                RowKey = slug,
+                ["IsPublic"] = true
+            }, ETag.All, TableUpdateMode.Merge);
         }
 
         [FunctionName(nameof(SavePostMetadata))]
@@ -170,7 +213,8 @@ namespace ServerlessBlog.Engine
                 ["ImageUrl"] = metadata.ImageUrl,
                 ["Tags"] = metadata.Tags,
                 ["Published"] = metadata.Published,
-                ["Preview"] = metadata.Preview
+                ["Preview"] = metadata.Preview,
+                ["IsPublic"] = false
             });
 
             return new OkResult();
