@@ -202,7 +202,7 @@ namespace ServerlessBlog.Engine
                 ["Tags"] = metadata.Tags,
                 ["Published"] = metadata.Published,
                 ["Preview"] = metadata.Preview,
-                ["IsPublic"] = false
+                ["IsPublic"] = metadata.IsPublic
             });
 
             return new OkResult();
