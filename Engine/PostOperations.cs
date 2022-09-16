@@ -168,7 +168,7 @@ namespace ServerlessBlog.Engine
         }
 
         [FunctionName(nameof(PublishPost))]
-        public async Task PublishPost([QueueTrigger("created", Connection = "AzureStorageConnection")] string slug)
+        public async Task PublishPost([QueueTrigger("scheduled", Connection = "AzureStorageConnection")] string slug)
         {
             await tableClient.UpdateEntityAsync<TableEntity>(new TableEntity()
             {
