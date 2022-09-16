@@ -108,6 +108,21 @@ resource storageFunction 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   }
 }
 
+resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2022-05-01' = {
+  name: '/default'
+}
+
+resource queueCreatedPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2022-05-01' = {
+  name: 'created'
+  parent: queueService
+}
+
+resource queueScheduledPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2022-05-01' = {
+  name: 'scheduled'
+  parent: queueService
+}
+
+
 resource appPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: appPlanName_var
   location: location
