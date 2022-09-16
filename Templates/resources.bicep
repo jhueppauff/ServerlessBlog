@@ -107,7 +107,7 @@ resource storageFunction 'Microsoft.Storage/storageAccounts@2021-09-01' = {
     allowBlobPublicAccess: false
   }
 }
-/*
+
 resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2021-09-01' = {
   name: 'default'
   parent: storageWeb
@@ -122,7 +122,6 @@ resource queueScheduledPosts 'Microsoft.Storage/storageAccounts/queueServices/qu
   name: 'scheduled'
   parent: queueService
 }
-*/
 
 resource appPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: appPlanName_var
@@ -137,7 +136,6 @@ resource appPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 
 resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
   name: functionEngineName
-  identity: {}
   location: location
   kind: 'functionapp'
   properties: {
@@ -210,7 +208,6 @@ resource functionEngine_authsettings 'Microsoft.Web/sites/config@2016-08-01' = {
 resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
   name: functionFrontendName
   location: location
-  identity: {}
   kind: 'functionapp'
   properties: {
     serverFarmId: appPlan.id
