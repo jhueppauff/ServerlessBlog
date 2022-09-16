@@ -167,7 +167,7 @@ namespace ServerlessBlog.Engine
         }
 
         [FunctionName(nameof(PublishPost))]
-        public async Task<IActionResult> PublishPost([QueueTrigger("created", Connection = "AzureStorageConnection")] string slug)
+        public async Task PublishPost([QueueTrigger("created", Connection = "AzureStorageConnection")] string slug)
         {
             await tableClient.UpdateEntityAsync<TableEntity>(new TableEntity()
             {
@@ -175,7 +175,6 @@ namespace ServerlessBlog.Engine
                 RowKey = slug,
                 ["IsPublic"] = true
             }, ETag.All, TableUpdateMode.Merge);
-            return new OkResult();
         }
 
         [FunctionName(nameof(SavePostMetadata))]
