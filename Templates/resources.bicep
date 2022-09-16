@@ -50,7 +50,7 @@ resource storageWeb 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   }
 }
 
-resource storageNameWeb_default 'Microsoft.Storage/storageAccounts/blobServices@2022-05-01' = {
+resource storageWebBlobServices 'Microsoft.Storage/storageAccounts/blobServices@2022-05-01' = {
   parent: storageWeb
   name: 'default'
   properties: {
@@ -109,7 +109,8 @@ resource storageFunction 'Microsoft.Storage/storageAccounts@2022-05-01' = {
 }
 
 resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2022-05-01' = {
-  name: '/default'
+  name: 'default'
+  parent: storageWeb
 }
 
 resource queueCreatedPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2022-05-01' = {
