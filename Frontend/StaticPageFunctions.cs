@@ -35,7 +35,7 @@ namespace ServerlessBlog.Frontend
 
             string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, "../statics/index.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
 
-            var posts = await GetPosts();
+            var posts = await GetPostsAsync();
 
             StringBuilder indexContent = new();
             CultureInfo cultureInfo = new("en-us");
@@ -81,9 +81,9 @@ namespace ServerlessBlog.Frontend
             return result;
         }
 
-        private async Task<List<PostMetadata>> GetPosts()
+        private async Task<List<PostMetadata>> GetPostsAsync()
         {
-            AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: $"", maxPerPage: 100);
+            AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: $"IsPublic eq true", maxPerPage: 100);
 
             List<PostMetadata> postMetadata = new();
 
@@ -99,7 +99,8 @@ namespace ServerlessBlog.Frontend
                         ImageUrl = qEntity.GetString("ImageUrl"),
                         Tags = qEntity.GetString("Tags"),
                         Published = qEntity.GetString("Published"),
-                        Preview = qEntity.GetString("Preview")
+                        Preview = qEntity.GetString("Preview"),
+                        IsPublic = qEntity.GetBoolean("IsPublic") ?? false
                     });
                 }
             }

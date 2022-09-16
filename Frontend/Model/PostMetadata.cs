@@ -27,5 +27,7 @@ namespace ServerlessBlog.Frontend.Model
         public string Preview { get; set; }
 
         public string ImageUrl { get; set; }
+
+        public bool IsPublic { get; set; }
     }
 }
