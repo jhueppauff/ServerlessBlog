@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Model
 {
-    internal class ScheduelRequest
+    internal class PublishRequest
     {
         public string Slug { get; set; }
 

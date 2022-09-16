@@ -150,7 +150,7 @@ namespace ServerlessBlog.Engine
 
         [FunctionName(nameof(SchedulePostPublish))]
         public async Task<IActionResult> SchedulePostPublish(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish/schedule")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish")] HttpRequest req,
         [Queue("scheduled", Connection = "AzureStorageConnection")] QueueClient queue)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -160,34 +160,22 @@ namespace ServerlessBlog.Engine
                 return new BadRequestObjectResult("missing request body");
             }
 
-            ScheduelRequest scheduelRequest = JsonConvert.DeserializeObject<ScheduelRequest>(requestBody);
+            PublishRequest publishRequest = JsonConvert.DeserializeObject<PublishRequest>(requestBody);
 
-            await queue.SendMessageAsync(scheduelRequest.Slug, visibilityTimeout: scheduelRequest.Delay);
+            await queue.SendMessageAsync(publishRequest.Slug, visibilityTimeout: publishRequest.Delay);
             return new OkResult();
         }
 
         [FunctionName(nameof(PublishPost))]
-        public async Task<IActionResult> PublishPost(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish/{slug}")] HttpRequest req, string slug)
+        public async Task<IActionResult> PublishPost([QueueTrigger("created", Connection = "AzureStorageConnection")] string slug)
         {
-            await PublishPostAsync(slug);
-            return new OkResult();
-        }
-
-        [FunctionName(nameof(QueuePublishPost))]
-        public async Task<IActionResult> QueuePublishPost([QueueTrigger("created", Connection = "AzureStorageConnection")] string slug)
-        {
-            await PublishPostAsync(slug);
-            return new OkResult();
-        }
-
-        private async Task PublishPostAsync(string slug)
-        {
-            await tableClient.UpdateEntityAsync<TableEntity>(new TableEntity() {
+            await tableClient.UpdateEntityAsync<TableEntity>(new TableEntity()
+            {
                 PartitionKey = slug,
                 RowKey = slug,
                 ["IsPublic"] = true
             }, ETag.All, TableUpdateMode.Merge);
+            return new OkResult();
         }
 
         [FunctionName(nameof(SavePostMetadata))]
