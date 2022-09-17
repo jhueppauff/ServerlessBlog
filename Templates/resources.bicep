@@ -50,8 +50,8 @@ resource scheduledQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
   parent: serviceBus
 }
 
-resource publishQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
-  name: 'published'
+resource renderQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
+  name: 'created'
   parent: serviceBus
 }
 

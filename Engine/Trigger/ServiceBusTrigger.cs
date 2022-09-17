@@ -9,6 +9,7 @@ using Azure.Data.Tables;
 using Azure;
 using Engine.Services;
 using Engine.Model;
+using Engine.Constants;
 
 namespace Engine.Trigger
 {
@@ -27,7 +28,7 @@ namespace Engine.Trigger
         }
 
         [FunctionName(nameof(RenderPost))]
-        public async Task RenderPost([ServiceBusTrigger("created", Connection = "AzureStorageConnection")] QueueMessage message,
+        public async Task RenderPost([ServiceBusTrigger(ServiceBusQueueNames.NewBlogPostQueue, Connection = "AzureStorageConnection")] QueueMessage message,
         [Blob("posts/{Slug}.md", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent)
         {
             _logger.LogInformation($"ServicBus Trigger {nameof(RenderPost)} was triggered for {message.Slug}");
@@ -35,7 +36,7 @@ namespace Engine.Trigger
         }
 
         [FunctionName(nameof(PublishPost))]
-        public async Task PublishPost([ServiceBusTrigger("scheduled", Connection = "AzureStorageConnection")] QueueMessage message)
+        public async Task PublishPost([ServiceBusTrigger(ServiceBusQueueNames.PublishBlogPostQueue, Connection = "AzureStorageConnection")] QueueMessage message)
         {
             _logger.LogInformation($"ServicBus Trigger {nameof(PublishPost)} was triggered for {message.Slug}");
             await _blogPostService.PublishBlogPostAsync(message.Slug);

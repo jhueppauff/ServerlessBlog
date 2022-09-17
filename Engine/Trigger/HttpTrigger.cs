@@ -11,18 +11,11 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Engine.Services;
-using Azure.Data.Tables;
-using Azure.Storage.Blobs;
-using Azure;
 using Engine.Model;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
-using System.Web;
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
-using System.Linq;
-using Newtonsoft.Json.Linq;
+using Engine.Constants;
 
 namespace Engine.Trigger
 {
@@ -176,7 +169,7 @@ namespace Engine.Trigger
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
         public async Task<IActionResult> SavePostContent([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "post/{slug}")] HttpRequest req, string slug,
-        [ServiceBus("created", Connection = "ServiceBusConnection")] IAsyncCollector<dynamic> outputServiceBus)
+        [ServiceBus(ServiceBusQueueNames.NewBlogPostQueue, Connection = "ServiceBusConnection")] IAsyncCollector<dynamic> outputServiceBus)
         {
             _logger.LogInformation($"Function {nameof(SavePostContent)} was triggered");
             if (string.IsNullOrWhiteSpace(slug))
@@ -217,7 +210,7 @@ namespace Engine.Trigger
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
         public async Task<IActionResult> SchedulePostPublish(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish")] HttpRequest req,
-        [ServiceBus("scheduled", Connection = "ServiceBusConnection")] IAsyncCollector<dynamic> outputServiceBus)
+        [ServiceBus(ServiceBusQueueNames.PublishBlogPostQueue, Connection = "ServiceBusConnection")] IAsyncCollector<dynamic> outputServiceBus)
         {
             _logger.LogInformation($"Function {nameof(SchedulePostPublish)} was triggered");
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
