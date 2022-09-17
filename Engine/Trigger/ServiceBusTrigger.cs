@@ -39,6 +39,12 @@ namespace Engine.Trigger
         public async Task PublishPost([ServiceBusTrigger(ServiceBusQueueNames.PublishBlogPostQueue, Connection = "ServiceBusConnection")] QueueMessage message)
         {
             _logger.LogInformation($"ServicBus Trigger {nameof(PublishPost)} was triggered for {message.Slug}");
+
+            if (message == null)
+            {
+                _logger.LogError($"{nameof(QueueMessage)} is null");
+            }
+
             await _blogPostService.PublishBlogPostAsync(message.Slug);
         }
     }
