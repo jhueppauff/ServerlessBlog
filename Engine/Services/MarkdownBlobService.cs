@@ -24,7 +24,7 @@ namespace Engine.Services
 
         public MarkdownBlobService(ILoggerFactory loggerFactory, BlobServiceClient blobServiceClient)
         {
-            this.logger = loggerFactory.CreateLogger<MarkdownBlobService>(); 
+            this.logger = loggerFactory.CreateLogger<MarkdownBlobService>();
             blobMarkdownContainerClient = blobServiceClient.GetBlobContainerClient(BlobContainerNames.MarkdownContainer);
         }
 
@@ -84,7 +84,6 @@ namespace Engine.Services
                 logger.LogError(ex, $"An error occured while uploading markdown for {slug}");
                 throw;
             }
-
         }
     }
 }

@@ -73,7 +73,6 @@ namespace Engine.Services
                 logger.LogError(ex, "An error occured while retrieving the images");
                 throw;
             }
-            
         }
 
         public async Task DeleteBlobAsync(string blobName)
