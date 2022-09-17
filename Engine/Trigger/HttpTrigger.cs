@@ -210,7 +210,7 @@ namespace Engine.Trigger
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
         public async Task<IActionResult> SchedulePostPublish(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish")] HttpRequest req,
-        [ServiceBus(ServiceBusQueueNames.PublishBlogPostQueue, Connection = "ServiceBusConnection")] IAsyncCollector<dynamic> outputServiceBus)
+        [ServiceBus(ServiceBusQueueNames.PublishBlogPostQueue, Connection = "ServiceBusConnection")] IAsyncCollector<ServiceBusMessage> outputServiceBus)
         {
             _logger.LogInformation($"Function {nameof(SchedulePostPublish)} was triggered");
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
