@@ -163,6 +163,9 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
   name: functionEngineName
   location: location
   kind: 'functionapp'
+  identity: {
+     type: 'SystemAssigned'
+  }
   properties: {
     serverFarmId: appPlan.id
     siteConfig: {
