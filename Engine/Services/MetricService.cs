@@ -66,9 +66,9 @@ namespace Engine.Services
 
                 foreach (var item in grouped)
                 {
-                    if (response.Where(x => x.Timestamp == item.Key).Any())
+                    if (response.Any(x => x.Timestamp == item.Key))
                     {
-                        var entry = response.FirstOrDefault(x => x.Timestamp == item.Key);
+                        var entry = response.Find(x => x.Timestamp == item.Key);
                         entry.Views = +item.Count();
                     }
                     else
@@ -98,9 +98,9 @@ namespace Engine.Services
 
                 foreach (var item in grouped)
                 {
-                    if (response.Where(x => x.Slug == item.Key).Any())
+                    if (response.Any(x => x.Slug == item.Key))
                     {
-                        var entry = response.FirstOrDefault(x => x.Slug == item.Key);
+                        var entry = response.Find(x => x.Slug == item.Key);
                         entry.Views = +item.Count();
                     }
                     else

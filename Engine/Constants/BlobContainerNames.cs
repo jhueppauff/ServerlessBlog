@@ -1,6 +1,6 @@
 ﻿namespace Engine.Constants
 {
-    internal class BlobContainerNames
+    internal static class BlobContainerNames
     {
         public const string ImageContainer = "public";
         public const string MarkdownContainer = "posts";

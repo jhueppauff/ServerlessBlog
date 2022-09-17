@@ -1,6 +1,6 @@
 ﻿namespace Engine.Constants
 {
-    internal class TableNames
+    internal static class TableNames
     {
         public const string MetricTableName = "metrics";
         public const string MetadataTableName = "metadata";

@@ -30,7 +30,7 @@ namespace Engine.Trigger
         private readonly HtmlBlobService _htmlBlobService;
         private readonly MetricService _metricService;
 
-        public HttpTrigger(ILoggerFactory loggerFactory, ImageBlobService imageBlobService, MarkdownBlobService markdownBlobService, 
+        public HttpTrigger(ILoggerFactory loggerFactory, ImageBlobService imageBlobService, MarkdownBlobService markdownBlobService,
             BlogMetadataService blogPostService, HtmlBlobService htmlBlobService, MetricService metricService, ServiceBusClient serviceBusClient)
         {
             _logger = loggerFactory.CreateLogger<HttpTrigger>();
@@ -201,7 +201,6 @@ namespace Engine.Trigger
             var sender = _serviceBusClient.CreateSender(ServiceBusQueueNames.NewBlogPostQueue);
 
             await sender.SendMessageAsync(new ServiceBusMessage(body));
-            
             return new OkObjectResult(slug);
         }
 
@@ -304,4 +303,3 @@ namespace Engine.Trigger
         #endregion
     }
 }
-

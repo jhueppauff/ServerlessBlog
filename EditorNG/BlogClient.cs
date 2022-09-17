@@ -1,13 +1,11 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Forms;
-using System.Net.Http.Headers;
-using Newtonsoft.Json;
 using EditorNG.Models;
+using Microsoft.AspNetCore.Components.Forms;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace EditorNG
 {
@@ -40,7 +38,7 @@ namespace EditorNG
 
         public async Task<string> GetBlogPostMarkdownAsync(string slug)
         {
-            
+
             var response = await client.GetAsync($"/api/post/{slug}/markdown");
             response.EnsureSuccessStatusCode();
 
@@ -126,7 +124,7 @@ namespace EditorNG
         public async Task<HttpResponseMessage> UploadFileAsync(IBrowserFile file, string extentsion)
         {
             long maxFileSize = 1024 * 1024 * 200;
-            
+
             using MultipartFormDataContent content = new();
 
             StreamContent fileContent = new(file.OpenReadStream(maxFileSize));

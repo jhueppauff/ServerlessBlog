@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace EditorNG.Models
+﻿namespace EditorNG.Models
 {
-    public class PostMetadata 
+    public class PostMetadata
     {
         public string PartitionKey { get; set; }
 
@@ -18,7 +16,7 @@ namespace EditorNG.Models
 
         public string Preview { get; set; }
 
-        public string ImageUrl{ get; set; }
+        public string ImageUrl { get; set; }
 
         public int Views { get; set; }
 
