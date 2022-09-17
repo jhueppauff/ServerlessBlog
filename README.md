@@ -1,5 +1,7 @@
 # ServerlessBlog
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jhueppauff_ServerlessBlog&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=jhueppauff_ServerlessBlog)
+
 Serverless blog engine running [https://blog.hueppauff.com](https://blog.hueppauff.com). This Engine use Azure Functions and Azure Platform Services to host a blog as cost efficent as possible. All Services used are consumption-based, meaning you'll only pay for the usage of the blog.
 Learn more about [serverless](https://azure.microsoft.com/en-us/solutions/serverless/)
 
