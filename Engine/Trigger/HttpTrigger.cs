@@ -227,10 +227,7 @@ namespace Engine.Trigger
                 ScheduledEnqueueTime = publishRequest.PublishDate
             };
 
-            await outputServiceBus.AddAsync(new QueueMessage()
-            {
-                Slug = publishRequest.Slug
-            });
+            await outputServiceBus.AddAsync(message);
 
             return new OkResult();
         }
