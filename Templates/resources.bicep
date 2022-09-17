@@ -262,7 +262,7 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'AzureStorageConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};'
+          value: 'https://${storageNameWeb_var}.blob.${environment().suffixes.storage}'
         }
         {
           name: 'CosmosDBConnection'
