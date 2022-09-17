@@ -51,7 +51,7 @@ namespace Engine.Trigger
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the blob Url")]
         public async Task<IActionResult> UploadImage([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Put", Route = "Image/Upload/{extension}")] HttpRequest request, string extension)
         {
-            if (string.IsNullOrWhiteSpace(extension) || string.IsNullOrEmpty(extension))
+            if (string.IsNullOrWhiteSpace(extension))
             {
                 return new BadRequestObjectResult("Missing extension");
             }
@@ -82,7 +82,7 @@ namespace Engine.Trigger
         public async Task<IActionResult> DeleteImage([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Delete", Route = "Image/{blobName}")] HttpRequest request, string blobName)
         {
             _logger.LogInformation($"Function {nameof(DeleteImage)} was triggered for {blobName}");
-            if (string.IsNullOrWhiteSpace(blobName) || string.IsNullOrEmpty(blobName))
+            if (string.IsNullOrWhiteSpace(blobName))
             {
                 return new BadRequestObjectResult("Missing Blob Name");
             }
@@ -190,7 +190,7 @@ namespace Engine.Trigger
                 content = await reader.ReadToEndAsync().ConfigureAwait(false);
             }
 
-            if (string.IsNullOrWhiteSpace(content) || string.IsNullOrWhiteSpace(content))
+            if (string.IsNullOrWhiteSpace(content))
             {
                 return new BadRequestObjectResult("Body cannot be empty");
             }
@@ -266,7 +266,7 @@ namespace Engine.Trigger
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric/{slug}/history")] HttpRequest request, string slug)
         {
             _logger.LogInformation($"Function {nameof(GetPageViewHistory)} was triggered");
-            if (string.IsNullOrWhiteSpace(slug) || string.IsNullOrEmpty(slug))
+            if (string.IsNullOrWhiteSpace(slug))
             {
                 return new BadRequestObjectResult($"Missing {nameof(slug)}");
             }
