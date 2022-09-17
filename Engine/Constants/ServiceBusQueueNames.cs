@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Constants
 {
-    public class ServiceBusQueueNames
+    public static class ServiceBusQueueNames
     {
         public const string NewBlogPostQueue = "created";
         public const string PublishBlogPostQueue = "scheduled";
