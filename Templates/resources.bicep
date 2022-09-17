@@ -16,6 +16,10 @@ var storageNameWeb_var = 'stblogstaticweprod001'
 var storageFunction_var = 'stblogfuncweprod001'
 var cdnProfileName_var = replace(functionEngineName, 'func', 'cdn')
 var cdnEndpointName = replace(functionFrontendName, 'func', 'cdnedp')
+var serviceBusReceiverRoleId = '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
+var serviceBusSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
+var blogDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+var blogDataOwnerRoleId = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
 
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   name: staticWebAppName
@@ -55,8 +59,15 @@ resource renderQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
   parent: serviceBus
 }
 
-var serviceBusReceiverRoleId = '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
-var serviceBusSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
+resource blobDataContributorRoleDefenition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup()
+  name: blogDataContributorRoleId
+}
+
+resource blobDataOwnerRoleDefenition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup()
+  name: blogDataOwnerRoleId
+}
 
 resource serviceBusReceiverRoleDefenition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup()
@@ -66,6 +77,46 @@ resource serviceBusReceiverRoleDefenition 'Microsoft.Authorization/roleDefinitio
 resource serviceBusSenderRoleDefenition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup()
   name: serviceBusSenderRoleId
+}
+
+resource rbacFunctionServiceStorageWebOwner 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageWeb.id, functionEngine.id, blogDataOwnerRoleId)
+  scope: storageWeb
+  properties: {
+    principalId: functionEngine.identity.principalId
+    roleDefinitionId: blobDataOwnerRoleDefenition.id
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource rbacFunctionServiceStorageFunctionOwner 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageFunction.id, functionEngine.id, blogDataOwnerRoleId)
+  scope: storageFunction
+  properties: {
+    principalId: functionEngine.identity.principalId
+    roleDefinitionId: blobDataOwnerRoleDefenition.id
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource rbacFunctionServiceStorageWeb 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageWeb.id, functionEngine.id, blogDataContributorRoleId)
+  scope: storageWeb
+  properties: {
+    principalId: functionEngine.identity.principalId
+    roleDefinitionId: blobDataContributorRoleDefenition.id
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource rbacFunctionServiceStorageFunction 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageFunction.id, functionEngine.id, serviceBusReceiverRoleId)
+  scope: storageFunction
+  properties: {
+    principalId: functionEngine.identity.principalId
+    roleDefinitionId: blobDataContributorRoleDefenition.id
+    principalType: 'ServicePrincipal'
+  }
 }
 
 resource rbacFunctionServiceBusReceiver 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -184,12 +235,12 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
       minTlsVersion: '1.2'
       appSettings: [
         {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
+          name: 'AzureWebJobsStorage__accountName'
+          value: storageFunction.name
         }
         {
           name: 'AzureStorageConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};AccountKey=${storageWeb.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};'
         }
         {
           name: 'CosmosDBConnection'
@@ -263,12 +314,12 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
       minTlsVersion: '1.2'
       appSettings: [
         {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
+          name: 'AzureWebJobsStorage__accountName'
+          value: storageFunction.name
         }
         {
           name: 'AzureStorageConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};AccountKey=${storageWeb.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};'
         }
         {
           name: 'CosmosDBConnection'
