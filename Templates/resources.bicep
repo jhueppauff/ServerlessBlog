@@ -80,10 +80,10 @@ resource serviceBusSenderRoleDefenition 'Microsoft.Authorization/roleDefinitions
 }
 
 resource rbacFunctionServiceStorageWebOwner 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageWeb.id, functionEngine.id, blogDataOwnerRoleId)
+  name: guid(storageWeb.id, functionFrontend.id, blogDataOwnerRoleId)
   scope: storageWeb
   properties: {
-    principalId: functionEngine.identity.principalId
+    principalId: functionFrontend.identity.principalId
     roleDefinitionId: blobDataOwnerRoleDefenition.id
     principalType: 'ServicePrincipal'
   }
@@ -100,10 +100,10 @@ resource rbacFunctionServiceStorageFunctionOwner 'Microsoft.Authorization/roleAs
 }
 
 resource rbacFunctionServiceStorageWeb 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageWeb.id, functionEngine.id, blogDataContributorRoleId)
+  name: guid(storageWeb.id, functionFrontend.id, blogDataContributorRoleId)
   scope: storageWeb
   properties: {
-    principalId: functionEngine.identity.principalId
+    principalId: functionFrontend.identity.principalId
     roleDefinitionId: blobDataContributorRoleDefenition.id
     principalType: 'ServicePrincipal'
   }
