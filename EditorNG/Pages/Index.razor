@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Authorization;
 @using System.Reflection;
 @using EditorNG.Models;
-
+@using System;
 @inject BlogClient blogClient;
 @inject IJSRuntime JSRuntime
 
@@ -66,22 +66,7 @@ else
     <Title>Publish Dialog</Title>
 
     <Body>
-        <div class="form-group">
-            <label class="col-md-4 control-label" for="selectbasic">Delay Publish (Days)</label>
-            <div class="col-md-4">
-                <input @bind="@selectedPost" class="form-control" type="text" disabled="disabled"/>
-                <select id="selectdelay" @bind="@delay" class="form-control">
-                    <option value="0">Now</option>
-                    <option value="1">1 Day</option>
-                    <option value="2">2 Days</option>
-                    <option value="3">3 Days</option>
-                    <option value="4">4 Days</option>
-                    <option value="5">5 Days</option>
-                    <option value="6">6 Days</option>
-                    <option value="7">7 Days</option>
-                </select>
-            </div>
-        </div>
+        <MudDatePicker PickerVariant="PickerVariant.Dialog" Label="Select Publish Date" @bind-Date="@publishDate" />
     </Body>
     <Footer>
         <button type="button" class="btn btn-primary" @onclick="@(() => Publish())">Upload</button>
@@ -92,7 +77,7 @@ else
 
 @code {
     private ModalDialog modal { get; set; }
-    private int delay = 0;
+    private DateTime? publishDate = DateTime.Now;
     private string selectedPost;
     private List<PostMetadata> posts;
 
@@ -126,8 +111,7 @@ else
 
     private async Task Publish()
     {
-        TimeSpan delaySpan = TimeSpan.FromDays(delay);
-        await blogClient.PublishPostAsync(selectedPost, delaySpan);
+        await blogClient.PublishPostAsync(selectedPost, publishDate ?? DateTime.UtcNow);
         modal.Close();
     }
 

@@ -10,6 +10,6 @@ namespace EditorNG.Models
     {
         public string Slug { get; set; }
 
-        public TimeSpan Delay { get; set; }
+        public DateTime PublishDate { get; set; }
     }
 }

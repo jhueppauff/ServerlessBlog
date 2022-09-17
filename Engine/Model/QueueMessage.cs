@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace Engine.Model
 {
-    public class PageView
+    public class QueueMessage
     {
         public string Slug { get; set; }
-
-        public int Views { get; set; }
-
-        public DateTime Timestamp { get; set; }
     }
 }
