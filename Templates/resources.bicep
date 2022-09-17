@@ -64,6 +64,7 @@ resource rbacFunctionServiceBusReceiver 'Microsoft.Authorization/roleAssignments
   properties: {
     principalId: functionEngine.identity.principalId
     roleDefinitionId: serviceBusReceiverRoleId
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -73,6 +74,7 @@ resource rbacFunctionServiceBusSender 'Microsoft.Authorization/roleAssignments@2
   properties: {
     principalId: functionEngine.identity.principalId
     roleDefinitionId: serviceBusSenderRoleId
+    principalType: 'ServicePrincipal'
   }
 }
 
