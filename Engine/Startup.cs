@@ -19,6 +19,7 @@ namespace Engine
             builder.Services.AddAzureClients(clientBuilder =>
             {
                 clientBuilder.AddBlobServiceClient(new Uri(Environment.GetEnvironmentVariable("AzureStorageConnection")));
+                clientBuilder.AddServiceBusClientWithNamespace(Environment.GetEnvironmentVariable("ServiceBusConnection__fullyQualifiedNamespace"));
                 clientBuilder.AddTableServiceClient(Environment.GetEnvironmentVariable("CosmosDBConnection"));
                 clientBuilder.UseCredential(new DefaultAzureCredential());
             });

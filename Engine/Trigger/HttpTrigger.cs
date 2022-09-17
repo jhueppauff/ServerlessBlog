@@ -22,6 +22,7 @@ namespace Engine.Trigger
     public class HttpTrigger
     {
         private readonly ILogger<HttpTrigger> _logger;
+        private readonly ServiceBusClient _serviceBusClient;
 
         private readonly ImageBlobService _imageBlobService;
         private readonly MarkdownBlobService _markdownBlobService;
@@ -30,7 +31,7 @@ namespace Engine.Trigger
         private readonly MetricService _metricService;
 
         public HttpTrigger(ILoggerFactory loggerFactory, ImageBlobService imageBlobService, MarkdownBlobService markdownBlobService, 
-            BlogMetadataService blogPostService, HtmlBlobService htmlBlobService, MetricService metricService)
+            BlogMetadataService blogPostService, HtmlBlobService htmlBlobService, MetricService metricService, ServiceBusClient serviceBusClient)
         {
             _logger = loggerFactory.CreateLogger<HttpTrigger>();
             _imageBlobService = imageBlobService;
@@ -38,6 +39,7 @@ namespace Engine.Trigger
             _blogMetadataService = blogPostService;
             _htmlBlobService = htmlBlobService;
             _metricService = metricService;
+            _serviceBusClient = serviceBusClient;
         }
 
         #region ImageTrigger
@@ -168,8 +170,7 @@ namespace Engine.Trigger
         [OpenApiRequestBody("text/plain", typeof(string), Required = true)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
-        public async Task<IActionResult> SavePostContent([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "post/{slug}")] HttpRequest req, string slug,
-        [ServiceBus(ServiceBusQueueNames.NewBlogPostQueue, Connection = "ServiceBusConnection")] IAsyncCollector<dynamic> outputServiceBus)
+        public async Task<IActionResult> SavePostContent([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "post/{slug}")] HttpRequest req, string slug)
         {
             _logger.LogInformation($"Function {nameof(SavePostContent)} was triggered");
             if (string.IsNullOrWhiteSpace(slug))
@@ -197,8 +198,9 @@ namespace Engine.Trigger
             await _markdownBlobService.UploadMarkdownAsync(content, slug);
 
             string body = System.Text.Json.JsonSerializer.Serialize(new QueueMessage() { Slug = slug});
+            var sender = _serviceBusClient.CreateSender(ServiceBusQueueNames.NewBlogPostQueue);
 
-            await outputServiceBus.AddAsync(body);
+            await sender.SendMessageAsync(new ServiceBusMessage(body));
             
             return new OkObjectResult(slug);
         }
@@ -209,8 +211,7 @@ namespace Engine.Trigger
         [OpenApiRequestBody("application/json", typeof(string), Required = true)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
         public async Task<IActionResult> SchedulePostPublish(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish")] HttpRequest req,
-        [ServiceBus(ServiceBusQueueNames.PublishBlogPostQueue, Connection = "ServiceBusConnection")] IAsyncCollector<ServiceBusMessage> outputServiceBus)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish")] HttpRequest req)
         {
             _logger.LogInformation($"Function {nameof(SchedulePostPublish)} was triggered");
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -229,7 +230,8 @@ namespace Engine.Trigger
                 ScheduledEnqueueTime = publishRequest.PublishDate
             };
 
-            await outputServiceBus.AddAsync(message);
+            var sender = _serviceBusClient.CreateSender(ServiceBusQueueNames.PublishBlogPostQueue);
+            await sender.SendMessageAsync(message);
 
             return new OkResult();
         }
