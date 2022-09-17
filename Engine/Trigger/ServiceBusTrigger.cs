@@ -19,20 +19,22 @@ namespace Engine.Trigger
 
         private readonly BlogMetadataService _blogPostService;
         private readonly MarkdownBlobService _markdownBlobService;
+        private readonly HtmlBlobService _htmlBlobService;
 
-        public ServiceBusTrigger(ILoggerFactory loggerFactory, BlogMetadataService blogPostService, MarkdownBlobService markdownBlobService)
+        public ServiceBusTrigger(ILoggerFactory loggerFactory, BlogMetadataService blogPostService, MarkdownBlobService markdownBlobService, HtmlBlobService htmlBlobService)
         {
             this._logger = loggerFactory.CreateLogger<ServiceBusTrigger>();
             _blogPostService = blogPostService;
             _markdownBlobService = markdownBlobService;
+            _htmlBlobService = htmlBlobService;
         }
 
         [FunctionName(nameof(RenderPost))]
-        public async Task RenderPost([ServiceBusTrigger(ServiceBusQueueNames.NewBlogPostQueue, Connection = "ServiceBusConnection")] QueueMessage message,
-        [Blob("posts/{Slug}.md", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent)
+        public async Task RenderPost([ServiceBusTrigger(ServiceBusQueueNames.NewBlogPostQueue, Connection = "ServiceBusConnection")] QueueMessage message)
         {
             _logger.LogInformation($"ServicBus Trigger {nameof(RenderPost)} was triggered for {message.Slug}");
-            await _markdownBlobService.UploadMarkdownAsync(postContent, message.Slug);
+            string content = await _markdownBlobService.GetMarkdownAsync(message.Slug);
+            await _htmlBlobService.UploadBlogHtmlContentAsync(content, message.Slug);
         }
 
         [FunctionName(nameof(PublishPost))]
