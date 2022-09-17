@@ -257,8 +257,8 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
       minTlsVersion: '1.2'
       appSettings: [
         {
-          name: 'AzureWebJobsStorage__accountName'
-          value: storageFunction.name
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'AzureStorageConnection'
@@ -339,8 +339,8 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
       minTlsVersion: '1.2'
       appSettings: [
         {
-          name: 'AzureWebJobsStorage__accountName'
-          value: storageFunction.name
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'AzureStorageConnection'
