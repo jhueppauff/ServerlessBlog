@@ -79,27 +79,8 @@ resource serviceBusSenderRoleDefenition 'Microsoft.Authorization/roleDefinitions
   name: serviceBusSenderRoleId
 }
 
-resource rbacFunctionServiceStorageWebOwner 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageWeb.id, functionFrontend.id, blogDataOwnerRoleId)
-  scope: storageWeb
-  properties: {
-    principalId: functionFrontend.identity.principalId
-    roleDefinitionId: blobDataOwnerRoleDefenition.id
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource rbacFunctionServiceStorageFunctionOwner 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageFunction.id, functionEngine.id, blogDataOwnerRoleId)
-  scope: storageFunction
-  properties: {
-    principalId: functionEngine.identity.principalId
-    roleDefinitionId: blobDataOwnerRoleDefenition.id
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource rbacFunctionServiceStorageWeb 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+// Frontend Storage
+resource rbacFunctionServiceStorageWebEngine 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storageWeb.id, functionFrontend.id, blogDataContributorRoleId)
   scope: storageWeb
   properties: {
@@ -109,7 +90,49 @@ resource rbacFunctionServiceStorageWeb 'Microsoft.Authorization/roleAssignments@
   }
 }
 
-resource rbacFunctionServiceStorageFunction 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource rbacFunctionServiceStorageWebFrontend 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageWeb.id, functionEngine.id, blogDataContributorRoleId)
+  scope: storageWeb
+  properties: {
+    principalId: functionEngine.identity.principalId
+    roleDefinitionId: blobDataContributorRoleDefenition.id
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Function Storage (2x Owner, Contributor)
+resource rbacFunctionServiceStorageFunctionOwnerFrontend 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageFunction.id, functionFrontend.id, blogDataOwnerRoleId)
+  scope: storageFunction
+  properties: {
+    principalId: functionFrontend.identity.principalId
+    roleDefinitionId: blobDataOwnerRoleDefenition.id
+    principalType: 'ServicePrincipal'
+  }
+}
+
+
+resource rbacFunctionServiceStorageFunctionFrontend 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageFunction.id, functionFrontend.id, serviceBusReceiverRoleId)
+  scope: storageFunction
+  properties: {
+    principalId: functionFrontend.identity.principalId
+    roleDefinitionId: blobDataContributorRoleDefenition.id
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource rbacFunctionServiceStorageFunctionOwnerEngine 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageFunction.id, functionEngine.id, blogDataOwnerRoleId)
+  scope: storageFunction
+  properties: {
+    principalId: functionEngine.identity.principalId
+    roleDefinitionId: blobDataOwnerRoleDefenition.id
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource rbacFunctionServiceStorageFunctionEngine 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storageFunction.id, functionEngine.id, serviceBusReceiverRoleId)
   scope: storageFunction
   properties: {
