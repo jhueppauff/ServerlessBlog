@@ -8,6 +8,7 @@ param cosmosDbisZoneRedundant bool
 param cosmosDbName string
 param staticWebAppName string
 param location string = 'westeurope'
+param serviceBusName string = 'sb-blog-we-prod-001'
 
 var appInsightName_var = replace(functionEngineName, 'func', 'appi')
 var appPlanName_var = replace(functionEngineName, 'func', 'plan')
@@ -33,6 +34,45 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   sku: {
     tier: 'Free'
     name: 'Free'
+  }
+}
+
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
+  name: serviceBusName
+  location: location
+  sku: {
+    name: 'Basic'
+  }
+}
+
+resource scheduledQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
+  name: 'scheduled'
+  parent: serviceBus
+}
+
+resource publishQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
+  name: 'published'
+  parent: serviceBus
+}
+
+var serviceBusReceiverRoleId = '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
+var serviceBusSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
+
+resource rbacFunctionServiceBusReceiver 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(serviceBus.id, functionEngine.id, serviceBusReceiverRoleId)
+  scope: serviceBus
+  properties: {
+    principalId: functionEngine.identity.principalId
+    roleDefinitionId: serviceBusReceiverRoleId
+  }
+}
+
+resource rbacFunctionServiceBusSender 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(serviceBus.id, functionEngine.id, serviceBusSenderRoleId)
+  scope: serviceBus
+  properties: {
+    principalId: functionEngine.identity.principalId
+    roleDefinitionId: serviceBusSenderRoleId
   }
 }
 
@@ -108,21 +148,6 @@ resource storageFunction 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   }
 }
 
-resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2021-09-01' = {
-  name: 'default'
-  parent: storageWeb
-}
-
-resource queueCreatedPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = {
-  name: 'created'
-  parent: queueService
-}
-
-resource queueScheduledPosts 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = {
-  name: 'scheduled'
-  parent: queueService
-}
-
 resource appPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: appPlanName_var
   location: location
@@ -166,6 +191,10 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: '~4'
+        }
+        {
+          name: 'ServiceBusConnection__fullyQualifiedNamespace'
+          value: '${serviceBus.name}.servicebus.windows.net'
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
