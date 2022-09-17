@@ -221,7 +221,7 @@ namespace Engine.Trigger
             }
 
             PublishRequest publishRequest = JsonConvert.DeserializeObject<PublishRequest>(requestBody);
-
+            _logger.LogInformation($"Received {nameof(PublishRequest)} for {publishRequest.Slug} at {publishRequest.PublishDate}");
             ServiceBusMessage message = new(Encoding.UTF8.GetBytes(publishRequest.Slug))
             {
                 ScheduledEnqueueTime = publishRequest.PublishDate
