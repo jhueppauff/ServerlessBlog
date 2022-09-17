@@ -195,10 +195,10 @@ namespace Engine.Trigger
             }
 
             await _markdownBlobService.UploadMarkdownAsync(content, slug);
-            await outputServiceBus.AddAsync(new QueueMessage()
-            {
-                Slug = slug
-            });
+
+            string body = System.Text.Json.JsonSerializer.Serialize(new QueueMessage() { Slug = slug});
+
+            await outputServiceBus.AddAsync(body);
             
             return new OkObjectResult(slug);
         }
@@ -222,7 +222,9 @@ namespace Engine.Trigger
 
             PublishRequest publishRequest = JsonConvert.DeserializeObject<PublishRequest>(requestBody);
             _logger.LogInformation($"Received {nameof(PublishRequest)} for {publishRequest.Slug} at {publishRequest.PublishDate}");
-            ServiceBusMessage message = new(Encoding.UTF8.GetBytes(publishRequest.Slug))
+
+            string body = System.Text.Json.JsonSerializer.Serialize(new QueueMessage() { Slug = publishRequest.Slug });
+            ServiceBusMessage message = new(Encoding.UTF8.GetBytes(body))
             {
                 ScheduledEnqueueTime = publishRequest.PublishDate
             };
