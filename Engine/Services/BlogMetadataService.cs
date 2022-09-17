@@ -1,18 +1,11 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using Azure.Storage.Blobs;
-using Markdig;
-using Markdig.Prism;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Engine.Constants;
 using System.Collections.Generic;
 using Engine.Model;
-using Microsoft.CodeAnalysis;
-using Engine.Trigger;
 
 namespace Engine.Services
 {
