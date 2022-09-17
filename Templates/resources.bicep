@@ -111,7 +111,6 @@ resource rbacFunctionServiceStorageFunctionOwnerFrontend 'Microsoft.Authorizatio
   }
 }
 
-
 resource rbacFunctionServiceStorageFunctionFrontend 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storageFunction.id, functionFrontend.id, serviceBusReceiverRoleId)
   scope: storageFunction
@@ -331,6 +330,9 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
   name: functionFrontendName
   location: location
   kind: 'functionapp'
+  identity: {
+     type: 'SystemAssigned'
+  }
   properties: {
     serverFarmId: appPlan.id
     siteConfig: {
