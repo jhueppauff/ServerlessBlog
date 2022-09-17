@@ -103,7 +103,6 @@ namespace Engine.Services
                 _logger.LogError(ex, $"There was an error retrieving blog metadata for {slug}");
                 throw;
             }
-            
         }
 
         public async Task SavePostMetadataAsync(PostMetadata postMetadata)
@@ -132,7 +131,6 @@ namespace Engine.Services
                 _logger.LogError(ex, $"There was an error saving blog metadata for {postMetadata.Slug}");
                 throw;
             }
-            
         }
     }
 }

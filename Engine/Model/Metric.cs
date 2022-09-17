@@ -2,7 +2,6 @@ using System;
 
 namespace ServerlessBlog.Engine.Model
 {
-
     public class Metric
     {
         /// <summary>
