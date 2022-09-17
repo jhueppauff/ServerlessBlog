@@ -58,12 +58,22 @@ resource publishQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
 var serviceBusReceiverRoleId = '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
 var serviceBusSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
 
+resource serviceBusReceiverRoleDefenition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup()
+  name: serviceBusReceiverRoleId
+}
+
+resource serviceBusSenderRoleDefenition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup()
+  name: serviceBusSenderRoleId
+}
+
 resource rbacFunctionServiceBusReceiver 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(serviceBus.id, functionEngine.id, serviceBusReceiverRoleId)
   scope: serviceBus
   properties: {
     principalId: functionEngine.identity.principalId
-    roleDefinitionId: serviceBusReceiverRoleId
+    roleDefinitionId: serviceBusReceiverRoleDefenition.id
     principalType: 'ServicePrincipal'
   }
 }
@@ -73,7 +83,7 @@ resource rbacFunctionServiceBusSender 'Microsoft.Authorization/roleAssignments@2
   scope: serviceBus
   properties: {
     principalId: functionEngine.identity.principalId
-    roleDefinitionId: serviceBusSenderRoleId
+    roleDefinitionId: serviceBusSenderRoleDefenition.id
     principalType: 'ServicePrincipal'
   }
 }
