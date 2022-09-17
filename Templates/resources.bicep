@@ -212,6 +212,10 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
           value: '${serviceBus.name}.servicebus.windows.net'
         }
         {
+          name: 'DeletionDays'
+          value: '32'
+        }
+        {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsight.properties.ConnectionString
         }

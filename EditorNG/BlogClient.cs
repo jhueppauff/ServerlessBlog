@@ -144,12 +144,12 @@ namespace EditorNG
             return responseMessage;
         }
 
-        public async Task PublishPostAsync(string slug, TimeSpan delay)
+        public async Task PublishPostAsync(string slug, DateTime publishDate)
         {
             var publishRequest = new PublishRequest()
             {
                 Slug = slug,
-                Delay = delay
+                PublishDate = publishDate
             };
 
             HttpRequestMessage publishRequestMessage = new(HttpMethod.Post, "/api/publish")

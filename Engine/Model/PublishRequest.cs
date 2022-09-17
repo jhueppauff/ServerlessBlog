@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Engine.Model
 {
-    internal class PublishRequest
+    public class PublishRequest
     {
         public string Slug { get; set; }
 
-        public TimeSpan Delay { get; set; }
+        public DateTime PublishDate { get; set; }
     }
 }

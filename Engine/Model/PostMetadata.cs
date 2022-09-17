@@ -1,5 +1,4 @@
-﻿
-namespace Engine
+﻿namespace Engine.Model
 {
     public class PostMetadata
     {
@@ -19,7 +18,7 @@ namespace Engine
 
         public string Title { get; set; }
 
-        public string Slug { get { return this.PartitionKey; } set { this.PartitionKey = value; this.RowKey = value; } }
+        public string Slug { get { return PartitionKey; } set { PartitionKey = value; RowKey = value; } }
 
         public string Published { get; set; }
 
