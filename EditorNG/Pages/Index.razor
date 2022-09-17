@@ -69,7 +69,7 @@ else
         <MudDatePicker PickerVariant="PickerVariant.Dialog" Label="Select Publish Date" @bind-Date="@publishDate" />
     </Body>
     <Footer>
-        <button type="button" class="btn btn-primary" @onclick="@(() => Publish())">Upload</button>
+        <button type="button" class="btn btn-primary" @onclick="@(() => Publish())">Publish</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal"
             @onclick="() => modal.Close()">Close</button>
     </Footer>
