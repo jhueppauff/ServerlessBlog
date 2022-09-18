@@ -5,7 +5,8 @@
 @using EditorNG.Models;
 @using System;
 @inject BlogClient blogClient;
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JSRuntime;
+@inject IDialogService DialogService;
 
 @attribute [Authorize]
 
@@ -41,8 +42,10 @@
                         }
                     }
                     <td>
-                        <button @onclick="@(() => Delete(post))" class="btn btn-danger"><span
-                        class="glyphicon glyphicon-remove-sign"></span> Delete</button>
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@((e) => DeletePost(post))">Delete</MudButton>
+                       @* <MudButton @onclick="@(() => DeletePost(post))" Variant="Variant.Filled" Color="Color.Error">Delete</MudButton>*@
+                        @*<button @onclick="@(() => Delete(post))" class="btn btn-danger"><span
+                        class="glyphicon glyphicon-remove-sign"></span> Delete</button>*@
                         @if (!post.IsPublic)
                         {
                             <button @onclick="() => ShowPublishOption(post)" class="btn btn-success">
@@ -98,6 +101,20 @@ else
         }
     }
 
+    private async Task DeletePost(PostMetadata post)
+    {
+        var parameters = new DialogParameters { ["post"] = post };
+
+        var dialog = DialogService.Show<DeleteBlogPostDialog>("Delete Post", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await blogClient.DeleteBlogPostAsync(post);
+            await Refresh();
+        }
+    }
+
     private async Task Refresh()
     {
         posts = await blogClient.GetBlogPostsAsync();
@@ -113,14 +130,5 @@ else
     {
         await blogClient.PublishPostAsync(selectedPost, publishDate ?? DateTime.UtcNow);
         modal.Close();
-    }
-
-    private async Task Delete(PostMetadata post)
-    {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the post '{post.Title}'?"))
-            return;
-
-        await blogClient.DeleteBlogPostAsync(post);
-        await Refresh();
     }
 }

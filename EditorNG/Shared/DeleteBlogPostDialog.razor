@@ -1,0 +1,36 @@
+﻿@using EditorNG.Models;
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3 mb-n1"/>
+            Delete Post?
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField Value="@post.Title" Label="Titel " ReadOnly="true"/>
+        <MudTextField Value="@post.Published" Label="Published" ReadOnly="true"/>
+    </DialogContent>
+    <DialogActions>
+         <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Error" OnClick="DeletePost">Delete Post</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public PostMetadata post { get; set; } = new PostMetadata();
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void DeletePost()
+    {
+        Snackbar.Add("Post Deleted", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(post.Slug));
+    }
+}

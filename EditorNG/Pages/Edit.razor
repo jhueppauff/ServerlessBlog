@@ -8,6 +8,7 @@
 @using EditorNG.Components;
 
 @inject BlogClient client;
+@inject ISnackbar Snackbar
 
 @code {
     [Parameter]
@@ -31,11 +32,11 @@
             <div class="row">
                 <div class="col-6">
                     <textarea id="postcontent" name="content" class="form-control" data-provide="markdown"
-                    @bind-value="editorBase.Body" @bind-value:event="oninput" data-iconlibrary="fa"
-                    rows="10"></textarea>
+                          @bind-value="editorBase.Body" @bind-value:event="oninput" data-iconlibrary="fa"
+                          rows="10"></textarea>
                 </div>
                 <div class="col-6">
-                    @((MarkupString) editorBase.Preview)
+                    @((MarkupString)editorBase.Preview)
                 </div>
             </div>
 
@@ -44,7 +45,7 @@
             <div class="form-group">
                 <label class="col-md-4 control-label" for="preview">Preview Text</label>
                 <textarea name="preview" class="form-control" type="text" placeholder="Preview" id="preview"
-                @bind="@post.Preview"></textarea>
+                      @bind="@post.Preview"></textarea>
             </div>
             <div class="row">
                 <div class="col-6">
@@ -57,13 +58,14 @@
                     <div class="form-group">
                         <label class="col-md-4 control-label" for="imageUrl">Image Url</label>
                         <input name="imageUrl" class="form-control" type="text" placeholder="https://blogimage"
-                        @bind="@post.ImageUrl" />
+                           @bind="@post.ImageUrl" />
                     </div>
                 </div>
             </div>
             <hr />
-            <button @onclick="@Save" class="btn btn-primary btn-success"><span
-                class="glyphicon glyphicon-cloud-upload"></span>Publish</button>
+            <button @onclick="@Save" class="btn btn-primary btn-success">
+                <span class="glyphicon glyphicon-cloud-upload"></span>Publish
+            </button>
         </div>
     </div>
 }
@@ -96,17 +98,30 @@ else
 
     private async Task Save()
     {
-        Console.WriteLine("Saving");
-
-        if (Slug == null)
+        if (!string.IsNullOrEmpty(post.Title) && !string.IsNullOrEmpty(post.Preview) && !string.IsNullOrEmpty(post.ImageUrl) && !string.IsNullOrEmpty(editorBase.Body))
         {
-            string slug = createSlug();
+            if (Slug == null)
+            {
+                string slug = createSlug();
 
-            post.PartitionKey = slug;
-            post.RowKey = slug;
+                post.PartitionKey = slug;
+                post.RowKey = slug;
+            }
+
+            try
+            {
+                await client.SaveBlogPostAsync(post, editorBase.Body);
+                Snackbar.Add("Saved Blog Post sucessfully", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"An error occured: {ex.Message}", Severity.Error);
+            }
         }
-
-        await client.SaveBlogPostAsync(post, editorBase.Body);
+        else
+        {
+            Snackbar.Add($"Not all required fields have been filled out.", Severity.Error);
+        }
     }
 
     private string createSlug()
