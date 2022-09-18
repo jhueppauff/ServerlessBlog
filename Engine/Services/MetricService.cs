@@ -1,9 +1,7 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using Engine.Constants;
-using Engine.Model;
+using ServerlessBlog.Engine.Constants;
 using Microsoft.Extensions.Logging;
-using ServerlessBlog.Engine.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Engine.Services
+namespace ServerlessBlog.Engine.Services
 {
     public class MetricService
     {

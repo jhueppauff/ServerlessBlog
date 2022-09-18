@@ -1,14 +1,14 @@
 ﻿using Azure.Identity;
-using Engine.Services;
+using ServerlessBlog.Engine.Services;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 
-[assembly: FunctionsStartup(typeof(Engine.Startup))]
+[assembly: FunctionsStartup(typeof(ServerlessBlog.Engine.Startup))]
 
-namespace Engine
+namespace ServerlessBlog.Engine
 {
     public class Startup : FunctionsStartup
     {

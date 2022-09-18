@@ -10,14 +10,14 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Engine.Services;
-using Engine.Model;
+using ServerlessBlog.Engine.Services;
+using ServerlessBlog.Engine.Model;
 using System.Text;
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
-using Engine.Constants;
+using ServerlessBlog.Engine.Constants;
 
-namespace Engine.Trigger
+namespace ServerlessBlog.Engine
 {
     public class HttpTrigger
     {

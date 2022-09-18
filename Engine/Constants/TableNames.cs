@@ -1,4 +1,4 @@
-﻿namespace Engine.Constants
+﻿namespace ServerlessBlog.Engine.Constants
 {
     internal static class TableNames
     {

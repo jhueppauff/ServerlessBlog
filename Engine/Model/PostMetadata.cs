@@ -1,4 +1,4 @@
-﻿namespace Engine.Model
+﻿namespace ServerlessBlog.Engine
 {
     public class PostMetadata
     {

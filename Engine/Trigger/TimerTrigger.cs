@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using Engine.Services;
+using ServerlessBlog.Engine.Services;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
-namespace Engine.Trigger
+namespace ServerlessBlog.Engine
 {
     public class TimerTrigger
     {

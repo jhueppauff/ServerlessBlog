@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
+    <RootNamespace>ServerlessBlog.Frontend</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="StaticPageFunctions.cs~RF1f4f7b61.TMP" />

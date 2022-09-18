@@ -1,20 +1,14 @@
-﻿using Azure.Core;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Engine.Constants;
-using Engine.Model;
-using Microsoft.AspNetCore.StaticFiles;
+using ServerlessBlog.Engine.Constants;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace Engine.Services
+namespace ServerlessBlog.Engine.Services
 {
     public class MarkdownBlobService
     {

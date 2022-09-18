@@ -1,7 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Engine.Constants;
-using Engine.Model;
+using ServerlessBlog.Engine.Constants;
+using ServerlessBlog.Engine.Model;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Engine.Services
+namespace ServerlessBlog.Engine.Services
 {
     public class ImageBlobService
     {

@@ -3,11 +3,10 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using Engine.Constants;
+using ServerlessBlog.Engine.Constants;
 using System.Collections.Generic;
-using Engine.Model;
 
-namespace Engine.Services
+namespace ServerlessBlog.Engine.Services
 {
     public class BlogMetadataService
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Engine.Constants
+namespace ServerlessBlog.Engine.Constants
 {
     public static class ServiceBusQueueNames
     {

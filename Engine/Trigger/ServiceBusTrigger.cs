@@ -7,11 +7,11 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Azure.Data.Tables;
 using Azure;
-using Engine.Services;
-using Engine.Model;
-using Engine.Constants;
+using ServerlessBlog.Engine.Services;
+using ServerlessBlog.Engine.Model;
+using ServerlessBlog.Engine.Constants;
 
-namespace Engine.Trigger
+namespace ServerlessBlog.Engine
 {
     public class ServiceBusTrigger
     {

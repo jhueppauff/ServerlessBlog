@@ -1,5 +1,5 @@
 ﻿using Azure.Storage.Blobs;
-using Engine.Constants;
+using ServerlessBlog.Engine.Constants;
 using Markdig;
 using Markdig.Prism;
 using Microsoft.Extensions.Logging;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Engine.Services
+namespace ServerlessBlog.Engine.Services
 {
     public class HtmlBlobService
     {
