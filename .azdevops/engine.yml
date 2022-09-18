@@ -40,7 +40,7 @@ stages:
         organization: 'jhueppauff'
         scannerMode: 'MSBuild'
         projectKey: 'jhueppauff_ServerlessBlog'
-        projectName: 'ServerlessBlog.Engine'
+        projectName: 'ServerlessBlog'
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
