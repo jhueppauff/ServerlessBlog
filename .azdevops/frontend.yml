@@ -34,6 +34,12 @@ stages:
       vmImage: $(vmImageName)
 
     steps:
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'jhueppauff'
+        scannerMode: 'MSBuild'
+        projectKey: 'jhueppauff_ServerlessBlog'
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
@@ -41,7 +47,10 @@ stages:
         projects: |
           $(workingDirectory)/*.csproj
         arguments: --output $(System.DefaultWorkingDirectory)/publish_output --configuration Release
-
+    - task: SonarCloudAnalyze@1
+    - task: SonarCloudPublish@1
+      inputs:
+        pollingTimeoutSec: '300'
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
