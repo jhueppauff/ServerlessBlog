@@ -14,21 +14,20 @@
 
 @attribute [Authorize]
 
-<select class="form-select form-select-lg mb-3" @onchange="LoadGraph">
+<MudSelect T="string" Label="Posts" AnchorOrigin="Origin.BottomCenter" ValueChanged="(e) => LoadGraph(e)">
     @if (posts != null)
     {
         @foreach (var post in posts)
         {
-            <option value="@post.Slug">@post.Slug</option>
+            <MudSelectItem  Value="@post.Slug"/>
         }
     }
-</select>
+</MudSelect>
 
 <PlotlyChart @bind-Config="config" @bind-Layout="layout" @bind-Data="data" @ref="chart" />
 
 @code {
     private List<PostMetadata> posts;
-    private string selectedPost;
     string[] Labels;
 
     Config config = new Config()
@@ -65,9 +64,8 @@
         Labels = Labels.Reverse().ToArray();
     }
 
-    private async Task LoadGraph(ChangeEventArgs e)
+    private async Task LoadGraph(string selectedPost)
     {
-        selectedPost = e.Value.ToString();
         var response = await blogClient.GetPageViewHistoryAsync(selectedPost);
         
         await chart.Clear();
