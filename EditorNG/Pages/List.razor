@@ -28,7 +28,7 @@
                         <td>@blob.Name</td>
                         <td>@blob.Url</td>
                         <td>
-                            <button class="btn btn-danger" @click="DeleteBlob(blob)">Delete</button>
+                            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => DeleteBlob(blob))">Delete</MudButton>
                         </td>
                     </tr>
                 }

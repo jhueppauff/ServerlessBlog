@@ -10,8 +10,8 @@
 
 @attribute [Authorize]
 
-<a href="/add" class="btn btn-success"><span class="glyphicon glyphicon-plus-sign"></span> Add</a>
-<button @onclick="@Refresh" class="btn btn-success"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
+<MudButton href="/add" Variant="Variant.Filled" Color="Color.Info">Add</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(() => Refresh())">Refresh</MudButton>
 
 @if (posts != null)
 {
@@ -35,25 +35,20 @@
                 <tr>
                     @foreach (PropertyInfo propertyInfo in post.GetType().GetProperties())
                     {
-                        @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name !=
-                       "ImageUrl")
+                        @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name != "ImageUrl")
                         {
                             <td>@propertyInfo.GetValue(post)</td>
                         }
                     }
                     <td>
                         <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@((e) => DeletePost(post))">Delete</MudButton>
-                       @* <MudButton @onclick="@(() => DeletePost(post))" Variant="Variant.Filled" Color="Color.Error">Delete</MudButton>*@
-                        @*<button @onclick="@(() => Delete(post))" class="btn btn-danger"><span
-                        class="glyphicon glyphicon-remove-sign"></span> Delete</button>*@
                         @if (!post.IsPublic)
                         {
-                            <button @onclick="() => ShowPublishOption(post)" class="btn btn-success">
+                            <MudButton OnClick="(e) => ShowPublishOption(post)" Variant="Variant.Filled" Color="Color.Success">
                                 <span class="glyphicon glyphicon-send"></span> Publish
-                             </button>
+                             </MudButton>
                         }
-                        <a href=@($"/Edit/{post.Slug}") Match="NavLinkMatch.All" class="btn btn-info"><span
-                        class="glyphicon glyphicon-edit"></span> Edit</a>
+                        <MudButton href=@($"/Edit/{post.Slug}") Match="NavLinkMatch.All" Variant="Variant.Filled" Color="Color.Success">Edit</MudButton>
                     </td>
                 </tr>
             }
@@ -72,9 +67,8 @@ else
         <MudDatePicker PickerVariant="PickerVariant.Dialog" Label="Select Publish Date" @bind-Date="@publishDate" />
     </Body>
     <Footer>
-        <button type="button" class="btn btn-primary" @onclick="@(() => Publish())">Publish</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal"
-            @onclick="() => modal.Close()">Close</button>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Publish())">Publish</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="() => modal.Close()">Close</MudButton>
     </Footer>
 </ModalDialog>
 

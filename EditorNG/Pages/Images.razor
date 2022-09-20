@@ -14,7 +14,7 @@
 <!-- List all blobs -->
 <h1>List all Images</h1>
 
-<button class="btn btn-primary" @onclick="() => modal.Open()">Upload new image</button>
+<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="() => modal.Open()">Upload new image</MudButton>
 
 <ModalDialog @ref="modal">
     <Title>Upload an image</Title>
@@ -28,8 +28,8 @@
         <a href="@link" target="_blank" rel="noopener noreferrer">@link</a>
     </Body>
     <Footer>
-        <button type="button" class="btn btn-primary" @onclick="@UploadFile">Upload</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => modal.Close()">Close</button>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="@UploadFile">Upload</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" data-dismiss="modal" @onclick="() => modal.Close()">Close</MudButton>
     </Footer>
 </ModalDialog>
 
@@ -52,7 +52,7 @@
                             <td>@blob.Name</td>
                             <td><a href="@blob.Url">@blob.Url</a></td>
                             <td>
-                                <button class="btn btn-danger" @onclick="@(() => DeleteBlob(blob))">Delete</button>
+                                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => DeleteBlob(blob))">Delete</MudButton>
                             </td>
                         </tr>
                     }
