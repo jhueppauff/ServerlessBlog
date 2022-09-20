@@ -1,7 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using ServerlessBlog.Engine.Constants;
-using ServerlessBlog.Engine.Model;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using System;

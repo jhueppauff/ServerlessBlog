@@ -11,7 +11,6 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using ServerlessBlog.Engine.Services;
-using ServerlessBlog.Engine.Model;
 using System.Text;
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;

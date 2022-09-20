@@ -1,14 +1,7 @@
-using System;
-using Azure.Storage.Blobs;
-using Markdig;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Azure.Data.Tables;
-using Azure;
 using ServerlessBlog.Engine.Services;
-using ServerlessBlog.Engine.Model;
 using ServerlessBlog.Engine.Constants;
 
 namespace ServerlessBlog.Engine
