@@ -205,7 +205,7 @@ namespace ServerlessBlog.Engine
         }
 
         [FunctionName(nameof(SchedulePostPublish))]
-        [OpenApiOperation(operationId: nameof(SavePostContent), tags: new[] { "BlogPosts" })]
+        [OpenApiOperation(operationId: nameof(SchedulePostPublish), tags: new[] { "BlogPosts" })]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiRequestBody("application/json", typeof(string), Required = true)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
@@ -278,7 +278,6 @@ namespace ServerlessBlog.Engine
         [FunctionName(nameof(GetPageViews))]
         [OpenApiOperation(operationId: nameof(GetPageViews), tags: new[] { "Metric" })]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the page view history")]
         public async Task<IActionResult> GetPageViews([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric")] HttpRequest request)
         {
