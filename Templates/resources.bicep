@@ -257,6 +257,10 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
       minTlsVersion: '1.2'
       appSettings: [
         {
+          name: 'OpenApi__Auth__TenantId'
+          value: '72e647c0-4a7a-4959-bee5-14c8615d8ae5'
+        }
+        {
           name: 'AzureWebJobsStorage'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
