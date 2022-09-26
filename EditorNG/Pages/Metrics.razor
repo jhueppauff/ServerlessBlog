@@ -14,93 +14,116 @@
 
 @attribute [Authorize]
 
-<MudSelect T="string" Label="Posts" AnchorOrigin="Origin.BottomCenter" ValueChanged="(e) => LoadGraph(e)">
+<MudSelect T="string" Label="Posts" MultiSelection="true" AnchorOrigin="Origin.BottomCenter" ValueChanged="(e) => LoadGraph(e)">
     @if (posts != null)
     {
         @foreach (var post in posts)
         {
-            <MudSelectItem  Value="@post.Slug"/>
+            <MudSelectItem Value="@post.Slug" />
         }
     }
 </MudSelect>
 
-<PlotlyChart @bind-Config="config" @bind-Layout="layout" @bind-Data="data" @ref="chart" />
+@if (loaded)
+{
+    <MudChart ChartType="ChartType.Line" ChartSeries="@Series" ChartOptions="@_options" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="100%"></MudChart>
+}
 
 @code {
+    private readonly ChartOptions _options = new();
+    private IEnumerable<string> selectedOptions { get; set; } = new HashSet<string>();
+    private List<string> selectedValues { get; set; } = new();
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+    public string[] XAxisLabels;
+    public string[] Dates;
+    public List<ChartSeries> Series = new List<ChartSeries>();
     private List<PostMetadata> posts;
-    string[] Labels;
-
-    Config config = new Config()
-        {
-            Responsive = true
-        };
-
-    Layout layout = new Layout()
-        {
-            Title = new Title { Text = "Page Views in the last 31 days" },
-            YAxis = new List<YAxis>
-        {
-            new()
-            {
-                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Page Views" }
-            }
-        }
-        };
-
-    PlotlyChart chart;
-    IList<ITrace> data;
-
+    private bool loaded = false;
 
     protected override async Task OnInitializedAsync()
     {
         posts = await blogClient.GetBlogPostsAsync();
 
-        Labels = new string[31];
+        XAxisLabels = new string[31];
+        Dates = new string[31];
+
         for (int i = 0; i < 31; i++)
         {
-            Labels[i] = DateTime.Now.AddDays(-i).ToShortDateString();
+            XAxisLabels[i] = DateTime.Now.AddDays(-i).ToString("dd.MM");
+            Dates[i] = DateTime.Now.AddDays(-i).ToShortDateString();
         }
 
-        Labels = Labels.Reverse().ToArray();
+        XAxisLabels = XAxisLabels.Reverse().ToArray();
+        Dates = Dates.Reverse().ToArray();
+
+        _options.YAxisLines = true;
+        _options.YAxisTicks = 5;
     }
 
-    private async Task LoadGraph(string selectedPost)
+    private Tuple<bool, string> GetLastChangedValue(string input)
     {
-        var response = await blogClient.GetPageViewHistoryAsync(selectedPost);
-        
-        await chart.Clear();
-        data.Clear();
-        var x = new List<DateOnly>();
-        var y = new List<int>();
+        List<string> selectedPosts = input.Split(", ").ToList();
+        string changedPost;
 
-        for (int i = 0; i < Labels.Length; i++)
+        if (selectedPosts.Count > selectedValues.Count)
         {
-            var metricDay = response.FirstOrDefault(x => x.Timestamp == Convert.ToDateTime(Labels[i]));
-            int views = metricDay != null ? metricDay.Views : 0;
+            // new entry
+            changedPost = selectedPosts.Except(selectedValues).FirstOrDefault();
+            selectedValues.Add(changedPost);
+            return new Tuple<bool, string>(true, changedPost);
+        }
+        else if (selectedPosts.Count <= selectedValues.Count)
+        {
+            // entry removed
+            changedPost = selectedValues.Except(selectedPosts).FirstOrDefault();
+            selectedValues.Remove(changedPost);
+            return new Tuple<bool, string>(false, changedPost);
+        }
+        else
+        {
+            return null;
+        }
+    }
 
-            if (i == 0)
+    private async Task LoadGraph(string selectedPosts)
+    {
+        var result = GetLastChangedValue(selectedPosts);
+        string selectedPost = result.Item2;
+
+        if (!result.Item1)
+        {
+            // Value was removed
+            if (!String.IsNullOrEmpty(selectedPosts))
             {
-                var scatter = new ScatterGl
-                    {
-                        Name = $"{views} Views",
-                        X = new List<object> { Labels[i] },
-                        Y = new List<object> { views },
-                        Fill = Plotly.Blazor.Traces.ScatterGlLib.FillEnum.ToZeroY,
-                        FillColor = true,
-                        ShowLegend = false,
-                        Mode = Plotly.Blazor.Traces.ScatterGlLib.ModeFlag.Lines | Plotly.Blazor.Traces.ScatterGlLib.ModeFlag.Markers
-                    };
-
-                await chart.AddTrace(scatter);
-                await chart.React();
+                Series.Remove(Series.FirstOrDefault(x => x.Name == selectedPost));
             }
             else
             {
-                string date = Labels[i];
-                await chart.ExtendTrace(date, views, -1);
+                Series.Clear();
+                loaded = false;
             }
         }
+        else
+        {
+            // Value was added
+            var response = await blogClient.GetPageViewHistoryAsync(selectedPost);
 
-        await chart.React();
+            List<double> data = new List<double>();
+
+            for (int i = 0; i < Dates.Length; i++)
+            {
+                var metricDay = response.FirstOrDefault(x => x.Timestamp == Convert.ToDateTime(Dates[i]));
+                int views = metricDay != null ? metricDay.Views : 0;
+                data.Add(views);
+            }
+
+            Series.Add(new ChartSeries()
+                {
+                    Name = selectedPost,
+                    Data = data.ToArray<double>()
+                });
+
+            loaded = true;
+        }
     }
 }

@@ -20,8 +20,7 @@
             <tr>
                 @foreach (PropertyInfo propertyInfo in posts[0].GetType().GetProperties())
                 {
-                    @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name !=
-                   "ImageUrl")
+                    @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name != "ImageUrl")
                     {
                         <th>@propertyInfo.Name</th>
                     }
