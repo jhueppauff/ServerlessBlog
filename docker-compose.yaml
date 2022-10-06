@@ -1,0 +1,46 @@
+version: '3.5'
+
+services:
+  storage:
+    container_name: azurite
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+
+  blogeditor:
+    container_name: blog-editor
+    build:
+      context: ./EditorNG/
+      dockerfile: dockerfile
+    ports:
+      - 8080:80
+  
+  frontend:
+    container_name: frontend
+    build: 
+      context: ./Frontend/
+      dockerfile: dockerfile
+    ports:
+      - 8081:80
+    environment:
+      - AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+      - AzureWebJobsScriptRoot=/home/site/wwwroot
+      - AzureStorageConnection=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://storage:10000/devstoreaccount1;QueueEndpoint=http://storage:10001/devstoreaccount1;TableEndpoint=http://storage:10002/devstoreaccount1;
+      - CosmosDBConnection=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://storage:10002/devstoreaccount1;
+
+  engine:
+    container_name: engine
+    build: 
+      context: ./Engine/
+      dockerfile: dockerfile
+    ports:
+      - 8082:80
+    environment:
+      - AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+      - AzureWebJobsScriptRoot=/home/site/wwwroot
+      - AzureStorageConnection=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://storage:10000/devstoreaccount1;QueueEndpoint=http://storage:10001/devstoreaccount1;TableEndpoint=http://storage:10002/devstoreaccount1;
+      - CosmosDBConnection=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://storage:10002/devstoreaccount1;
+      - DeletionDays=31
+      - ServiceBusConnection

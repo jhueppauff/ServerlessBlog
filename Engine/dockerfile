@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /Engine
+
+COPY Engine.csproj .
+RUN dotnet restore Engine.csproj
+COPY . .
+RUN dotnet build Engine.csproj -c Debug -o /app/build
+
+FROM build AS publish
+RUN dotnet publish Engine.csproj -c Debug -o /app/publish
+
+FROM mcr.microsoft.com/azure-functions/dotnet:4 AS final
+
+ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+
+WORKDIR /home/site/wwwroot
+
+COPY --from=publish /app/publish .
