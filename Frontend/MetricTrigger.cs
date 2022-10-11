@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Azure.WebJobs.Extensions.HttpApi;
 using Microsoft.AspNetCore.Http;
@@ -8,13 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Globalization;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Azure.Data.Tables;
-using System.Collections.Generic;
-using Azure;
 using ServerlessBlog.Frontend.Model;
 
 

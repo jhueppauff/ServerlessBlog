@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using Azure.Data.Tables;
 using System.Threading.Tasks;
-using ServerlessBlog.Frontend.Model;
 
 namespace ServerlessBlog.Frontend
 {
