@@ -257,10 +257,6 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
       minTlsVersion: '1.2'
       appSettings: [
         {
-          name: 'WEBSITE_SITE_NAME'
-          value: 'Engine'
-        }
-        {
           name: 'OpenApi__Auth__TenantId'
           value: '72e647c0-4a7a-4959-bee5-14c8615d8ae5'
         }
@@ -302,7 +298,7 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet'
+          value: 'dotnet-isolated'
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
@@ -346,10 +342,6 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
     siteConfig: {
       minTlsVersion: '1.2'
       appSettings: [
-        {
-          name: 'WEBSITE_SITE_NAME'
-          value: 'Frontend'
-        }
         {
           name: 'AzureWebJobsStorage'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
