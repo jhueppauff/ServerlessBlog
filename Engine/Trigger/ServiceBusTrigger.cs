@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using ServerlessBlog.Engine.Services;
 using ServerlessBlog.Engine.Constants;
+using Microsoft.Azure.Functions.Worker;
 
 namespace ServerlessBlog.Engine
 {
@@ -22,7 +22,7 @@ namespace ServerlessBlog.Engine
             _htmlBlobService = htmlBlobService;
         }
 
-        [FunctionName(nameof(RenderPost))]
+        [Function(nameof(RenderPost))]
         public async Task RenderPost([ServiceBusTrigger(ServiceBusQueueNames.NewBlogPostQueue, Connection = "ServiceBusConnection")] QueueMessage message)
         {
             _logger.LogInformation($"ServicBus Trigger {nameof(RenderPost)} was triggered for {message.Slug}");
@@ -30,7 +30,7 @@ namespace ServerlessBlog.Engine
             await _htmlBlobService.UploadBlogHtmlContentAsync(content, message.Slug);
         }
 
-        [FunctionName(nameof(PublishPost))]
+        [Function(nameof(PublishPost))]
         public async Task PublishPost([ServiceBusTrigger(ServiceBusQueueNames.PublishBlogPostQueue, Connection = "ServiceBusConnection")] QueueMessage message)
         {
             _logger.LogInformation($"ServicBus Trigger {nameof(PublishPost)} was triggered for {message.Slug}");
