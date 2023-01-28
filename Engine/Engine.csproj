@@ -3,8 +3,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <AnalysisLevel>7.0-recommended</AnalysisLevel>
-    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
-    <PublishReadyToRun>true</PublishReadyToRun>
+    <!--<RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <PublishReadyToRun>true</PublishReadyToRun>-->
     <RootNamespace>ServerlessBlog.Engine</RootNamespace>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
