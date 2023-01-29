@@ -44,7 +44,7 @@ namespace ServerlessBlog.Engine
                     services.AddAzureClients(clientBuilder =>
                     {
                         clientBuilder.AddBlobServiceClient(Environment.GetEnvironmentVariable("AzureStorageConnection"));
-                        clientBuilder.AddServiceBusClient(Environment.GetEnvironmentVariable("ServiceBusConnection"));
+                        clientBuilder.AddServiceBusClient(Environment.GetEnvironmentVariable("ServiceBusConnection__fullyQualifiedNamespace"));
                         clientBuilder.AddTableServiceClient(Environment.GetEnvironmentVariable("CosmosDBConnection"));
                         clientBuilder.UseCredential(new DefaultAzureCredential());
                     });
