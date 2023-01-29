@@ -1,24 +1,18 @@
-using System;
-using System.IO;
 using System.Net;
-using System.Threading.Tasks;
+using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using ServerlessBlog.Engine.Services;
-using System.Text;
-using Azure.Messaging.ServiceBus;
-using Newtonsoft.Json;
-using ServerlessBlog.Engine.Constants;
-using ServerlessBlog.Engine.Security;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Azure.Functions.Worker.Http;
-using static System.Reflection.Metadata.BlobBuilder;
+using Azure.Messaging.ServiceBus;
+using ServerlessBlog.Engine.Services;
+using ServerlessBlog.Engine.Constants;
+using ServerlessBlog.Engine.Security;
+using Newtonsoft.Json;
 using HttpMultipartParser;
-using Azure.Core;
 
 namespace ServerlessBlog.Engine
 {

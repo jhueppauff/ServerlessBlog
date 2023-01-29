@@ -7,14 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using ServerlessBlog.Engine.Services;
-using System;
-using System.Threading.Tasks;
 
 namespace ServerlessBlog.Engine
 {
     public static class Program
     {
-        public static async Task Main()
+        public static async Task Main(string[] args)
         {
             var host = new HostBuilder()
                 .ConfigureFunctionsWorkerDefaults(worker =>
