@@ -13,6 +13,7 @@ using ServerlessBlog.Engine.Constants;
 using ServerlessBlog.Engine.Security;
 using Newtonsoft.Json;
 using HttpMultipartParser;
+using System.Text.RegularExpressions;
 
 namespace ServerlessBlog.Engine
 {
@@ -202,6 +203,8 @@ namespace ServerlessBlog.Engine
                 using StreamReader reader = new(stream, Encoding.UTF8);
                 content = await reader.ReadToEndAsync().ConfigureAwait(false);
             }
+
+            content = Regex.Unescape(content);
 
             if (string.IsNullOrWhiteSpace(content))
             {
