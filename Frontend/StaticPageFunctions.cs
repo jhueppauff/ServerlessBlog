@@ -51,7 +51,7 @@ namespace ServerlessBlog.Frontend
                         tags += $"<li>{tag}</li>";
                     }
                 }
-                DateTime publishDate = DateTime.ParseExact(post.Published, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                //DateTime publishDate = DateTime.ParseExact(post.Published, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                 string html = @$"<div class='card mb-4 shadow-lg' style='background-color: #303030;'>
                                     <div class='card-body'>
                                         <div style='opacity: 0.8; height: 250px; width: 100%; background-size: cover; background-image: url({post.ImageUrl}); background-repeat: no-repeat; heigth: 250px;'>
@@ -64,7 +64,7 @@ namespace ServerlessBlog.Frontend
                                         </br>
                                         <div style='display: flex; justify-content: space-between; align-items: center;'>
                                             <a href='Post/{post.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>
-                                            <p class='card-text'>{publishDate.ToString("dd.MM.yyyy")}</p>
+                                            <p class='card-text'>{post.Published}</p>
                                         </div>
                                    </div>
                                 </div>";
