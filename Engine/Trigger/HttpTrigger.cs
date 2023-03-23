@@ -122,7 +122,7 @@ namespace ServerlessBlog.Engine
             string markdownText = await _markdownBlobService.GetMarkdownAsync(slug);
 
             var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(markdownText);
+            await response.WriteStringAsync(markdownText, Encoding.UTF8);
             return response;
         }
 
