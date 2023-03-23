@@ -63,7 +63,7 @@ namespace ServerlessBlog.Frontend
                                         </div>
                                         </br>
                                         <div style='display: flex; justify-content: space-between; align-items: center;'>
-                                            <a href='Post/{post.PartitionKey}' class=""btn btn-primary'>Read More ?</a>
+                                            <a href='Post/{post.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>
                                             <p class='card-text'>{post.Published}</p>
                                         </div>
                                    </div>
