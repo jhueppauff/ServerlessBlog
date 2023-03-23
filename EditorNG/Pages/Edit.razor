@@ -86,7 +86,7 @@ else
 
         if (Slug != null)
         {
-            editorBase.Body = HttpUtility.HtmlDecode(await client.GetBlogPostMarkdownAsync(Slug));
+            editorBase.Body = HttpUtility.HtmlDecode(await client.GetBlogPostMarkdownAsync(Regex.Unescape(Slug)));
             post = await client.GetBlogPostAsync(Slug);
         }
         else
