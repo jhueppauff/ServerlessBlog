@@ -67,7 +67,7 @@ namespace ServerlessBlog.Frontend
                 stringBuilder.AppendLine("</br>");
                 stringBuilder.AppendLine("<div style='display: flex; justify-content: space-between; align-items: center;'>");
                 stringBuilder.AppendLine($"<a href='Post/{post.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>");
-                stringBuilder.AppendLine($"<p class='card-text' style='color: white'>{publishDate.ToString("dd.MM.yyyy")}</p>");
+                stringBuilder.AppendLine($"<p class='card-text' style='color: gray'>{publishDate.ToString("dd.MM.yyyy")}</p>");
                 stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</div>");
