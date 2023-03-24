@@ -51,7 +51,8 @@ namespace ServerlessBlog.Frontend
                         tags += $"<li>{tag}</li>";
                     }
                 }
-                //DateTime publishDate = DateTime.ParseExact(post.Published, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                
+                DateTime publishDate = DateTime.Parse(post.Published);
 
                 StringBuilder stringBuilder= new();
                 stringBuilder.AppendLine("<div class='card mb-4 shadow-lg' style='background-color: #303030;'>");
@@ -66,7 +67,7 @@ namespace ServerlessBlog.Frontend
                 stringBuilder.AppendLine("</br>");
                 stringBuilder.AppendLine("<div style='display: flex; justify-content: space-between; align-items: center;'>");
                 stringBuilder.AppendLine($"<a href='Post/{post.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>");
-                stringBuilder.AppendLine($"<p class='card-text' style='color: white'>{post.Published}</p>");
+                stringBuilder.AppendLine($"<p class='card-text' style='color: white'>{publishDate.ToString("dd.MM.yyyy")}</p>");
                 stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</div>");
