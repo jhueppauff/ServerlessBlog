@@ -51,7 +51,7 @@ namespace ServerlessBlog.Frontend
                         tags += $"<li>{tag}</li>";
                     }
                 }
-                DateTime publishDate = DateTime.ParseExact(post.Published, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                //DateTime publishDate = DateTime.ParseExact(post.Published, "dd/MM/yyyy", CultureInfo.InvariantCulture);
 
                 StringBuilder stringBuilder= new();
                 stringBuilder.AppendLine("<div class='card mb-4 shadow-lg' style='background-color: #303030;'>");
