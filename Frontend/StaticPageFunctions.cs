@@ -59,16 +59,14 @@ namespace ServerlessBlog.Frontend
                 stringBuilder.AppendLine("<div class='card-body'>");
                 stringBuilder.AppendLine($"<div style='opacity: 0.8; height: 250px; width: 100%; background-size: cover; background-image: url({post.ImageUrl}); background-repeat: no-repeat; heigth: 250px;'>");
                 stringBuilder.AppendLine("</div>");
-                stringBuilder.AppendLine($"<h2 class='card-title'><a href='Post/{post.PartitionKey}'>{post.Title}</a></h2>");
+                stringBuilder.AppendLine($"<h2 class='card-title' style='margin-bottom: 0;'><a href='Post/{post.PartitionKey}'>{post.Title}</a></h2>");
+                stringBuilder.AppendLine($"<p class='card-text' style='color: gray; margin-top: -4px;'>{publishDate.ToString("dd.MM.yyyy")}</p>");
                 stringBuilder.AppendLine($"<p class='card-text' style='color: white;'>{post.Preview}</p>");
                 stringBuilder.AppendLine("<div class='tags'>");
                 stringBuilder.AppendLine(tags);
                 stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</br>");
-                stringBuilder.AppendLine("<div style='display: flex; justify-content: space-between; align-items: center;'>");
                 stringBuilder.AppendLine($"<a href='Post/{post.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>");
-                stringBuilder.AppendLine($"<p class='card-text' style='color: gray'>{publishDate.ToString("dd.MM.yyyy")}</p>");
-                stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</div>");
 
