@@ -18,13 +18,12 @@
     <table class="table table-striped table-hover">
         <thead>
             <tr>
-                @foreach (PropertyInfo propertyInfo in posts[0].GetType().GetProperties())
-                {
-                    @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name != "ImageUrl")
-                    {
-                        <th>@propertyInfo.Name</th>
-                    }
-                }
+                <th>Public</th>
+                <th>Title</th>
+                <th>Tags</th>
+                <th>Created on</th>
+                <th>Views</th>
+                <th>Intro</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -32,13 +31,34 @@
             @foreach (PostMetadata post in posts)
             {
                 <tr>
-                    @foreach (PropertyInfo propertyInfo in post.GetType().GetProperties())
-                    {
-                        @if (propertyInfo.Name != "PartitionKey" && propertyInfo.Name != "RowKey" && propertyInfo.Name != "ImageUrl")
+                    <td>
+                        @if (post.IsPublic)
                         {
-                            <td>@propertyInfo.GetValue(post)</td>
+                            <MudIcon Icon="@Icons.Material.Filled.Public" Color="Color.Success"/>
                         }
-                    }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.PublicOff" Color="Color.Error" />
+                        }
+                    </td>
+                    <td>
+                        <MudText Typo="Typo.subtitle1">@post.Title</MudText>
+                    </td>
+                    <td>
+                        @foreach (var tag in post.Tags.Split(';'))
+                        {
+                            <MudPaper Class="pa-1 ma-1">@tag</MudPaper>
+                        }
+                    </td>
+                    <td>
+                        <MudText Typo="Typo.body2">@post.Published</MudText>
+                    </td>
+                    <td>
+                        <MudText Typo="Typo.body2">@post.Views</MudText>
+                    </td>
+                    <td>
+                        <MudText Typo="Typo.body2">@post.Preview</MudText>
+                    </td>
                     <td>
                         <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@((e) => DeletePost(post))">Delete</MudButton>
                         @if (!post.IsPublic)

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ namespace EditorNG
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
+            builder.RootComponents.Add<HeadOutlet>("head::after");
 
             string endpoint = builder.Configuration.GetSection("Backend").GetValue<string>("Endpoint");
 

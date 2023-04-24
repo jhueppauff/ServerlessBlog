@@ -14,9 +14,9 @@
 <!-- List all blobs -->
 <h1>List all Images</h1>
 
-<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="() => modal.Open()">Upload new image</MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="() => uploadModal.Open()">Upload new image</MudButton>
 
-<ModalDialog @ref="modal">
+<ModalDialog @ref="uploadModal">
     <Title>Upload an image</Title>
     <Body>
         <div class="drag-drop-zone">
@@ -29,7 +29,17 @@
     </Body>
     <Footer>
         <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="@UploadFile">Upload</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Error" data-dismiss="modal" @onclick="() => modal.Close()">Close</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" data-dismiss="uploadModal" @onclick="() => uploadModal.Close()">Close</MudButton>
+    </Footer>
+</ModalDialog>
+
+<ModalDialog @ref="previewModal">
+    <Title>Preview</Title>
+    <Body>
+        <MudImage src="@link" Fluid="true" Class="rounded-lg" />
+    </Body>
+    <Footer>
+        <MudButton Variant="Variant.Filled" Color="Color.Info" data-dismiss="previewModal" @onclick="() => previewModal.Close()">Close</MudButton>
     </Footer>
 </ModalDialog>
 
@@ -52,6 +62,7 @@
                             <td>@blob.Name</td>
                             <td><a href="@blob.Url">@blob.Url</a></td>
                             <td>
+                                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(() => PreviewBlob(blob))">Preview</MudButton>
                                 <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => DeleteBlob(blob))">Delete</MudButton>
                             </td>
                         </tr>
@@ -69,9 +80,9 @@
 </div>
 
 @code {
-    private ModalDialog modal { get; set; }
+    private ModalDialog uploadModal { get; set; }
+    private ModalDialog previewModal { get; set; }
     private List<Blob> blobs;
-
     private string link = string.Empty;
     private string encodedLink = string.Empty;
     private const string DefaultStatus = "Drop a file here to upload it, or click to choose a file";
@@ -120,6 +131,12 @@
                 status = $"Error: {await response.Content.ReadAsStringAsync()}";
             }
         }
+    }
+
+    private void PreviewBlob(Blob blob)
+    {
+        link = blob.Url;
+        previewModal.Open();
     }
 
     private async Task<List<Blob>> GetBlobs()
