@@ -26,6 +26,45 @@ namespace ServerlessBlog.Frontend
             this.tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
         }
 
+        [FunctionName(nameof(GetStaticContent))]
+        public async Task<IActionResult> GetStaticContent(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/{filename}")] HttpRequest req, string filename,
+            ILogger log, ExecutionContext context)
+        {
+            log.LogInformation("Get Static Content");
+
+            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, $"../statics/${filename}.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
+
+            if(filename.EndsWith(".css"))
+            {
+                return new ContentResult
+                {
+                    Content = content,
+                    ContentType = "text/css"
+                };
+            }
+
+            if (filename.EndsWith(".js"))
+            {
+                return new ContentResult
+                {
+                    Content = content,
+                    ContentType = "text/javascript"
+                };
+            }
+
+            if (filename.EndsWith(".ico"))
+            {
+                return new ContentResult
+                {
+                    Content = content,
+                    ContentType = "image/x-icon"
+                };
+            }
+
+            return null;
+        }
+
         [FunctionName(nameof(IndexPage))]
         public async Task<IActionResult> IndexPage(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/")] HttpRequest req,
