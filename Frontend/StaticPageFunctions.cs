@@ -33,7 +33,7 @@ namespace ServerlessBlog.Frontend
         {
             log.LogInformation("Get Static Content");
 
-            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, $"../statics/${filename}.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
+            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, $"../statics/{filename}.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
 
             if(filename.EndsWith(".css"))
             {
