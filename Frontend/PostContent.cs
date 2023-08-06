@@ -1,41 +1,42 @@
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using Azure.Data.Tables;
 using System.Threading.Tasks;
+using ServerlessBlog.Frontend.HTTP;
 
 namespace ServerlessBlog.Frontend
 {
     public class PostContent
     {
         private readonly TableClient tableClient;
+        private readonly ILogger<PageProcessor> _logger;
 
-        public PostContent()
+        public PostContent(ILoggerFactory loggerFactory)
         {
             tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
+            _logger = loggerFactory.CreateLogger<PageProcessor>();
         }
         
-        [FunctionName("GetPost")]
-        public static IActionResult GetPost(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPost/{slug}")] HttpRequest req,
-            [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string content,
-            ILogger log)
+        [Function("GetPost")]
+        public IActionResult GetPost(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPost/{slug}")] HttpRequestData req,
+            [BlobInput("published/{slug}.html", Connection = "AzureStorageConnection")] string content)
         {
-            log.LogInformation("Get Post was triggered.");
+            _logger.LogInformation("Get Post was triggered.");
 
             return new OkObjectResult(content);
         }
 
-        [FunctionName("GetPostMetadata")]
+        [Function("GetPostMetadata")]
         public async Task<IActionResult> GetPostMetadata(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPostMetadata/{slug}")] HttpRequest req, string slug,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetPostMetadata/{slug}")] HttpRequestData req, string slug)
         {
-            log.LogInformation("Get PostMetadata was triggered");
+            _logger.LogInformation("Get PostMetadata was triggered");
 
             if (string.IsNullOrWhiteSpace(slug))
             {

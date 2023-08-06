@@ -2,11 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.WebJobs.Extensions.HttpApi;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Globalization;
@@ -14,65 +12,61 @@ using Azure.Data.Tables;
 using System.Collections.Generic;
 using Azure;
 using ServerlessBlog.Frontend.Model;
+using System.Net;
+using Microsoft.Azure.Functions.Worker.Http;
 
-namespace ServerlessBlog.Frontend
+namespace ServerlessBlog.Frontend.HTTP
 {
-    public class StaticPageFunctions : HttpFunctionBase
+    public class PageProcessor 
     {
-        private readonly TableClient tableClient;
+        private readonly TableClient _tableClient;
+        private readonly string _executionDirectory;
+        private readonly ILogger<PageProcessor> _logger;
 
-        public StaticPageFunctions(IHttpContextAccessor httpContextAccessor): base(httpContextAccessor)
+        public PageProcessor(ILoggerFactory loggerFactory)
         {
-            this.tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
+            _tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
+            _logger = loggerFactory.CreateLogger<PageProcessor>();
+            _executionDirectory = Environment.CurrentDirectory;
         }
 
-        [FunctionName(nameof(GetStaticContent))]
-        public async Task<IActionResult> GetStaticContent(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/{filename}")] HttpRequest req, string filename,
-            ILogger log, ExecutionContext context)
+        [Function(nameof(GetStaticContent))]
+        public async Task<HttpResponseData> GetStaticContent(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/{filename}")] HttpRequestData req, string filename, FunctionContext context)
         {
-            log.LogInformation("Get Static Content");
+            _logger.LogInformation("Get Static Content");
 
-            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, $"../statics/{filename}"), System.Text.Encoding.UTF8).ConfigureAwait(false);
-
-            if(filename.EndsWith(".css"))
+            string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, $"statics/{filename}"), Encoding.UTF8).ConfigureAwait(false);
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            
+            if (filename.EndsWith(".css"))
             {
-                return new ContentResult
-                {
-                    Content = content,
-                    ContentType = "text/css"
-                };
+                response.Headers.Add("Content-Type", "text/css; charset=utf-8");
+                await response.WriteStringAsync(content);
             }
 
             if (filename.EndsWith(".js"))
             {
-                return new ContentResult
-                {
-                    Content = content,
-                    ContentType = "text/javascript"
-                };
+                response.Headers.Add("Content-Type", "text/javascript; charset=utf-8");
+                await response.WriteStringAsync(content);
             }
 
             if (filename.EndsWith(".ico"))
             {
-                return new ContentResult
-                {
-                    Content = content,
-                    ContentType = "image/x-icon"
-                };
+                response.Headers.Add("Content-Type", "image/x-icon; charset=utf-8");
+                await response.WriteStringAsync(content);
             }
 
-            return null;
+            return response;
         }
 
-        [FunctionName(nameof(IndexPage))]
-        public async Task<IActionResult> IndexPage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/")] HttpRequest req,
-            ILogger log, ExecutionContext context)
+        [Function(nameof(IndexPage))]
+        public async Task<HttpResponseData> IndexPage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/")] HttpRequestData req)
         {
-            log.LogInformation("Get Blog Home");
+            _logger.LogInformation("Get Blog Home");
 
-            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, "../statics/index.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
+            string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, "statics/index.html"), Encoding.UTF8).ConfigureAwait(false);
 
             var posts = await GetPostsAsync();
 
@@ -90,10 +84,10 @@ namespace ServerlessBlog.Frontend
                         tags += $"<li>{tag}</li>";
                     }
                 }
-                
-                DateTime publishDate = DateTime.Parse(post.Published);
 
-                StringBuilder stringBuilder= new();
+                DateTime publishDate = DateTime.Parse(post.Published, CultureInfo.InvariantCulture);
+
+                StringBuilder stringBuilder = new();
                 stringBuilder.AppendLine("<div class='card mb-4 shadow-lg' style='background-color: #303030;'>");
                 stringBuilder.AppendLine("<div class='card-body'>");
                 stringBuilder.AppendLine($"<div style='opacity: 0.8; height: 250px; width: 100%; background-size: cover; background-image: url({post.ImageUrl}); background-repeat: no-repeat; heigth: 250px;'>");
@@ -115,18 +109,17 @@ namespace ServerlessBlog.Frontend
             content = content.Replace("$post$", indexContent.ToString());
             content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
 
-            var result = new ContentResult
-            {
-                Content = content,
-                ContentType = "text/html"
-            };
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "text/html; charset=utf-8");
 
-            return result;
+            await response.WriteStringAsync(content);
+
+            return response;
         }
 
         private async Task<List<PostMetadata>> GetPostsAsync()
         {
-            AsyncPageable<TableEntity> queryResultsMaxPerPage = tableClient.QueryAsync<TableEntity>(filter: $"IsPublic eq true", maxPerPage: 100);
+            AsyncPageable<TableEntity> queryResultsMaxPerPage = _tableClient.QueryAsync<TableEntity>(filter: $"IsPublic eq true", maxPerPage: 100);
 
             List<PostMetadata> postMetadata = new();
 
@@ -151,35 +144,40 @@ namespace ServerlessBlog.Frontend
             return postMetadata;
         }
 
-        [FunctionName(nameof(GetLicense))]
-        public IActionResult GetLicense([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "license")] HttpRequest req)
+        [Function(nameof(GetLicense))]
+        public async Task<HttpResponseData> GetLicense([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "license")] HttpRequestData req)
         {
-            return File("statics/license.html");
+            string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, "statics/license.html"), Encoding.UTF8);
+
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "text/html; charset=utf-8");
+
+            await response.WriteStringAsync(content);
+
+            return response;
         }
 
-        [FunctionName(nameof(PostPage))]
-        public async Task<IActionResult> PostPage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Post/{slug}")] HttpRequest req, string slug,
-            [Blob("published/{slug}.html", FileAccess.Read, Connection = "AzureStorageConnection")] string postContent,
-            ILogger log, ExecutionContext context)
+        [Function(nameof(PostPage))]
+        public async Task<HttpResponseData> PostPage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Post/{slug}")] HttpRequestData req, string slug,
+            [BlobInput("published/{slug}.html", Connection = "AzureStorageConnection")] string postContent)
         {
-            log.LogInformation("Get Blob Post Page");
-            var postMetadata = await tableClient.GetEntityAsync<TableEntity>(slug, slug);
+            _logger.LogInformation("Get Blob Post Page");
+            var postMetadata = await _tableClient.GetEntityAsync<TableEntity>(slug, slug);
 
-            string content = await System.IO.File.ReadAllTextAsync(Path.Combine(context.FunctionDirectory, "../statics/post.html"), System.Text.Encoding.UTF8).ConfigureAwait(false);
+            string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, "statics/post.html"), Encoding.UTF8).ConfigureAwait(false);
             content = content.Replace("$content$", postContent);
             content = content.Replace("$date$", postMetadata.Value.GetString("Published"));
             content = content.Replace("$titel$", postMetadata.Value.GetString("Title"));
             content = content.Replace("$description$", postMetadata.Value.GetString("Preview"));
             content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
 
-            var result = new ContentResult
-            {
-                Content = content,
-                ContentType = "text/html"
-            };
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "text/html; charset=utf-8");
 
-            return result;
+            await response.WriteStringAsync(content);
+
+            return response;
         }
     }
 }
