@@ -9,40 +9,46 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using Azure.Data.Tables;
 using ServerlessBlog.Frontend.Model;
+using System.Net;
+using Microsoft.AspNetCore.Http.HttpResults;
 
-
-namespace ServerlessBlog.Frontend
+namespace ServerlessBlog.Frontend.API
 {
-    public class MetricTrigger 
+    public class Metric
     {
         private readonly TableClient tableClient;
 
-        public MetricTrigger()
+        public Metric()
         {
-            this.tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metrics");
+            tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metrics");
         }
 
         [Function(nameof(ProcessMetric))]
-        public async Task<IActionResult> ProcessMetric(
+        public async Task<HttpResponseData> ProcessMetric(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/track")] HttpRequestData req)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
             if (string.IsNullOrWhiteSpace(requestBody))
             {
-                return new BadRequestObjectResult("missing request body");
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync("Missing request body");
+                return errorResponse;
             }
 
-            Metric body = JsonSerializer.Deserialize<Metric>(requestBody);
+            Model.Metric body = JsonSerializer.Deserialize<Model.Metric>(requestBody);
 
-            await tableClient.UpsertEntityAsync<TableEntity>(new TableEntity()
+            await tableClient.UpsertEntityAsync(new TableEntity()
             {
                 PartitionKey = Convert.ToString(body.Slug),
                 RowKey = Convert.ToString(body.SessionId),
                 ["Timestamp"] = DateTime.UtcNow
             });
 
-            return new OkResult();
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+
+            return response;
         }
     }
 }
