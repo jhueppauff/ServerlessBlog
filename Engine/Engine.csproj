@@ -15,6 +15,7 @@
     <PackageReference Include="Azure.Identity" Version="1.9.0" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.16.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
+    <PackageReference Include="HotChocolate.AzureFunctions.IsolatedProcess" Version="13.4.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.51" />
     <PackageReference Include="HttpMultipartParser" Version="8.2.0" />
     <PackageReference Include="Markdig" Version="0.32.0" />

@@ -242,14 +242,7 @@ namespace ServerlessBlog.Engine
             PublishRequest publishRequest = JsonConvert.DeserializeObject<PublishRequest>(requestBody);
             _logger.LogInformation($"Received {nameof(PublishRequest)} for {publishRequest!.Slug} at {publishRequest.PublishDate}");
 
-            string body = System.Text.Json.JsonSerializer.Serialize(new QueueMessage() { Slug = publishRequest.Slug });
-            ServiceBusMessage message = new(Encoding.UTF8.GetBytes(body))
-            {
-                ScheduledEnqueueTime = publishRequest.PublishDate
-            };
-
-            var sender = _serviceBusClient.CreateSender(ServiceBusQueueNames.PublishBlogPostQueue);
-            await sender.SendMessageAsync(message);
+            await _blogMetadataService.ScheduleBlogPostPublishAsync(publishRequest);
 
             return request.CreateResponse(HttpStatusCode.OK);
         }

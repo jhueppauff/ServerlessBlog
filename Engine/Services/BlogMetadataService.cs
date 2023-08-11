@@ -5,6 +5,8 @@ using System;
 using System.Threading.Tasks;
 using ServerlessBlog.Engine.Constants;
 using System.Collections.Generic;
+using Azure.Messaging.ServiceBus;
+using System.Text;
 
 namespace ServerlessBlog.Engine.Services
 {
@@ -12,11 +14,25 @@ namespace ServerlessBlog.Engine.Services
     {
         private readonly ILogger<BlogMetadataService> _logger;
         private readonly TableClient _tableClient;
+        private readonly ServiceBusClient _serviceBusClient;
 
-        public BlogMetadataService(ILoggerFactory loggerFactory, TableServiceClient tableServiceClient)
+        public BlogMetadataService(ILoggerFactory loggerFactory, TableServiceClient tableServiceClient, ServiceBusClient serviceBusClient)
         {
             this._logger = loggerFactory.CreateLogger<BlogMetadataService>();
             this._tableClient = tableServiceClient.GetTableClient(TableNames.MetadataTableName);
+            this._serviceBusClient = serviceBusClient;
+        }
+
+        public async Task ScheduleBlogPostPublishAsync(PublishRequest publishRequest)
+        {
+            string body = System.Text.Json.JsonSerializer.Serialize(new QueueMessage() { Slug = publishRequest.Slug });
+            ServiceBusMessage message = new(Encoding.UTF8.GetBytes(body))
+            {
+                ScheduledEnqueueTime = publishRequest.PublishDate
+            };
+
+            var sender = _serviceBusClient.CreateSender(ServiceBusQueueNames.PublishBlogPostQueue);
+            await sender.SendMessageAsync(message);
         }
 
         public async Task PublishBlogPostAsync(string slug)
@@ -90,12 +106,28 @@ namespace ServerlessBlog.Engine.Services
             }
         }
 
-        public async Task<TableEntity> GetBlogPostMetadataAsync(string slug)
+        public async Task<PostMetadata> GetBlogPostMetadataAsync(string slug)
         {
             try
             {
                 _logger.LogInformation($"Retrieved blog metadata sucessfully for {slug}");
-                return (await _tableClient.GetEntityAsync<TableEntity>(slug, slug)).Value;
+
+                var response = await _tableClient.GetEntityAsync<TableEntity>(slug, slug);
+
+                PostMetadata postMetadata = new()
+                {
+                    PartitionKey = response.Value.PartitionKey,
+                    RowKey = response.Value.RowKey,
+                    Slug = response.Value.GetString("Slug"),
+                    Title = response.Value.GetString("Title"),
+                    ImageUrl = response.Value.GetString("ImageUrl"),
+                    Tags = response.Value.GetString("Tags"),
+                    Published = response.Value.GetString("Published"),
+                    Preview = response.Value.GetString("Preview"),
+                    IsPublic = response.Value.GetBoolean("IsPublic") ?? false
+                };
+
+                return postMetadata;
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 ﻿using Azure.Identity;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using ServerlessBlog.Engine.GraphQL;
 using ServerlessBlog.Engine.Services;
 
 namespace ServerlessBlog.Engine
@@ -18,6 +20,11 @@ namespace ServerlessBlog.Engine
                 .ConfigureFunctionsWorkerDefaults(worker =>
                 {
                     worker.UseNewtonsoftJson();
+                })
+                .AddGraphQLFunction(b =>
+                {
+                    b.AddQueryType<Query>();
+                    b.AddMutationType<Mutations>();
                 })
                 .ConfigureOpenApi()
                 .ConfigureServices(services =>
