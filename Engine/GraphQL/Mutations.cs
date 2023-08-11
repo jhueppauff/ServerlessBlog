@@ -4,17 +4,14 @@ namespace ServerlessBlog.Engine.GraphQL
 {
     internal class Mutations
     {
-        private readonly MetricService _metricService;
-
         private readonly BlogMetadataService _metadataService;
 
         private readonly ImageBlobService _imageBlobService;
 
         private readonly MarkdownBlobService _markdownBlobService;
 
-        public Mutations(MetricService metricService, BlogMetadataService metadataService, ImageBlobService imageBlobService, MarkdownBlobService markdownBlobService)
+        public Mutations(BlogMetadataService metadataService, ImageBlobService imageBlobService, MarkdownBlobService markdownBlobService)
         {
-            _metricService = metricService;
             _metadataService = metadataService;
             _imageBlobService = imageBlobService;
             _markdownBlobService = markdownBlobService;
