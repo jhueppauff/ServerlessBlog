@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrontendTests", "Tests\Frontend\FrontendTests.csproj", "{618BCB82-2B9F-43EB-BB42-DB96998FB277}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EditorNG", "EditorNG\EditorNG.csproj", "{AA5AE1D1-78FF-49BF-AAD6-C0008213D751}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Frontend", "Frontend\Frontend.csproj", "{BF418A9C-DF43-4610-9B8F-4F81F0A03CE5}"
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{618BCB82-2B9F-43EB-BB42-DB96998FB277}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{618BCB82-2B9F-43EB-BB42-DB96998FB277}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{618BCB82-2B9F-43EB-BB42-DB96998FB277}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{618BCB82-2B9F-43EB-BB42-DB96998FB277}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AA5AE1D1-78FF-49BF-AAD6-C0008213D751}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AA5AE1D1-78FF-49BF-AAD6-C0008213D751}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA5AE1D1-78FF-49BF-AAD6-C0008213D751}.Release|Any CPU.ActiveCfg = Release|Any CPU
