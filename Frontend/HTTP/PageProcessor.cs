@@ -35,8 +35,22 @@ namespace ServerlessBlog.Frontend.HTTP
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/{filename}")] HttpRequestData req, string filename, FunctionContext context)
         {
             _logger.LogInformation("Get Static Content");
+            string path = Path.Combine(_executionDirectory, $"statics/{filename}");
 
-            string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, $"statics/{filename}"), Encoding.UTF8).ConfigureAwait(false);
+            if (!VerifyPathUnderRoot(path, _executionDirectory))
+            {
+                // Returning not found when directory is changed
+                var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
+                return notFoundResponse;
+            }
+
+            if (!File.Exists(path))
+            {
+                var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
+                return notFoundResponse;
+            }
+
+            string content = await File.ReadAllTextAsync(path, Encoding.UTF8);
             var response = req.CreateResponse(HttpStatusCode.OK);
             
             if (filename.EndsWith(".css"))
@@ -178,6 +192,13 @@ namespace ServerlessBlog.Frontend.HTTP
             await response.WriteStringAsync(content);
 
             return response;
+        }
+
+        private static bool VerifyPathUnderRoot(string pathToVerify, string rootPath = ".")
+        {
+            var fullRoot = Path.GetFullPath(rootPath);
+            var fullPathToVerify = Path.GetFullPath(pathToVerify);
+            return fullPathToVerify.StartsWith(fullRoot);
         }
     }
 }
