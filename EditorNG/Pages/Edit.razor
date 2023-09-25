@@ -9,6 +9,7 @@
 
 @inject BlogClient client;
 @inject ISnackbar Snackbar
+@inject IDialogService Dialog
 
 @code {
     [Parameter]
@@ -32,8 +33,8 @@
             <div class="row">
                 <div class="col-6">
                     <textarea id="postcontent" name="content" class="form-control" data-provide="markdown"
-                          @bind-value="editorBase.Body" @bind-value:event="oninput" data-iconlibrary="fa"
-                          rows="10"></textarea>
+                    @bind-value="editorBase.Body" @bind-value:event="oninput" data-iconlibrary="fa"
+                              rows="10"></textarea>
                 </div>
                 <div class="col-6">
                     @((MarkupString)editorBase.Preview)
@@ -45,7 +46,7 @@
             <div class="form-group">
                 <label class="col-md-4 control-label" for="preview">Preview Text</label>
                 <textarea name="preview" class="form-control" type="text" placeholder="Preview" id="preview"
-                      @bind="@post.Preview"></textarea>
+                @bind="@post.Preview"></textarea>
             </div>
             <div class="row">
                 <div class="col-6">
@@ -57,8 +58,14 @@
                 <div class="col-6">
                     <div class="form-group">
                         <label class="col-md-4 control-label" for="imageUrl">Image Url</label>
-                        <input name="imageUrl" class="form-control" type="text" placeholder="https://blogimage"
-                           @bind="@post.ImageUrl" />
+                        <div class="input-group w-auto">
+                            <input name="imageUrl" class="form-control" type="text" placeholder="https://blogimage"
+                            @bind="@post.ImageUrl" />
+
+                            <MudButton class="btn btn-primary" OnClick="(e) => OpenDialog()" Variant="Variant.Filled" Color="Color.Success" type="button" id="button-search-image" data-mdb-ripple-color="dark">
+                                <span class="glyphicon glyphicon-search"></span> Select
+                            </MudButton>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,11 +81,39 @@ else
     <p>Loading ...</p>
 }
 
+<ModalDialog @ref="modal">
+    <Title>Image search dialog</Title>
+
+    <Body>
+        @if (images != null)
+        {
+            <div class="row">
+                @foreach (var image in images)
+                {
+                    <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+                        <img src="@image.Url" class="img-fluid" alt="@image.Name" @onclick="(() => SelectImage(image.Url))"/>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            // Improve this to only be called when the modal dialog is opened
+            // To reduce unnecessary api calls
+            @LoadImages()
+            <p>loading ...</p>
+        }
+    </Body>
+    <Footer>
+        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="() => modal.Close()">Close</MudButton>
+    </Footer>
+</ModalDialog>
 
 @code {
+    private ModalDialog modal { get; set; }
     private PostMetadata post;
-
     private MarkdownEditorBase editorBase;
+    private List<Blob> images;
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,6 +129,22 @@ else
             editorBase.Body = string.Empty;
             post = new PostMetadata();
         }
+    }
+
+    private void SelectImage(string url)
+    {
+        post.ImageUrl = url;
+        modal.Close();
+    }
+
+    private void OpenDialog()
+    {
+        modal.Open();
+    }
+
+    private async Task LoadImages()
+    {
+        images = await client.GetBlobsAsync();
     }
 
     private async Task Save()
