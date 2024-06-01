@@ -97,7 +97,7 @@ namespace ServerlessBlog.Engine
             _logger.LogInformation($"Function {nameof(GetMarkdown)} was triggered for {slug}");
             if (String.IsNullOrEmpty(slug))
             {
-                slug = System.Web.HttpUtility.ParseQueryString(request!.Url!.Query!)["slug"]!;
+                slug = System.Web.HttpUtility.ParseQueryString(request!.Query.ToString())["slug"];
             }
 
             if (string.IsNullOrEmpty(slug) || string.IsNullOrWhiteSpace(slug))
