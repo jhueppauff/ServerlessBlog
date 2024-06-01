@@ -16,18 +16,11 @@ using System.Net;
 
 namespace ServerlessBlog.Frontend.HTTP
 {
-    public class PageProcessor 
+    public class PageProcessor(ILoggerFactory loggerFactory)
     {
-        private readonly TableClient _tableClient;
-        private readonly string _executionDirectory;
-        private readonly ILogger<PageProcessor> _logger;
-
-        public PageProcessor(ILoggerFactory loggerFactory)
-        {
-            _tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
-            _logger = loggerFactory.CreateLogger<PageProcessor>();
-            _executionDirectory = Environment.CurrentDirectory;
-        }
+        private readonly TableClient _tableClient = new(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
+        private readonly string _executionDirectory = Environment.CurrentDirectory;
+        private readonly ILogger<PageProcessor> _logger = loggerFactory.CreateLogger<PageProcessor>();
 
         [Function(nameof(GetStaticContent))]
         public async Task<IActionResult> GetStaticContent(
@@ -146,7 +139,7 @@ namespace ServerlessBlog.Frontend.HTTP
         {
             AsyncPageable<TableEntity> queryResultsMaxPerPage = _tableClient.QueryAsync<TableEntity>(filter: $"IsPublic eq true", maxPerPage: 100);
 
-            List<PostMetadata> postMetadata = new();
+            List<PostMetadata> postMetadata = [];
 
             await foreach (Page<TableEntity> page in queryResultsMaxPerPage.AsPages())
             {

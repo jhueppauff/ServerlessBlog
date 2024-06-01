@@ -10,16 +10,10 @@ using System;
 
 namespace ServerlessBlog.Frontend.API
 {
-    public class PostContent
+    public class PostContent(ILoggerFactory loggerFactory)
     {
-        private readonly TableClient tableClient;
-        private readonly ILogger<PageProcessor> _logger;
-
-        public PostContent(ILoggerFactory loggerFactory)
-        {
-            tableClient = new TableClient(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
-            _logger = loggerFactory.CreateLogger<PageProcessor>();
-        }
+        private readonly TableClient tableClient = new(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
+        private readonly ILogger<PageProcessor> _logger = loggerFactory.CreateLogger<PageProcessor>();
 
         [Function("GetPost")]
         public async Task<HttpResponseData> GetPost(

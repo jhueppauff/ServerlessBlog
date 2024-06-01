@@ -17,32 +17,20 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 
 namespace ServerlessBlog.Engine
 {
-    public class HttpTrigger
+    public class HttpTrigger(ILoggerFactory loggerFactory, ImageBlobService imageBlobService, MarkdownBlobService markdownBlobService,
+        BlogMetadataService blogPostService, HtmlBlobService htmlBlobService, MetricService metricService, ServiceBusClient serviceBusClient)
     {
-        private readonly ILogger<HttpTrigger> _logger;
-        private readonly ServiceBusClient _serviceBusClient;
-
-        private readonly ImageBlobService _imageBlobService;
-        private readonly MarkdownBlobService _markdownBlobService;
-        private readonly BlogMetadataService _blogMetadataService;
-        private readonly HtmlBlobService _htmlBlobService;
-        private readonly MetricService _metricService;
-
-        public HttpTrigger(ILoggerFactory loggerFactory, ImageBlobService imageBlobService, MarkdownBlobService markdownBlobService,
-            BlogMetadataService blogPostService, HtmlBlobService htmlBlobService, MetricService metricService, ServiceBusClient serviceBusClient)
-        {
-            _logger = loggerFactory.CreateLogger<HttpTrigger>();
-            _imageBlobService = imageBlobService;
-            _markdownBlobService = markdownBlobService;
-            _blogMetadataService = blogPostService;
-            _htmlBlobService = htmlBlobService;
-            _metricService = metricService;
-            _serviceBusClient = serviceBusClient;
-        }
+        private readonly ILogger<HttpTrigger> _logger = loggerFactory.CreateLogger<HttpTrigger>();
+        private readonly ServiceBusClient _serviceBusClient = serviceBusClient;
+        private readonly ImageBlobService _imageBlobService = imageBlobService;
+        private readonly MarkdownBlobService _markdownBlobService = markdownBlobService;
+        private readonly BlogMetadataService _blogMetadataService = blogPostService;
+        private readonly HtmlBlobService _htmlBlobService = htmlBlobService;
+        private readonly MetricService _metricService = metricService;
 
         #region ImageTrigger
         [Function(nameof(UploadImage))]
-        [OpenApiOperation(operationId: nameof(UploadImage), tags: new[] { "Image" })]
+        [OpenApiOperation(operationId: nameof(UploadImage), tags: ["Image"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "extension", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **extension** parameter")]
         [OpenApiRequestBody("application/x-www-form-urlencoded", typeof(Stream), Required = true, Description = "Body containing the Image")]
@@ -66,7 +54,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(GetImages))]
-        [OpenApiOperation(operationId: nameof(GetImages), tags: new[] { "Image" })]
+        [OpenApiOperation(operationId: nameof(GetImages), tags: ["Image"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow),Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the blob Url")]
         public async Task<HttpResponseData> GetImages([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Get", Route = "Image")] HttpRequestData request)
@@ -80,7 +68,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(DeleteImage))]
-        [OpenApiOperation(operationId: nameof(DeleteImage), tags: new[] { "Image" })]
+        [OpenApiOperation(operationId: nameof(DeleteImage), tags: ["Image"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "blobName", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **blobName** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
@@ -102,7 +90,7 @@ namespace ServerlessBlog.Engine
 
         #region BlogPostTrigger
         [Function(nameof(GetMarkdown))]
-        [OpenApiOperation(operationId: nameof(GetMarkdown), tags: new[] { "BlogPosts" })]
+        [OpenApiOperation(operationId: nameof(GetMarkdown), tags: ["BlogPosts"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the markdown")]
@@ -127,7 +115,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(DeletePost))]
-        [OpenApiOperation(operationId: nameof(DeletePost), tags: new[] { "BlogPosts" })]
+        [OpenApiOperation(operationId: nameof(DeletePost), tags: ["BlogPosts"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
@@ -149,7 +137,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(GetBlogPosts))]
-        [OpenApiOperation(operationId: nameof(GetBlogPosts), tags: new[] { "BlogPosts" })]
+        [OpenApiOperation(operationId: nameof(GetBlogPosts), tags: ["BlogPosts"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
         public async Task<HttpResponseData> GetBlogPosts([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post")] HttpRequestData request)
@@ -164,7 +152,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(GetBlogPost))]
-        [OpenApiOperation(operationId: nameof(GetBlogPost), tags: new[] { "BlogPosts" })]
+        [OpenApiOperation(operationId: nameof(GetBlogPost), tags: ["BlogPosts"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
@@ -179,7 +167,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(SavePostContent))]
-        [OpenApiOperation(operationId: nameof(SavePostContent), tags: new[] { "BlogPosts" })]
+        [OpenApiOperation(operationId: nameof(SavePostContent), tags: ["BlogPosts"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiRequestBody("text/plain", typeof(string), Required = true)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
@@ -198,7 +186,7 @@ namespace ServerlessBlog.Engine
             }
 
             string content = string.Empty;
-            using (Stream stream = request.Body)
+            await using (Stream stream = request.Body)
             {
                 using StreamReader reader = new(stream, Encoding.UTF8);
                 content = await reader.ReadToEndAsync().ConfigureAwait(false);
@@ -224,7 +212,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(SchedulePostPublish))]
-        [OpenApiOperation(operationId: nameof(SchedulePostPublish), tags: new[] { "BlogPosts" })]
+        [OpenApiOperation(operationId: nameof(SchedulePostPublish), tags: ["BlogPosts"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiRequestBody("application/json", typeof(string), Required = true)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
@@ -239,7 +227,8 @@ namespace ServerlessBlog.Engine
                 return request.CreateResponse(HttpStatusCode.BadRequest);
             }
 
-            PublishRequest publishRequest = JsonConvert.DeserializeObject<PublishRequest>(requestBody);
+            PublishRequest? publishRequest = JsonConvert.DeserializeObject<PublishRequest>(requestBody);
+            ArgumentNullException.ThrowIfNull(publishRequest);
             _logger.LogInformation($"Received {nameof(PublishRequest)} for {publishRequest!.Slug} at {publishRequest.PublishDate}");
 
             string body = System.Text.Json.JsonSerializer.Serialize(new QueueMessage() { Slug = publishRequest.Slug });
@@ -255,7 +244,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(SavePostMetadata))]
-        [OpenApiOperation(operationId: nameof(SavePostMetadata), tags: new[] { "BlogPosts" })]
+        [OpenApiOperation(operationId: nameof(SavePostMetadata), tags: ["BlogPosts"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiRequestBody("application/json", typeof(string), Required = true)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
@@ -268,7 +257,8 @@ namespace ServerlessBlog.Engine
                 return request.CreateResponse(HttpStatusCode.BadRequest);
             }
 
-            PostMetadata metadata = JsonConvert.DeserializeObject<PostMetadata>(requestBody);
+            PostMetadata? metadata = JsonConvert.DeserializeObject<PostMetadata>(requestBody);
+            ArgumentNullException.ThrowIfNull(metadata);
             await _blogMetadataService.SavePostMetadataAsync(metadata!);
 
             return request.CreateResponse(HttpStatusCode.OK);
@@ -277,7 +267,7 @@ namespace ServerlessBlog.Engine
 
         #region MetricTrigger
         [Function(nameof(GetPageViewHistory))]
-        [OpenApiOperation(operationId: nameof(GetPageViewHistory), tags: new[] { "Metric" })]
+        [OpenApiOperation(operationId: nameof(GetPageViewHistory), tags: ["Metric"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the page view history")]
@@ -298,7 +288,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(GetPageViews))]
-        [OpenApiOperation(operationId: nameof(GetPageViews), tags: new[] { "Metric" })]
+        [OpenApiOperation(operationId: nameof(GetPageViews), tags: ["Metric"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the page view history")]
         public async Task<HttpResponseData> GetPageViews([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric")] HttpRequestData request)
@@ -312,7 +302,7 @@ namespace ServerlessBlog.Engine
         }
 
         [Function(nameof(GetPageView))]
-        [OpenApiOperation(operationId: nameof(GetPageView), tags: new[] { "Metric" })]
+        [OpenApiOperation(operationId: nameof(GetPageView), tags: ["Metric"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the page view history")]
