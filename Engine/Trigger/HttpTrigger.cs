@@ -14,6 +14,7 @@ using HttpMultipartParser;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ServerlessBlog.Engine
 {
@@ -35,11 +36,11 @@ namespace ServerlessBlog.Engine
         [OpenApiParameter(name: "extension", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **extension** parameter")]
         [OpenApiRequestBody("application/x-www-form-urlencoded", typeof(Stream), Required = true, Description = "Body containing the Image")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the blob Url")]
-        public async Task<HttpResponseData> UploadImage([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Put", Route = "Image/Upload/{extension}")] HttpRequestData request, string extension)
+        public async Task<IActionResult> UploadImage([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Put", Route = "Image/Upload/{extension}")] HttpRequest request, string extension)
         {
             if (string.IsNullOrWhiteSpace(extension))
             {
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+                return new BadRequestResult();
             }
 
             _logger.LogInformation($"Function {nameof(UploadImage)} was triggered");
@@ -47,24 +48,20 @@ namespace ServerlessBlog.Engine
             var content = await MultipartFormDataParser.ParseAsync(request.Body);
             Uri blobUri = await _imageBlobService.UploadImageAsync(extension, content.Files[0].Data);
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(blobUri);
-
-            return response;
+            return new OkObjectResult(blobUri);
         }
-
+        
         [Function(nameof(GetImages))]
         [OpenApiOperation(operationId: nameof(GetImages), tags: ["Image"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the blob Url")]
-        public async Task<HttpResponseData> GetImages([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Get", Route = "Image")] HttpRequestData request)
+        public async Task<IActionResult> GetImages(
+            [HttpTrigger(AuthorizationLevel.Anonymous, methods: new[] { "GET" }, Route = "Image")] HttpRequest request)
         {
             _logger.LogInformation($"Function {nameof(GetImages)} was triggered");
             var blobs = await _imageBlobService.GetImagesAsync();
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(blobs);
-            return response;
+            return new OkObjectResult(blobs);
         }
 
         [Function(nameof(DeleteImage))]
@@ -72,19 +69,20 @@ namespace ServerlessBlog.Engine
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "blobName", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **blobName** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
-        public async Task<HttpResponseData> DeleteImage([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Delete", Route = "Image/{blobName}")] HttpRequestData request, string blobName)
+        public async Task<IActionResult> DeleteImage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, methods: new[] { "DELETE" }, Route = "Image/{blobName}")] HttpRequest request, string blobName)
         {
             _logger.LogInformation($"Function {nameof(DeleteImage)} was triggered for {blobName}");
             if (string.IsNullOrWhiteSpace(blobName))
             {
-                _logger.LogWarning("Missing blob name in request");
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+            _logger.LogWarning("Missing blob name in request");
+            return new BadRequestResult();
             }
 
             _logger.LogInformation($"Function {nameof(DeleteImage)} was triggered");
             await _imageBlobService.DeleteBlobAsync(blobName);
 
-            return request.CreateResponse(HttpStatusCode.OK);
+            return new OkResult();
         }
         #endregion
 
@@ -172,31 +170,26 @@ namespace ServerlessBlog.Engine
         [OpenApiRequestBody("text/plain", typeof(string), Required = true)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
-        public async Task<HttpResponseData> SavePostContent([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "post/{slug}")] HttpRequestData request, string slug)
+        public async Task<IActionResult> SavePostContent([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "post/{slug}")] HttpRequest request, string slug)
         {
             _logger.LogInformation($"Function {nameof(SavePostContent)} was triggered");
             if (string.IsNullOrWhiteSpace(slug))
             {
-                slug = System.Web.HttpUtility.ParseQueryString(request!.Url!.Query!)["slug"]!;
+            slug = request.Query["slug"];
             }
 
             if (string.IsNullOrWhiteSpace(slug))
             {
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+                return new BadRequestResult();
             }
 
-            string content = string.Empty;
-            await using (Stream stream = request.Body)
-            {
-                using StreamReader reader = new(stream, Encoding.UTF8);
-                content = await reader.ReadToEndAsync().ConfigureAwait(false);
-            }
+            string content = await new StreamReader(request.Body).ReadToEndAsync();
 
             content = Regex.Unescape(content);
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+                return new BadRequestResult();
             }
 
             await _markdownBlobService.UploadMarkdownAsync(content, slug);
@@ -206,9 +199,7 @@ namespace ServerlessBlog.Engine
 
             await sender.SendMessageAsync(new ServiceBusMessage(body));
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(slug);
-            return response;
+            return new OkObjectResult(slug);
         }
 
         [Function(nameof(SchedulePostPublish))]
@@ -216,15 +207,14 @@ namespace ServerlessBlog.Engine
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiRequestBody("application/json", typeof(string), Required = true)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
-        public async Task<HttpResponseData> SchedulePostPublish(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish")] HttpRequestData request)
+        public async Task<IActionResult> SchedulePostPublish(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "publish")] HttpRequest request)
         {
             _logger.LogInformation($"Function {nameof(SchedulePostPublish)} was triggered");
             string requestBody = await new StreamReader(request.Body).ReadToEndAsync();
-
             if (string.IsNullOrWhiteSpace(requestBody))
             {
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+                return new BadRequestResult();
             }
 
             PublishRequest? publishRequest = JsonConvert.DeserializeObject<PublishRequest>(requestBody);
@@ -240,7 +230,7 @@ namespace ServerlessBlog.Engine
             var sender = _serviceBusClient.CreateSender(ServiceBusQueueNames.PublishBlogPostQueue);
             await sender.SendMessageAsync(message);
 
-            return request.CreateResponse(HttpStatusCode.OK);
+            return new OkResult();
         }
 
         [Function(nameof(SavePostMetadata))]
@@ -248,20 +238,21 @@ namespace ServerlessBlog.Engine
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiRequestBody("application/json", typeof(string), Required = true)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
-        public async Task<HttpResponseData> SavePostMetadata([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "post")] HttpRequestData request)
+        public async Task<IActionResult> SavePostMetadata(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "post")] HttpRequest request)
         {
             string requestBody = await new StreamReader(request.Body).ReadToEndAsync();
 
             if (string.IsNullOrWhiteSpace(requestBody))
             {
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+                return new BadRequestResult();
             }
 
             PostMetadata? metadata = JsonConvert.DeserializeObject<PostMetadata>(requestBody);
             ArgumentNullException.ThrowIfNull(metadata);
             await _blogMetadataService.SavePostMetadataAsync(metadata!);
 
-            return request.CreateResponse(HttpStatusCode.OK);
+            return new OkResult();
         }
         #endregion
 
@@ -271,34 +262,30 @@ namespace ServerlessBlog.Engine
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the page view history")]
-        public async Task<HttpResponseData> GetPageViewHistory(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric/{slug}/history")] HttpRequestData request, string slug)
+        public async Task<IActionResult> GetPageViewHistory(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric/{slug}/history")] HttpRequest request, string slug)
         {
             _logger.LogInformation($"Function {nameof(GetPageViewHistory)} was triggered");
             if (string.IsNullOrWhiteSpace(slug))
             {
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+            return new BadRequestResult();
             }
 
             var pageMetric = await _metricService.GetPageMetricAsync(slug);
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(pageMetric);
-            return response;
+            return new OkObjectResult(pageMetric);
         }
 
         [Function(nameof(GetPageViews))]
         [OpenApiOperation(operationId: nameof(GetPageViews), tags: ["Metric"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the page view history")]
-        public async Task<HttpResponseData> GetPageViews([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric")] HttpRequestData request)
+        public async Task<IActionResult> GetPageViews([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric")] HttpRequest request)
         {
             _logger.LogInformation($"Function {nameof(GetPageViews)} was triggered");
             var pageViews = await _metricService.GetPageViews();
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(pageViews);
-            return response;
+            return new OkObjectResult(pageViews);
         }
 
         [Function(nameof(GetPageView))]
@@ -306,16 +293,13 @@ namespace ServerlessBlog.Engine
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the page view history")]
-        public async Task<HttpResponseData> GetPageView(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric/{slug}")] HttpRequestData request, string slug)
+        public async Task<IActionResult> GetPageView([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "metric/{slug}")] HttpRequest request, string slug)
         {
             _logger.LogInformation($"Function {nameof(GetPageView)} was triggered");
 
             var pageViews = await _metricService.GetPageViews(slug);
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(pageViews);
-            return response;
+            return new OkObjectResult(pageViews);
         }
         #endregion
     }
