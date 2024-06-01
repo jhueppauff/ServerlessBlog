@@ -55,7 +55,7 @@ namespace ServerlessBlog.Engine
 
         [Function(nameof(GetImages))]
         [OpenApiOperation(operationId: nameof(GetImages), tags: ["Image"])]
-        [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow),Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
+        [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the blob Url")]
         public async Task<HttpResponseData> GetImages([HttpTrigger(AuthorizationLevel.Anonymous, methods: "Get", Route = "Image")] HttpRequestData request)
         {
@@ -145,7 +145,7 @@ namespace ServerlessBlog.Engine
             _logger.LogInformation($"Function {nameof(GetBlogPosts)} was triggered");
 
             var metadata = await _blogMetadataService.GetBlogPostMetadataAsync();
-            
+
             var response = request.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(metadata);
             return response;
@@ -201,7 +201,7 @@ namespace ServerlessBlog.Engine
 
             await _markdownBlobService.UploadMarkdownAsync(content, slug);
 
-            string body = System.Text.Json.JsonSerializer.Serialize(new QueueMessage() { Slug = slug});
+            string body = System.Text.Json.JsonSerializer.Serialize(new QueueMessage() { Slug = slug });
             var sender = _serviceBusClient.CreateSender(ServiceBusQueueNames.NewBlogPostQueue);
 
             await sender.SendMessageAsync(new ServiceBusMessage(body));
