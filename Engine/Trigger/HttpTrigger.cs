@@ -92,7 +92,7 @@ namespace ServerlessBlog.Engine
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response containing the markdown")]
-        public async Task<HttpResponseData> GetMarkdown([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post/{slug}/markdown")] HttpRequestData request, string slug)
+        public async Task<IActionResult> GetMarkdown([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post/{slug}/markdown")] HttpRequest request, string slug)
         {
             _logger.LogInformation($"Function {nameof(GetMarkdown)} was triggered for {slug}");
             if (String.IsNullOrEmpty(slug))
@@ -102,14 +102,17 @@ namespace ServerlessBlog.Engine
 
             if (string.IsNullOrEmpty(slug) || string.IsNullOrWhiteSpace(slug))
             {
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+                return new BadRequestResult();
             }
 
             string markdownText = await _markdownBlobService.GetMarkdownAsync(slug);
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteStringAsync(markdownText, Encoding.UTF8);
-            return response;
+            return new ContentResult
+            {
+                Content = markdownText,
+                ContentType = "text/markdown; charset=utf-8",
+                StatusCode = (int)HttpStatusCode.OK
+            };
         }
 
         [Function(nameof(DeletePost))]
@@ -117,13 +120,13 @@ namespace ServerlessBlog.Engine
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
-        public async Task<HttpResponseData> DeletePost([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "post/{slug}")] HttpRequestData request, string slug)
+        public async Task<IActionResult> DeletePost([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "post/{slug}")] HttpRequest request, string slug)
         {
             _logger.LogInformation($"Function {nameof(DeletePost)} was triggered for {slug}");
 
             if (string.IsNullOrWhiteSpace(slug))
             {
-                return request.CreateResponse(HttpStatusCode.BadRequest);
+                return new BadRequestResult();
             }
 
             await _markdownBlobService.DeleteMarkdownAsync(slug);
@@ -131,22 +134,20 @@ namespace ServerlessBlog.Engine
 
             await _blogMetadataService.DeleteBlogPostAsync(slug);
 
-            return request.CreateResponse(HttpStatusCode.OK);
+            return new OkResult();
         }
 
         [Function(nameof(GetBlogPosts))]
         [OpenApiOperation(operationId: nameof(GetBlogPosts), tags: ["BlogPosts"])]
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
-        public async Task<HttpResponseData> GetBlogPosts([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post")] HttpRequestData request)
+        public async Task<IActionResult> GetBlogPosts([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post")] HttpRequest request)
         {
             _logger.LogInformation($"Function {nameof(GetBlogPosts)} was triggered");
 
             var metadata = await _blogMetadataService.GetBlogPostMetadataAsync();
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(metadata);
-            return response;
+            return new OkObjectResult(metadata);
         }
 
         [Function(nameof(GetBlogPost))]
@@ -154,14 +155,12 @@ namespace ServerlessBlog.Engine
         [OpenApiSecurity("Azure AD Authentication", SecuritySchemeType.OAuth2, Flows = typeof(ImplicitAuthFlow), Name = "Authorization", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "slug", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The **slug** parameter")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "The OK response")]
-        public async Task<HttpResponseData> GetBlogPost([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post/{slug}")] HttpRequestData request, string slug)
+        public async Task<IActionResult> GetBlogPost([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "post/{slug}")] HttpRequest request, string slug)
         {
             _logger.LogInformation($"Function {nameof(GetBlogPost)} was triggered");
             var metadata = await _blogMetadataService.GetBlogPostMetadataAsync(slug);
 
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(metadata);
-            return response;
+            return new OkObjectResult(metadata);
         }
 
         [Function(nameof(SavePostContent))]
