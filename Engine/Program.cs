@@ -15,7 +15,7 @@ namespace ServerlessBlog.Engine
         public static async Task Main(string[] args)
         {
             var host = new HostBuilder()
-                .ConfigureFunctionsWorkerDefaults(worker =>
+                .ConfigureFunctionsWebApplication(worker =>
                 {
                     worker.UseNewtonsoftJson();
                 })
@@ -48,7 +48,6 @@ namespace ServerlessBlog.Engine
                         clientBuilder.AddTableServiceClient(Environment.GetEnvironmentVariable("CosmosDBConnection"));
                         clientBuilder.UseCredential(new DefaultAzureCredential());
                     });
-
 
                     services.AddTransient<ImageBlobService>();
                     services.AddTransient<BlogMetadataService>();
