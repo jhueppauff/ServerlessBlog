@@ -1,29 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <AnalysisLevel>7.0-recommended</AnalysisLevel>
     <!--<RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <PublishReadyToRun>true</PublishReadyToRun>-->
     <RootNamespace>ServerlessBlog.Frontend</RootNamespace>
     <OutputType>Exe</OutputType>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>enabled</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="StaticPageFunctions.cs~RF1f4f7b61.TMP" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Data.Tables" Version="12.8.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.18.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Blobs" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.13.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk.Analyzers" Version="1.2.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage.Blobs" Version="5.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Include="WebJobs.Extensions.HttpApi" Version="2.0.3" />
+    <PackageReference Include="Azure.Data.Tables" Version="12.8.3" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.2.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Blobs" Version="6.4.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk.Analyzers" Version="1.2.1" />
+    <PackageReference Include="WebJobs.Extensions.HttpApi" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.22.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="1.3.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -39,5 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
 </Project>

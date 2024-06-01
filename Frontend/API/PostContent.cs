@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 using Azure.Data.Tables;
 using ServerlessBlog.Frontend.HTTP;
 using System.Net;
+using System.Threading.Tasks;
+using System;
 
 namespace ServerlessBlog.Frontend.API
 {

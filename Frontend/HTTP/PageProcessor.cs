@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using Azure;
 using ServerlessBlog.Frontend.Model;
 using System.Net;
-using Microsoft.Azure.Functions.Worker.Http;
 
 namespace ServerlessBlog.Frontend.HTTP
 {
@@ -31,52 +30,64 @@ namespace ServerlessBlog.Frontend.HTTP
         }
 
         [Function(nameof(GetStaticContent))]
-        public async Task<HttpResponseData> GetStaticContent(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/{filename}")] HttpRequestData req, string filename, FunctionContext context)
+        public async Task<IActionResult> GetStaticContent(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{filename}")] HttpRequest req, string filename)
         {
             _logger.LogInformation("Get Static Content");
             string path = Path.Combine(_executionDirectory, $"statics/{filename}");
 
             if (!VerifyPathUnderRoot(path, _executionDirectory))
             {
-                // Returning not found when directory is changed
-                var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
-                return notFoundResponse;
+            // Returning not found when directory is changed
+            return new NotFoundResult();
             }
 
             if (!File.Exists(path))
             {
-                var notFoundResponse = req.CreateResponse(HttpStatusCode.NotFound);
-                return notFoundResponse;
+            return new NotFoundResult();
             }
 
             string content = await File.ReadAllTextAsync(path, Encoding.UTF8);
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            
+            IActionResult response;
+
             if (filename.EndsWith(".css"))
             {
-                response.Headers.Add("Content-Type", "text/css; charset=utf-8");
-                await response.WriteStringAsync(content);
-            }
-
-            if (filename.EndsWith(".js"))
+            response = new ContentResult
             {
-                response.Headers.Add("Content-Type", "text/javascript; charset=utf-8");
-                await response.WriteStringAsync(content);
+                Content = content,
+                ContentType = "text/css; charset=utf-8",
+                StatusCode = (int)HttpStatusCode.OK
+            };
             }
-
-            if (filename.EndsWith(".ico"))
+            else if (filename.EndsWith(".js"))
             {
-                response.Headers.Add("Content-Type", "image/x-icon; charset=utf-8");
-                await response.WriteStringAsync(content);
+            response = new ContentResult
+            {
+                Content = content,
+                ContentType = "text/javascript; charset=utf-8",
+                StatusCode = (int)HttpStatusCode.OK
+            };
+            }
+            else if (filename.EndsWith(".ico"))
+            {
+            response = new ContentResult
+            {
+                Content = content,
+                ContentType = "image/x-icon; charset=utf-8",
+                StatusCode = (int)HttpStatusCode.OK
+            };
+            }
+            else
+            {
+            response = new BadRequestResult();
             }
 
             return response;
         }
 
         [Function(nameof(IndexPage))]
-        public async Task<HttpResponseData> IndexPage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "/")] HttpRequestData req)
+        public async Task<IActionResult> IndexPage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{ignored:maxlength(0)?}")] HttpRequest req, string ignored = "")
         {
             _logger.LogInformation("Get Blog Home");
 
@@ -123,12 +134,12 @@ namespace ServerlessBlog.Frontend.HTTP
             content = content.Replace("$post$", indexContent.ToString());
             content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/html; charset=utf-8");
-
-            await response.WriteStringAsync(content);
-
-            return response;
+            return new ContentResult
+            {
+                Content = content,
+                ContentType = "text/html; charset=utf-8",
+                StatusCode = (int)HttpStatusCode.OK
+            };
         }
 
         private async Task<List<PostMetadata>> GetPostsAsync()
@@ -159,21 +170,22 @@ namespace ServerlessBlog.Frontend.HTTP
         }
 
         [Function(nameof(GetLicense))]
-        public async Task<HttpResponseData> GetLicense([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "license")] HttpRequestData req)
+        public async Task<IActionResult> GetLicense(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "license")] HttpRequest req)
         {
             string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, "statics/license.html"), Encoding.UTF8);
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/html; charset=utf-8");
-
-            await response.WriteStringAsync(content);
-
-            return response;
+            return new ContentResult
+            {
+            Content = content,
+            ContentType = "text/html; charset=utf-8",
+            StatusCode = (int)HttpStatusCode.OK
+            };
         }
 
         [Function(nameof(PostPage))]
-        public async Task<HttpResponseData> PostPage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Post/{slug}")] HttpRequestData req, string slug,
+        public async Task<IActionResult> PostPage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Post/{slug}")] HttpRequest req, string slug,
             [BlobInput("published/{slug}.html", Connection = "AzureStorageConnection")] string postContent)
         {
             _logger.LogInformation("Get Blob Post Page");
@@ -186,12 +198,12 @@ namespace ServerlessBlog.Frontend.HTTP
             content = content.Replace("$description$", postMetadata.Value.GetString("Preview"));
             content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/html; charset=utf-8");
-
-            await response.WriteStringAsync(content);
-
-            return response;
+            return new ContentResult
+            {
+            Content = content,
+            ContentType = "text/html; charset=utf-8",
+            StatusCode = (int)HttpStatusCode.OK
+            };
         }
 
         private static bool VerifyPathUnderRoot(string pathToVerify, string rootPath = ".")
