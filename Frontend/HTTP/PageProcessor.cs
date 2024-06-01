@@ -203,7 +203,7 @@ namespace ServerlessBlog.Frontend.HTTP
         {
             var fullRoot = Path.GetFullPath(rootPath);
             var fullPathToVerify = Path.GetFullPath(pathToVerify);
-            return fullPathToVerify.StartsWith(fullRoot);
+            return fullPathToVerify.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
