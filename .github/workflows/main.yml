@@ -1,0 +1,10 @@
+name: 'serverless blog'
+
+on: 
+  push:
+    branches: ['main']
+
+jobs:
+  build: 
+    name: 'frontend'
+    uses: ./.github/workflows/build-frontend.yml

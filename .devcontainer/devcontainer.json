@@ -7,7 +7,7 @@
 		"args": { 
 			// Update 'VARIANT' to pick a .NET Core version: 3.1, 6.0
 			// Append -bullseye or -focal to pin to an OS version.
-			"VARIANT": "6.0-bullseye",
+			"VARIANT": "8.0-bullseye",
 			// Options
 			"NODE_VERSION": "lts/*"
 		}
@@ -22,7 +22,8 @@
 				"ms-dotnettools.csharp",
 				"ms-vscode.vscode-node-azure-pack",
 				"ms-azuretools.vscode-bicep",
-				"vscode-icons-team.vscode-icons"
+				"vscode-icons-team.vscode-icons",
+				"github.vscode-github-actions"
 			]
 		}
 	},

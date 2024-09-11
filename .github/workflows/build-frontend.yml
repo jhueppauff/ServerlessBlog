@@ -1,0 +1,28 @@
+name: 'build frontend'
+on:
+  workflow_call:
+
+jobs:
+  build: 
+    runs-on: [ ubuntu-latest ]
+    steps:
+      - name: '⬇️ Checkout code'
+        uses: actions/checkout@v3
+      - name: '🏗️ Setup dotnet'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+      - name: '🏗️ dotnet restore'
+        run: dotnet restore
+      - name: '🏗️ dotnet build'
+        run: dotnet build
+      - name: '🏗️ dotnet publish'
+        run: dotnet publish
+      - name: '🧪 Test with dotnet'
+        run: dotnet test --logger trx --results-directory "TestResults"
+      - name: '⬆️ Upload build artifacts'
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts
+          path: |
+            Frontend/bin/Release/*
