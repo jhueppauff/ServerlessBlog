@@ -255,6 +255,7 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: appPlan.id
     siteConfig: {
       minTlsVersion: '1.2'
+      netFrameworkVersion: 'v8.0',
       appSettings: [
         {
           name: 'OpenApi__Auth__TenantId'
@@ -341,6 +342,7 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: appPlan.id
     siteConfig: {
       minTlsVersion: '1.2'
+      netFrameworkVersion: 'v8.0',
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
