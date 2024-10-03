@@ -1,4 +1,4 @@
-name: Azure Static Web Apps CI/CD
+name: Admin Portal
 
 on:
     workflow_call: 
