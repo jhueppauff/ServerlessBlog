@@ -15,13 +15,11 @@ jobs:
     with:
         working_directory: 'Engine'
 
-  frontend:
-    uses: ./.github/workflows/frontend.yml
-    secrets: 
-        AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_VICTORIOUS_SAND_013560403 }}
-        GITHUB_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    with: 
-        appLocation: 'EditorNG'
-        outputLocation: 'wwwroot'
-
-    
+#  frontend:
+#    uses: ./.github/workflows/frontend.yml
+#    secrets: 
+#        AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_VICTORIOUS_SAND_013560403 }}
+#        GITHUB_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#    with: 
+#        appLocation: 'EditorNG'
+#        outputLocation: 'wwwroot'
