@@ -1,0 +1,22 @@
+name: 'Serverless Blog'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+        working_directory: 'Engine'
+
+  frontend:
+    uses: ./.github/workflows/frontend.yml
+    with: 
+        working_directory: 'Frontend'
+    

@@ -1,0 +1,57 @@
+name: build-engine
+
+on: 
+    workflow_call: 
+      inputs:
+        DOTNET_VERSION:
+          required: false
+          type: string
+          default: '8.0.x'
+        DOTNET_CONFIGURATION:
+          type: string
+          required: false
+          default: 'Release'
+        WORKING_DIRECTORY:
+          type: string
+          required: false
+          default: '.'
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup dotnet ${{ inputs.DOTNET_VERSION }}
+              uses: actions/setup-dotnet@v3
+              with:
+                dotnet-version: ${{ inputs.DOTNET_VERSION }}
+
+            - uses: actions/cache@v3
+              with:
+                path: ~/.nuget/packages
+                key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+                restore-keys: |
+                  ${{ runner.os }}-nuget-
+
+            - name: Install dependencies
+              run: dotnet restore
+              working-directory: ${{ inputs.WORKING_DIRECTORY }}
+
+            - name: Build
+              run: dotnet build --configuration ${{ inputs.DOTNET_CONFIGURATION }} --no-restore
+              working-directory: ${{ inputs.WORKING_DIRECTORY }}
+
+            #- name: Test with the dotnet CLI
+            #  run: dotnet test
+            #- name: Upload dotnet test results
+            #  uses: actions/upload-artifact@v3
+            #  with:
+            #    name: dotnet-results-${{ inputs.DOTNET_VERSION }}
+            #    path: TestResults-${{ inputs.DOTNET_VERSION }}
+            #  # Use always() to always run this step to publish test results when there are test failures
+            #  if: ${{ always() }}
+
+            - name: dotnet publish
+              run: dotnet publish -c Release -o /publish
+              working-directory: ${{ inputs.WORKING_DIRECTORY }}
