@@ -1,7 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using EditorNG.States
+@inherits LayoutComponentBase
 
 <MudLayout>
-	<AppBar OnSidebarToggled="ToggleSidebar" OnThemeToggled="ToggleTheme" />
+	<AppBar OnSidebarToggled="ToggleSidebar" />
 
 	<NavMenu SideBarOpen="_sidebarOpen" />
 
@@ -12,17 +13,16 @@
 	</MudMainContent>
 </MudLayout>
 
-<MudThemeProvider Theme="_currentTheme" />
+<MudThemeProvider Theme="_currentTheme" @bind-IsDarkMode="@_isDarkMode" />
 
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
 @code {
-    private MudTheme _currentTheme = new MudTheme();
-    private bool _sidebarOpen = true;
+	private MudTheme _currentTheme = new MudTheme();
 
-
-    private void ToggleTheme(MudTheme changedTheme) => _currentTheme = changedTheme;
+	private bool _sidebarOpen = true;
+    private bool _isDarkMode = true;
 
     private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;
 }

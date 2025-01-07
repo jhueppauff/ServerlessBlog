@@ -10,76 +10,57 @@
 
 @attribute [Authorize]
 
-<MudButton href="/add" Variant="Variant.Filled" Color="Color.Info">Add</MudButton>
-<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(() => Refresh())">Refresh</MudButton>
-
-@if (posts != null)
-{
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th scope="col">Public</th>
-                <th scope="col">Title</th>
-                <th scope="col">Tags</th>
-                <th scope="col">Created on</th>
-                <th scope="col">Views</th>
-                <th scope="col">Intro</th>
-                <th scope="col">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (PostMetadata post in posts)
+<MudTable Items="@posts" Striped="@true" Hover="@true" Loading="@loading">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Blog Posts</MudText>
+        <MudSpacer />
+        <MudButtonGroup>
+            <MudFab href="/add" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Add</MudFab>
+            <MudFab Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.Refresh" OnClick="@(() => Refresh())">Refresh</MudFab>
+        </MudButtonGroup>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Public</MudTh>
+        <MudTh>Title</MudTh>
+        <MudTh>Tags</MudTh>
+        <MudTh>Created on</MudTh>
+        <MudTh>Views</MudTh>
+        <MudTh>Intro</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Public">
+            @if (context.IsPublic)
             {
-                <tr>
-                    <td>
-                        @if (post.IsPublic)
-                        {
-                            <MudIcon Icon="@Icons.Material.Filled.Public" Color="Color.Success" />
-                        }
-                        else
-                        {
-                            <MudIcon Icon="@Icons.Material.Filled.PublicOff" Color="Color.Error" />
-                        }
-                    </td>
-                    <td>
-                        <MudText Typo="Typo.subtitle1">@post.Title</MudText>
-                    </td>
-                    <td>
-                        @foreach (var tag in post.Tags.Split(';'))
-                        {
-                            <MudPaper Class="pa-1 ma-1">@tag</MudPaper>
-                        }
-                    </td>
-                    <td>
-                        <MudText Typo="Typo.body2">@post.Published</MudText>
-                    </td>
-                    <td>
-                        <MudText Typo="Typo.body2">@post.Views</MudText>
-                    </td>
-                    <td>
-                        <MudText Typo="Typo.body2">@post.Preview</MudText>
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@((e) => DeletePost(post))">Delete</MudButton>
-                                @if (!post.IsPublic)
-                                {
-                                    <MudButton OnClick="(e) => ShowPublishOption(post)" Variant="Variant.Filled" Color="Color.Success">
-                                        <span class="glyphicon glyphicon-send"></span> Publish
-                                    </MudButton>
-                                }
-                                <MudButton href=@($"/Edit/{post.Slug}") Match="NavLinkMatch.All" Variant="Variant.Filled" Color="Color.Success">Edit</MudButton>
-                        </div>
-                    </td>
-                </tr>
+                <MudIcon Icon="@Icons.Material.Filled.Public" Color="Color.Success" />
             }
-        </tbody>
-    </table>
-}
-else
-{
-    <EditorNG.Components.Loading />
-}
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.PublicOff" Color="Color.Error" />
+            }
+        </MudTd>
+        <MudTd DataLabel="Title">@context.Title</MudTd>
+        <MudTd DataLabel="Tags">
+            @foreach (var tag in context.Tags.Split(';'))
+            {
+                <MudPaper Class="pa-1 ma-1">@tag</MudPaper>
+            }
+        </MudTd>
+        <MudTd DataLabel="Created on">@context.Published</MudTd>
+        <MudTd DataLabel="Views">@context.Views</MudTd>
+        <MudTd DataLabel="Intro">@context.Preview</MudTd>
+        <MudTd DataLabel="Actions">
+            <MudFab Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@((e) => DeletePost(context))">Delete</MudFab>
+            @if (!context.IsPublic)
+            {
+                <MudFab StartIcon="@Icons.Material.Filled.Public" OnClick="(e) => ShowPublishOption(context)" Variant="Variant.Filled" Color="Color.Success">
+                    <span class="glyphicon glyphicon-send"></span> Publish
+                </MudFab>
+            }
+            <MudFab href=@($"/Edit/{context.Slug}") StartIcon="@Icons.Material.Filled.Edit" Match="NavLinkMatch.All" Variant="Variant.Filled" Color="Color.Success">Edit</MudFab>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
 <ModalDialog @ref="modal">
     <Title>Publish Dialog</Title>
@@ -97,7 +78,8 @@ else
     private ModalDialog modal { get; set; }
     private DateTime? publishDate = DateTime.Now;
     private string selectedPost;
-    private List<PostMetadata> posts;
+    private bool loading = true;
+    private List<PostMetadata> posts = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -123,7 +105,7 @@ else
         var dialog = DialogService.Show<DeleteBlogPostDialog>("Delete Post", parameters);
         var result = await dialog.Result;
 
-        if (!result.Cancelled)
+        if (!result.Canceled)
         {
             await blogClient.DeleteBlogPostAsync(post);
             await Refresh();
@@ -132,7 +114,9 @@ else
 
     private async Task Refresh()
     {
+        loading = true;
         posts = await blogClient.GetBlogPostsAsync();
+        loading = false;
     }
 
     private void ShowPublishOption(PostMetadata post)

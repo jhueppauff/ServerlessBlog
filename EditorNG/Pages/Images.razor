@@ -11,11 +11,6 @@
 
 @attribute [Authorize]
 
-<!-- List all blobs -->
-<h1>List all Images</h1>
-
-<MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="() => uploadModal.Open()">Upload new image</MudButton>
-
 <ModalDialog @ref="uploadModal">
     <Title>Upload an image</Title>
     <Body>
@@ -43,46 +38,32 @@
     </Footer>
 </ModalDialog>
 
-<div class="row">
-    <div class="col-md-12">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Url</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (blobs != null)
-                {
-                    @foreach (var blob in blobs)
-                    {
-                        <tr>
-                            <td>@blob.Name</td>
-                            <td><a href="@blob.Url">@blob.Url</a></td>
-                            <td>
-                                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(() => PreviewBlob(blob))">Preview</MudButton>
-                                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => DeleteBlob(blob))">Delete</MudButton>
-                            </td>
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td>loading ...</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+<MudTable Items="@blobs" Striped="@true" Hover="@true" Loading="@loading">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Images</MudText>
+        <MudSpacer />
+        <MudFab Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="() => uploadModal.Open()">Upload new image</MudFab>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Url</MudTh>
+        <MudTh>Action</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Url">@context.Url</MudTd>
+        <MudTd DataLabel="Action">
+            <MudFab Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Preview" Color="Color.Info" OnClick="@(() => PreviewBlob(context))">Preview</MudFab>
+            <MudFab Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteBlob(context))">Delete</MudFab>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
 @code {
+    private bool loading = true;
     private ModalDialog uploadModal { get; set; }
     private ModalDialog previewModal { get; set; }
-    private List<Blob> blobs;
+    private List<Blob> blobs = [];
     private string link = string.Empty;
     private string encodedLink = string.Empty;
     private const string DefaultStatus = "Drop a file here to upload it, or click to choose a file";
@@ -96,7 +77,7 @@
     {
         if (e != null)
         {
-            inputFileChangeEventArgs = e;   
+            inputFileChangeEventArgs = e;
         }
     }
 
@@ -139,10 +120,11 @@
         previewModal.Open();
     }
 
-    private async Task<List<Blob>> GetBlobs()
+    private async Task GetBlobs()
     {
+        loading = true;
         blobs = await blogClient.GetBlobsAsync();
-        return blobs;
+        loading = false;
     }
 
     protected override async Task OnInitializedAsync()
