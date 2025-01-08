@@ -1,3 +1,4 @@
+using EditorNG.States;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +28,7 @@ namespace EditorNG
             });
 
             builder.Services.AddScoped<CustomAuthorizationMessageHandler>();
+            builder.Services.AddScoped<DarkModeState>();
 
             builder.Services.AddHttpClient(nameof(BlogClient),
                 client =>

@@ -1,0 +1,55 @@
+﻿@using EditorNG.Models
+@inject BlogClient _client;
+
+<MudDialog>
+    <TitleContent>
+        Image search dialog
+    </TitleContent>
+    <DialogContent>
+        @if (images != null)
+        {
+            <MudGrid Spacing=4 Justify="Justify.Center">
+                @foreach (var image in images)
+                {
+                    <MudItem>
+
+                        <MudPaper Height="140px" Width="140px">
+                            <MudImage Src="@image.Url" Fluid="true" @onclick="(() => SelectImage(image.Url))"></MudImage>
+                        </MudPaper>
+
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+        else
+        {
+            <EditorNG.Components.Loading></EditorNG.Components.Loading>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="() => MudDialog.Close()">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    private List<Blob> images { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadImages();
+    }
+
+    private async Task LoadImages()
+    {
+        images = await _client.GetBlobsAsync();
+    }
+
+    private void SelectImage(string url)
+    {
+        MudDialog.Close(DialogResult.Ok(url));
+        MudDialog.Close();
+    }
+}

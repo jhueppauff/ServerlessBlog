@@ -9,7 +9,7 @@
 
 @inject BlogClient client;
 @inject ISnackbar Snackbar
-@inject IDialogService Dialog
+@inject IDialogService DialogService
 
 @code {
     [Parameter]
@@ -22,98 +22,51 @@
 
 @if (post != null)
 {
-    <div class="row">
-        <div class="col-lg-12">
-            <br />
-            <div class="form-group">
-                <label class="col-md-4 control-label" for="title">Title</label>
-                <input name="title" class="form-control" type="text" placeholder="Title?" id="title" @bind="@post.Title" />
-            </div>
-
-            <div class="row">
-                <div class="col-6">
-                    <textarea id="postcontent" name="content" class="form-control" data-provide="markdown"
-                    @bind-value="editorBase.Body" @bind-value:event="oninput" data-iconlibrary="fa"
-                              rows="10"></textarea>
-                </div>
-                <div class="col-6">
-                    @((MarkupString)editorBase.Preview)
-                </div>
-            </div>
-
-            <hr />
-
-            <div class="form-group">
-                <label class="col-md-4 control-label" for="preview">Preview Text</label>
-                <textarea name="preview" class="form-control" type="text" placeholder="Preview" id="preview"
-                @bind="@post.Preview"></textarea>
-            </div>
-            <div class="row">
-                <div class="col-6">
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="tags">Tags</label>
-                        <input name="tags" class="form-control" type="text" placeholder="Tags" id="tags" @bind="@post.Tags" />
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudPaper Class="pa-4">
+                <MudForm Spacing=2>
+                    <MudTextField T="string" @bind-Value="@post.Title" Label="Title" Required="true" RequiredError="Title is required!" />
+                    <MudTextField T="string" @bind-Value="@editorBase.Body" Lines="@lines" Label="Content" Required="true" RequiredError="Content is required!"></MudTextField>
+                </MudForm>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudPaper Class="pa-4 mud-height-full">
+                <MudText Typo="Typo.subtitle2">Preview</MudText>
+                <MudText Typo="Typo.subtitle2">@((MarkupString)editorBase.Preview)</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="12">
+            <MudForm Spacing=4>
+                <MudPaper Class="pa-4">
+                    <MudTextField T="string" @bind-Value="@post.Preview" Lines="3" Label="Preview Text" Required="true" RequiredError="You need to specify a preview text!"></MudTextField>
+                    <MudTextField T="string" @bind-Value="@post.Tags" Label="Tags" Required="true" RequiredError="Please specify some tags"></MudTextField>
+                </MudPaper>
+                <MudPaper Class="pa-4">
+                    <div class="d-flex justify-center align-center">
+                        <MudTextField T="string" @bind-Value="@post.ImageUrl" Label="Image Url" Required="true" RequiredError="Please provide a link to an image for the blog post"></MudTextField>
+                        <MudButton StartIcon="@Icons.Material.Filled.Search" class="btn btn-primary" OnClick="(e) => OpenDialog()" Variant="Variant.Filled" Color="Color.Success" type="button" id="button-search-image" data-mdb-ripple-color="dark"></MudButton>
                     </div>
-                </div>
-                <div class="col-6">
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="imageUrl">Image Url</label>
-                        <div class="input-group w-auto">
-                            <input name="imageUrl" class="form-control" type="text" placeholder="https://blogimage"
-                            @bind="@post.ImageUrl" />
-
-                            <MudButton class="btn btn-primary" OnClick="(e) => OpenDialog()" Variant="Variant.Filled" Color="Color.Success" type="button" id="button-search-image" data-mdb-ripple-color="dark">
-                                <span class="glyphicon glyphicon-search"></span> Select
-                            </MudButton>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <hr />
-            <MudFab OnClick="@Save" StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Color="Color.Success">
-                Save
-            </MudFab>
-        </div>
-    </div>
+                </MudPaper>
+                <MudPaper Class="pa-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="@Save" DropShadow="false">Save</MudButton>
+                </MudPaper>
+            </MudForm>
+        </MudItem>
+    </MudGrid>
 }
 else
 {
-    <p>Loading ...</p>
+    <Loading></Loading>
 }
 
-<ModalDialog @ref="modal">
-    <Title>Image search dialog</Title>
-
-    <Body>
-        @if (images != null)
-        {
-            <div class="row">
-                @foreach (var image in images)
-                {
-                    <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                        <img src="@image.Url" class="img-fluid" alt="@image.Name" @onclick="(() => SelectImage(image.Url))"/>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            // Improve this to only be called when the modal dialog is opened
-            // To reduce unnecessary api calls
-            @LoadImages()
-            <EditorNG.Components.Loading></EditorNG.Components.Loading>
-        }
-    </Body>
-    <Footer>
-        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="() => modal.Close()">Close</MudButton>
-    </Footer>
-</ModalDialog>
-
 @code {
-    private ModalDialog modal { get; set; }
+    private MudDialogInstance MudDialog { get; set; }
     private PostMetadata post;
     private MarkdownEditorBase editorBase;
     private List<Blob> images;
+    private int lines = 50;
 
     protected override async Task OnInitializedAsync()
     {
@@ -123,6 +76,8 @@ else
         {
             editorBase.Body = HttpUtility.HtmlDecode(Regex.Unescape(await client.GetBlogPostMarkdownAsync(Slug)));
             post = await client.GetBlogPostAsync(Slug);
+            int lineCount = editorBase.Body.Split('\n').Length;
+            lines = lineCount >= 2 ? lineCount : 40;
         }
         else
         {
@@ -131,15 +86,16 @@ else
         }
     }
 
-    private void SelectImage(string url)
+    private async Task OpenDialog()
     {
-        post.ImageUrl = url;
-        modal.Close();
-    }
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<ImageSelectDialog>("Simple Dialog", options);
+        var result = await dialog.Result;
 
-    private void OpenDialog()
-    {
-        modal.Open();
+        if (!result.Canceled)
+        {
+            post.ImageUrl = result.Data.ToString();
+        }
     }
 
     private async Task LoadImages()
