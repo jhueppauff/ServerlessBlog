@@ -6,7 +6,7 @@ on:
         DOTNET_VERSION:
           required: false
           type: string
-          default: '8.0.x'
+          default: '9.0.x'
         DOTNET_CONFIGURATION:
           type: string
           required: false
@@ -15,6 +15,10 @@ on:
           type: string
           required: false
           default: '.'
+        ARTEFACT_NAME:
+          type: string
+          required: false
+          default: 'output'
 
 jobs:
     build:
@@ -59,5 +63,5 @@ jobs:
             - name: Upload artifact
               uses: actions/upload-artifact@v4.4.0
               with:
-                name: engine
+                name: ${{ inputs.ARTEFACT_NAME }}
                 path: ${{ inputs.WORKING_DIRECTORY }}/**/publish
