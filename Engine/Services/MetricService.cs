@@ -2,24 +2,14 @@
 using Azure.Data.Tables;
 using ServerlessBlog.Engine.Constants;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ServerlessBlog.Engine.Services
 {
-    public class MetricService
+    public class MetricService(ILoggerFactory loggerFactory, TableServiceClient tableServiceClient)
     {
-        private readonly ILogger<MetricService> _logger;
-        private readonly TableClient _tableClient;
-
-        public MetricService(ILoggerFactory loggerFactory, TableServiceClient tableServiceClient)
-        {
-            _logger = loggerFactory.CreateLogger<MetricService>();
-            _tableClient = tableServiceClient.GetTableClient(TableNames.MetricTableName);
-        }
+        private readonly ILogger<MetricService> _logger = loggerFactory.CreateLogger<MetricService>();
+        private readonly TableClient _tableClient = tableServiceClient.GetTableClient(TableNames.MetricTableName);
 
         public async Task CleanOldMetricsAsync(int days)
         {

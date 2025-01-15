@@ -3,24 +3,15 @@ using ServerlessBlog.Engine.Constants;
 using Markdig;
 using Markdig.Prism;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ServerlessBlog.Engine.Services
 {
-    public class HtmlBlobService
+    public class HtmlBlobService(ILoggerFactory loggerFactory, BlobServiceClient blobServiceClient)
     {
-        private readonly ILogger<HtmlBlobService> _logger;
+        private readonly ILogger<HtmlBlobService> _logger = loggerFactory.CreateLogger<HtmlBlobService>();
 
-        private readonly BlobContainerClient _blobPublishedContainerClient;
-
-        public HtmlBlobService(ILoggerFactory loggerFactory, BlobServiceClient blobServiceClient)
-        {
-            _logger = loggerFactory.CreateLogger<HtmlBlobService>();
-            _blobPublishedContainerClient = blobServiceClient.GetBlobContainerClient(BlobContainerNames.PublishContainer);
-        }
+        private readonly BlobContainerClient _blobPublishedContainerClient = blobServiceClient.GetBlobContainerClient(BlobContainerNames.PublishContainer);
 
         /// <summary>
         /// Deletes a Blog from the Html storage

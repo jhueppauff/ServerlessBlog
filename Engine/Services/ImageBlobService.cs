@@ -3,24 +3,14 @@ using Azure.Storage.Blobs.Models;
 using ServerlessBlog.Engine.Constants;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace ServerlessBlog.Engine.Services
 {
-    public class ImageBlobService
+    public class ImageBlobService(ILoggerFactory loggerFactory, BlobServiceClient blobServiceClient)
     {
-        private readonly ILogger<ImageBlobService> logger;
+        private readonly ILogger<ImageBlobService> logger = loggerFactory.CreateLogger<ImageBlobService>();
 
-        private readonly BlobContainerClient blobImageContainerClient;
-
-        public ImageBlobService(ILoggerFactory loggerFactory, BlobServiceClient blobServiceClient)
-        {
-            this.logger = loggerFactory.CreateLogger<ImageBlobService>();
-            blobImageContainerClient = blobServiceClient.GetBlobContainerClient(BlobContainerNames.ImageContainer);
-        }
+        private readonly BlobContainerClient blobImageContainerClient = blobServiceClient.GetBlobContainerClient(BlobContainerNames.ImageContainer);
 
         public async Task<Uri> UploadImageAsync(string extension, Stream stream)
         {

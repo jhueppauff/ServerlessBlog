@@ -6,21 +6,13 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace ServerlessBlog.Engine
 {
-    public class ServiceBusTrigger
+    public class ServiceBusTrigger(ILoggerFactory loggerFactory, BlogMetadataService blogPostService, MarkdownBlobService markdownBlobService, HtmlBlobService htmlBlobService)
     {
-        private readonly ILogger<ServiceBusTrigger> _logger;
+        private readonly ILogger<ServiceBusTrigger> _logger = loggerFactory.CreateLogger<ServiceBusTrigger>();
 
-        private readonly BlogMetadataService _blogPostService;
-        private readonly MarkdownBlobService _markdownBlobService;
-        private readonly HtmlBlobService _htmlBlobService;
-
-        public ServiceBusTrigger(ILoggerFactory loggerFactory, BlogMetadataService blogPostService, MarkdownBlobService markdownBlobService, HtmlBlobService htmlBlobService)
-        {
-            this._logger = loggerFactory.CreateLogger<ServiceBusTrigger>();
-            _blogPostService = blogPostService;
-            _markdownBlobService = markdownBlobService;
-            _htmlBlobService = htmlBlobService;
-        }
+        private readonly BlogMetadataService _blogPostService = blogPostService;
+        private readonly MarkdownBlobService _markdownBlobService = markdownBlobService;
+        private readonly HtmlBlobService _htmlBlobService = htmlBlobService;
 
         [Function(nameof(RenderPost))]
         public async Task RenderPost([ServiceBusTrigger(ServiceBusQueueNames.NewBlogPostQueue, Connection = "ServiceBusConnection")] QueueMessage message)

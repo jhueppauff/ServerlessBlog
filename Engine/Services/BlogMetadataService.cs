@@ -1,23 +1,14 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 using ServerlessBlog.Engine.Constants;
-using System.Collections.Generic;
 
 namespace ServerlessBlog.Engine.Services
 {
-    public class BlogMetadataService
+    public class BlogMetadataService(ILoggerFactory loggerFactory, TableServiceClient tableServiceClient)
     {
-        private readonly ILogger<BlogMetadataService> _logger;
-        private readonly TableClient _tableClient;
-
-        public BlogMetadataService(ILoggerFactory loggerFactory, TableServiceClient tableServiceClient)
-        {
-            this._logger = loggerFactory.CreateLogger<BlogMetadataService>();
-            this._tableClient = tableServiceClient.GetTableClient(TableNames.MetadataTableName);
-        }
+        private readonly ILogger<BlogMetadataService> _logger = loggerFactory.CreateLogger<BlogMetadataService>();
+        private readonly TableClient _tableClient = tableServiceClient.GetTableClient(TableNames.MetadataTableName);
 
         public async Task PublishBlogPostAsync(string slug)
         {

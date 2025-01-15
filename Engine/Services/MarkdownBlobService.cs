@@ -2,25 +2,16 @@
 using Azure.Storage.Blobs.Models;
 using ServerlessBlog.Engine.Constants;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace ServerlessBlog.Engine.Services
 {
-    public class MarkdownBlobService
+    public class MarkdownBlobService(ILoggerFactory loggerFactory, BlobServiceClient blobServiceClient)
     {
-        private readonly ILogger<MarkdownBlobService> logger;
+        private readonly ILogger<MarkdownBlobService> logger = loggerFactory.CreateLogger<MarkdownBlobService>();
 
-        private readonly BlobContainerClient blobMarkdownContainerClient;
-
-        public MarkdownBlobService(ILoggerFactory loggerFactory, BlobServiceClient blobServiceClient)
-        {
-            this.logger = loggerFactory.CreateLogger<MarkdownBlobService>();
-            blobMarkdownContainerClient = blobServiceClient.GetBlobContainerClient(BlobContainerNames.MarkdownContainer);
-        }
+        private readonly BlobContainerClient blobMarkdownContainerClient = blobServiceClient.GetBlobContainerClient(BlobContainerNames.MarkdownContainer);
 
         public async Task<string> GetMarkdownAsync(string slug)
         {

@@ -7,17 +7,11 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace ServerlessBlog.Engine
 {
-    public class TimerTrigger
+    public class TimerTrigger(ILoggerFactory loggerFactory, MetricService metricService)
     {
-        private readonly ILogger<TimerTrigger> _logger;
+        private readonly ILogger<TimerTrigger> _logger = loggerFactory.CreateLogger<TimerTrigger>();
 
-        private readonly MetricService _metricService;
-
-        public TimerTrigger(ILoggerFactory loggerFactory, MetricService metricService)
-        {
-            _logger = loggerFactory.CreateLogger<TimerTrigger>();
-            _metricService = metricService;
-        }
+        private readonly MetricService _metricService = metricService;
 
         [Function(nameof(CleanUpMetrics))]
         public async Task CleanUpMetrics([TimerTrigger("0 0 * * SUN")] TimerInfo myTimer)
