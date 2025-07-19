@@ -34,7 +34,6 @@ namespace ServerlessBlog.Engine
                                     },
                                     Servers = DefaultOpenApiConfigurationOptions.GetHostNames(),
                                     OpenApiVersion = DefaultOpenApiConfigurationOptions.GetOpenApiVersion(),
-                                    IncludeRequestingHostName = true,
                                     ForceHttps = false,
                                     ForceHttp = false,
                                 };
