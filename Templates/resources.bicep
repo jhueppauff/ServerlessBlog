@@ -1,28 +1,51 @@
+// ========== Parameters ==========
+@description('Name of the backend engine function app')
 param functionEngineName string = 'func-blog-engine-we-prod-001'
+
+@description('Name of the frontend function app')
 param functionFrontendName string = 'func-blog-engine-we-prod-001'
+
+@description('Custom domain name for the frontend function (optional). Leave empty to use default azurewebsites.net domain')
 param customDomainName string = ''
+
+@description('Azure Active Directory client ID for authentication')
 param aadClientId string
+
+@description('Azure Active Directory tenant for authentication')
 param aadTenant string
+
+@description('Enable zone redundancy for Cosmos DB')
 param cosmosDbisZoneRedundant bool
+
+@description('Name of the Cosmos DB account')
 param cosmosDbName string
+
+@description('Name of the static web app for the editor')
 param staticWebAppName string
+
+@description('Azure region for resource deployment')
 param location string = 'westeurope'
+
+@description('Name of the Service Bus namespace')
 param serviceBusName string = 'sb-blog-we-prod-001'
 
-var appInsightName_var = replace(functionEngineName, 'func', 'appi')
-var appPlanName_var = replace(functionEngineName, 'func', 'plan')
-var storageNameWeb_var = 'stblogstaticweprod001'
-var storageFunction_var = 'stblogfuncweprod001'
-var serviceBusReceiverRoleId = '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
-var serviceBusSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
-var blogDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
-var blogDataOwnerRoleId = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+// ========== Variables ==========
+var appInsightName = replace(functionEngineName, 'func', 'appi')
+var appPlanName = replace(functionEngineName, 'func', 'plan')
+var storageNameWeb = 'stblogstaticweprod001'
+var storageFunctionName = 'stblogfuncweprod001'
 
-resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
+// Built-in Azure RBAC role IDs
+var serviceBusReceiverRoleId = '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver
+var serviceBusSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' // Azure Service Bus Data Sender
+var blogDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // Storage Blob Data Contributor
+var blogDataOwnerRoleId = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner
+
+// ========== Static Web App (Editor) ==========
+resource staticWebApp 'Microsoft.Web/staticSites@2023-01-01' = {
   name: staticWebAppName
   location: location
-  tags: {
-  }
+  tags: {}
   properties: {
     repositoryUrl: 'https://github.com/jhueppauff/ServerlessBlog'
     branch: 'main'
@@ -38,24 +61,29 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   }
 }
 
-resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
+// ========== Service Bus ==========
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   name: serviceBusName
   location: location
   sku: {
     name: 'Basic'
   }
+  properties: {
+    minimumTlsVersion: '1.2'
+  }
 }
 
-resource scheduledQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
+resource scheduledQueue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-preview' = {
   name: 'scheduled'
   parent: serviceBus
 }
 
-resource renderQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
+resource renderQueue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-preview' = {
   name: 'created'
   parent: serviceBus
 }
 
+// ========== RBAC Role Definitions (Existing) ==========
 resource blobDataContributorRoleDefenition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup()
   name: blogDataContributorRoleId
@@ -76,7 +104,8 @@ resource serviceBusSenderRoleDefenition 'Microsoft.Authorization/roleDefinitions
   name: serviceBusSenderRoleId
 }
 
-// Frontend Storage
+// ========== RBAC Role Assignments ==========
+// Frontend Storage access
 resource rbacFunctionServiceStorageWebEngine 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storageWeb.id, functionFrontend.id, blogDataContributorRoleId)
   scope: storageWeb
@@ -158,8 +187,10 @@ resource rbacFunctionServiceBusSender 'Microsoft.Authorization/roleAssignments@2
   }
 }
 
-resource storageWeb 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: storageNameWeb_var
+// ========== Storage Accounts ==========
+// Web content storage (for blog posts and assets)
+resource storageWeb 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: storageNameWeb
   location: location
   kind: 'StorageV2'
   sku: {
@@ -169,10 +200,11 @@ resource storageWeb 'Microsoft.Storage/storageAccounts@2021-09-01' = {
     accessTier: 'Hot'
     minimumTlsVersion: 'TLS1_2'
     supportsHttpsTrafficOnly: true
+    allowBlobPublicAccess: false
   }
 }
 
-resource storageWebBlobServices 'Microsoft.Storage/storageAccounts/blobServices@2021-09-01' = {
+resource storageWebBlobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
   parent: storageWeb
   name: 'default'
   properties: {
@@ -198,8 +230,9 @@ resource storageWebBlobServices 'Microsoft.Storage/storageAccounts/blobServices@
   }
 }
 
-resource storageFunction 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: storageFunction_var
+// Function app storage (for function runtime)
+resource storageFunction 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: storageFunctionName
   location: location
   sku: {
     name: 'Standard_LRS'
@@ -230,8 +263,9 @@ resource storageFunction 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   }
 }
 
-resource appPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: appPlanName_var
+// ========== App Service Plan (Consumption) ==========
+resource appPlan 'Microsoft.Web/serverfarms@2023-01-01' = {
+  name: appPlanName
   location: location
   sku: {
     name: 'Y1'
@@ -241,7 +275,9 @@ resource appPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   }
 }
 
-resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
+// ========== Function Apps ==========
+// Backend engine function (authenticated API)
+resource functionEngine 'Microsoft.Web/sites@2023-01-01' = {
   name: functionEngineName
   location: location
   kind: 'functionapp'
@@ -260,11 +296,11 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunctionName};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'AzureStorageConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};AccountKey=${storageWeb.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb};AccountKey=${storageWeb.listKeys().keys[0].value}'
         }
         {
           name: 'CosmosDBConnection'
@@ -272,7 +308,7 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunctionName};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
@@ -315,20 +351,29 @@ resource functionEngine 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
-resource functionEngine_authsettings 'Microsoft.Web/sites/config@2016-08-01' = {
+// Authentication settings for backend engine
+resource functionEngine_authsettings 'Microsoft.Web/sites/config@2023-01-01' = {
   parent: functionEngine
-  name: 'authsettings'
+  name: 'authsettingsV2'
   properties: {
-    enabled: true
-    unauthenticatedClientAction: 'RedirectToLoginPage'
-    tokenStoreEnabled: true
-    defaultProvider: 'AzureActiveDirectory'
-    clientId: aadClientId
-    issuer: 'https://sts.windows.net/${aadTenant}/'
+    globalValidation: {
+      requireAuthentication: true
+      unauthenticatedClientAction: 'RedirectToLoginPage'
+    }
+    identityProviders: {
+      azureActiveDirectory: {
+        enabled: true
+        registration: {
+          clientId: aadClientId
+          openIdIssuer: 'https://sts.windows.net/${aadTenant}/v2.0'
+        }
+      }
+    }
   }
 }
 
-resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
+// Frontend function (public-facing blog)
+resource functionFrontend 'Microsoft.Web/sites@2023-01-01' = {
   name: functionFrontendName
   location: location
   kind: 'functionapp'
@@ -344,11 +389,11 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunctionName};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'AzureStorageConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb_var};AccountKey=${storageWeb.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageNameWeb};AccountKey=${storageWeb.listKeys().keys[0].value}'
         }
         {
           name: 'CosmosDBConnection'
@@ -356,7 +401,7 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunction_var};AccountKey=${storageFunction.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageFunctionName};AccountKey=${storageFunction.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
@@ -392,7 +437,7 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
 }
 
 // Custom domain binding for the frontend function (optional)
-resource functionFrontendCustomDomain 'Microsoft.Web/sites/hostNameBindings@2022-03-01' = if (!empty(customDomainName)) {
+resource functionFrontendCustomDomain 'Microsoft.Web/sites/hostNameBindings@2023-01-01' = if (!empty(customDomainName)) {
   parent: functionFrontend
   name: customDomainName
   properties: {
@@ -402,22 +447,9 @@ resource functionFrontendCustomDomain 'Microsoft.Web/sites/hostNameBindings@2022
   }
 }
 
-resource appInsight 'Microsoft.Insights/components@2020-02-02' = {
-  name: appInsightName_var
-  location: location
-  kind: 'web'
-  properties: {
-    WorkspaceResourceId: logAnalytics.id
-    IngestionMode: 'LogAnalytics'
-    RetentionInDays: 30
-    Application_Type: 'web'
-    Flow_Type: 'Redfield'
-    Request_Source: 'IbizaAIExtension'
-  }
-}
-
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' = {
-  name: replace(appInsightName_var, 'appi', 'log')
+// ========== Monitoring ==========
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: replace(appInsightName, 'appi', 'log')
   location: location
   properties: {
     sku: {
@@ -430,7 +462,20 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2021-12-01-previ
   }
 }
 
-resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
+resource appInsight 'Microsoft.Insights/components@2020-02-02' = {
+  name: appInsightName
+  location: location
+  kind: 'web'
+  properties: {
+    WorkspaceResourceId: logAnalytics.id
+    IngestionMode: 'LogAnalytics'
+    RetentionInDays: 30
+    Application_Type: 'web'
+  }
+}
+
+// ========== Cosmos DB (Table API) ==========
+resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = {
   kind: 'GlobalDocumentDB'
   name: cosmosDbName
   location: location
@@ -464,7 +509,7 @@ resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
   }
 }
 
-resource metadataTable 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15' = {
+resource metadataTable 'Microsoft.DocumentDB/databaseAccounts/tables@2023-11-15' = {
   parent: cosmosDb
   name: 'metadata'
   properties: {
@@ -474,7 +519,7 @@ resource metadataTable 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15'
   }
 }
 
-resource metricTable 'Microsoft.DocumentDB/databaseAccounts/tables@2021-04-15' = {
+resource metricTable 'Microsoft.DocumentDB/databaseAccounts/tables@2023-11-15' = {
   parent: cosmosDb
   name: 'metrics'
   properties: {
