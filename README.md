@@ -9,8 +9,8 @@ Components used
 
 - Azure Functions
 - Azure Storage (Blob, Table and Queues)
-- Azure CDN
 - Application Insights
+- Custom Domain Support (optional)
 
 ## How to run
 

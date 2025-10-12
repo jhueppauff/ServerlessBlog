@@ -1,7 +1,6 @@
 param functionEngineName string = 'func-blog-engine-we-prod-001'
 param functionFrontendName string = 'func-blog-engine-we-prod-001'
-param profileProperties object
-param endpointProperties object
+param customDomainName string = ''
 param aadClientId string
 param aadTenant string
 param cosmosDbisZoneRedundant bool
@@ -14,8 +13,6 @@ var appInsightName_var = replace(functionEngineName, 'func', 'appi')
 var appPlanName_var = replace(functionEngineName, 'func', 'plan')
 var storageNameWeb_var = 'stblogstaticweprod001'
 var storageFunction_var = 'stblogfuncweprod001'
-var cdnProfileName_var = replace(functionEngineName, 'func', 'cdn')
-var cdnEndpointName = replace(functionFrontendName, 'func', 'cdnedp')
 var serviceBusReceiverRoleId = '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
 var serviceBusSenderRoleId = '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
 var blogDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
@@ -340,6 +337,7 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
   }
   properties: {
     serverFarmId: appPlan.id
+    httpsOnly: true
     siteConfig: {
       minTlsVersion: '1.2'
       netFrameworkVersion: 'v8.0'
@@ -393,20 +391,15 @@ resource functionFrontend 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
-resource cdnProfileName 'microsoft.cdn/profiles@2019-04-15' = {
-  name: cdnProfileName_var
-  location: location
-  sku: {
-    name: 'Standard_Microsoft'
+// Custom domain binding for the frontend function (optional)
+resource functionFrontendCustomDomain 'Microsoft.Web/sites/hostNameBindings@2022-03-01' = if (!empty(customDomainName)) {
+  parent: functionFrontend
+  name: customDomainName
+  properties: {
+    hostNameType: 'Verified'
+    sslState: 'SniEnabled'
+    thumbprint: null
   }
-  properties: profileProperties
-}
-
-resource cdnProfileName_cdnEndpointName 'microsoft.cdn/profiles/endpoints@2019-04-15' = {
-  parent: cdnProfileName
-  name: cdnEndpointName
-  location: location
-  properties: endpointProperties
 }
 
 resource appInsight 'Microsoft.Insights/components@2020-02-02' = {
