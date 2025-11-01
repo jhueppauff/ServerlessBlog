@@ -25,22 +25,14 @@ pool:
   
 steps:
   - task: AzureCLI@2
+    displayName: 'Deploy Bicep template'
     inputs:
       azureSubscription: $(azureSubscription)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: |
-        az bicep build --file $(Build.SourcesDirectory)/Templates/resources.bicep
-          
-  - task: AzureResourceManagerTemplateDeployment@3
-    inputs:
-      deploymentScope: 'Resource Group'
-      azureResourceManagerConnection: '$(azureSubscription)'
-      subscriptionId: '$(subscriptionId)'
-      action: 'Create Or Update Resource Group'
-      resourceGroupName: '$(rgName)'
-      location: 'West Europe'
-      templateLocation: 'Linked artifact'
-      csmFile: '$(Build.SourcesDirectory)/Templates/resources.json'
-      csmParametersFile: '$(Build.SourcesDirectory)/Templates/resources.parameters.json'
-      deploymentMode: 'Incremental'
+        az deployment group create \
+          --resource-group $(rgName) \
+          --template-file $(Build.SourcesDirectory)/Templates/resources.bicep \
+          --parameters $(Build.SourcesDirectory)/Templates/resources.parameters.json \
+          --mode Incremental

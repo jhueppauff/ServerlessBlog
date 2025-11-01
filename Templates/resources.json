@@ -1,0 +1,630 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.38.33.27573",
+      "templateHash": "8057190160510650029"
+    }
+  },
+  "parameters": {
+    "functionEngineName": {
+      "type": "string",
+      "defaultValue": "func-blog-engine-we-prod-001",
+      "metadata": {
+        "description": "Name of the backend engine function app"
+      }
+    },
+    "functionFrontendName": {
+      "type": "string",
+      "defaultValue": "func-blog-engine-we-prod-001",
+      "metadata": {
+        "description": "Name of the frontend function app"
+      }
+    },
+    "customDomainName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Custom domain name for the frontend function (optional). Leave empty to use default azurewebsites.net domain"
+      }
+    },
+    "aadClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Active Directory client ID for authentication"
+      }
+    },
+    "aadTenant": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Active Directory tenant for authentication"
+      }
+    },
+    "cosmosDbisZoneRedundant": {
+      "type": "bool",
+      "metadata": {
+        "description": "Enable zone redundancy for Cosmos DB"
+      }
+    },
+    "cosmosDbName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Cosmos DB account"
+      }
+    },
+    "staticWebAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the static web app for the editor"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "westeurope",
+      "metadata": {
+        "description": "Azure region for resource deployment"
+      }
+    },
+    "serviceBusName": {
+      "type": "string",
+      "defaultValue": "sb-blog-we-prod-001",
+      "metadata": {
+        "description": "Name of the Service Bus namespace"
+      }
+    }
+  },
+  "variables": {
+    "appInsightName": "[replace(parameters('functionEngineName'), 'func', 'appi')]",
+    "appPlanName": "[replace(parameters('functionEngineName'), 'func', 'plan')]",
+    "storageNameWeb": "stblogstaticweprod001",
+    "storageFunctionName": "stblogfuncweprod001",
+    "serviceBusReceiverRoleId": "4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0",
+    "serviceBusSenderRoleId": "69a216fc-b8fb-44d8-bc22-1f3c2cd27a39",
+    "blogDataContributorRoleId": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+    "blogDataOwnerRoleId": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/staticSites",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('staticWebAppName')]",
+      "location": "[parameters('location')]",
+      "tags": {},
+      "properties": {
+        "repositoryUrl": "https://github.com/jhueppauff/ServerlessBlog",
+        "branch": "main",
+        "buildProperties": {
+          "appLocation": "EditorNG",
+          "apiLocation": "",
+          "appArtifactLocation": "wwwroot"
+        }
+      },
+      "sku": {
+        "tier": "Free",
+        "name": "Free"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[parameters('serviceBusName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Basic"
+      },
+      "properties": {
+        "minimumTlsVersion": "1.2"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[format('{0}/{1}', parameters('serviceBusName'), 'scheduled')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[format('{0}/{1}', parameters('serviceBusName'), 'created')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', variables('storageNameWeb'))]",
+      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb')), resourceId('Microsoft.Web/sites', parameters('functionFrontendName')), variables('blogDataContributorRoleId'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionFrontendName')), '2023-01-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('blogDataContributorRoleId'))]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionFrontendName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', variables('storageNameWeb'))]",
+      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb')), resourceId('Microsoft.Web/sites', parameters('functionEngineName')), variables('blogDataContributorRoleId'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionEngineName')), '2023-01-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('blogDataContributorRoleId'))]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionEngineName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', variables('storageFunctionName'))]",
+      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName')), resourceId('Microsoft.Web/sites', parameters('functionFrontendName')), variables('blogDataOwnerRoleId'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionFrontendName')), '2023-01-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('blogDataOwnerRoleId'))]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionFrontendName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', variables('storageFunctionName'))]",
+      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName')), resourceId('Microsoft.Web/sites', parameters('functionFrontendName')), variables('serviceBusReceiverRoleId'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionFrontendName')), '2023-01-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('blogDataContributorRoleId'))]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionFrontendName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', variables('storageFunctionName'))]",
+      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName')), resourceId('Microsoft.Web/sites', parameters('functionEngineName')), variables('blogDataOwnerRoleId'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionEngineName')), '2023-01-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('blogDataOwnerRoleId'))]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionEngineName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', variables('storageFunctionName'))]",
+      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName')), resourceId('Microsoft.Web/sites', parameters('functionEngineName')), variables('serviceBusReceiverRoleId'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionEngineName')), '2023-01-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('blogDataContributorRoleId'))]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionEngineName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.ServiceBus/namespaces/{0}', parameters('serviceBusName'))]",
+      "name": "[guid(resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName')), resourceId('Microsoft.Web/sites', parameters('functionEngineName')), variables('serviceBusReceiverRoleId'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionEngineName')), '2023-01-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('serviceBusReceiverRoleId'))]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionEngineName'))]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.ServiceBus/namespaces/{0}', parameters('serviceBusName'))]",
+      "name": "[guid(resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName')), resourceId('Microsoft.Web/sites', parameters('functionEngineName')), variables('serviceBusSenderRoleId'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionEngineName')), '2023-01-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('serviceBusSenderRoleId'))]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionEngineName'))]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[variables('storageNameWeb')]",
+      "location": "[parameters('location')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "accessTier": "Hot",
+        "minimumTlsVersion": "TLS1_2",
+        "supportsHttpsTrafficOnly": true,
+        "allowBlobPublicAccess": false
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2023-01-01",
+      "name": "[format('{0}/{1}', variables('storageNameWeb'), 'default')]",
+      "properties": {
+        "changeFeed": {
+          "enabled": true
+        },
+        "restorePolicy": {
+          "enabled": true,
+          "days": 6
+        },
+        "containerDeleteRetentionPolicy": {
+          "enabled": true,
+          "days": 7
+        },
+        "cors": {
+          "corsRules": []
+        },
+        "deleteRetentionPolicy": {
+          "enabled": true,
+          "days": 7
+        },
+        "isVersioningEnabled": true
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[variables('storageFunctionName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "enabled": true
+            },
+            "blob": {
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot",
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2023-01-01",
+      "name": "[variables('appPlanName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('functionEngineName')]",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
+        "siteConfig": {
+          "minTlsVersion": "1.2",
+          "netFrameworkVersion": "v8.0",
+          "appSettings": [
+            {
+              "name": "OpenApi__Auth__TenantId",
+              "value": "72e647c0-4a7a-4959-bee5-14c8615d8ae5"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageFunctionName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName')), '2023-01-01').keys[0].value)]"
+            },
+            {
+              "name": "AzureStorageConnection",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageNameWeb'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb')), '2023-01-01').keys[0].value)]"
+            },
+            {
+              "name": "CosmosDBConnection",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};TableEndpoint=https://{2}.table.cosmos.azure.com:443/;', parameters('cosmosDbName'), listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, parameters('cosmosDbName'))]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageFunctionName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName')), '2023-01-01').keys[0].value)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(parameters('functionEngineName'))]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~4"
+            },
+            {
+              "name": "ServiceBusConnection__fullyQualifiedNamespace",
+              "value": "[format('{0}.servicebus.windows.net', parameters('serviceBusName'))]"
+            },
+            {
+              "name": "DeletionDays",
+              "value": "32"
+            },
+            {
+              "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightName')), '2020-02-02').ConnectionString]"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet-isolated"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "1"
+            },
+            {
+              "name": "WEBSITE_ENABLE_SYNC_UPDATE_SITE",
+              "value": "true"
+            },
+            {
+              "name": "AzureWebJobsDisableHomepage",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('appInsightName'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName'))]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2023-01-01",
+      "name": "[format('{0}/{1}', parameters('functionEngineName'), 'authsettingsV2')]",
+      "properties": {
+        "globalValidation": {
+          "requireAuthentication": true,
+          "unauthenticatedClientAction": "RedirectToLoginPage"
+        },
+        "identityProviders": {
+          "azureActiveDirectory": {
+            "enabled": true,
+            "registration": {
+              "clientId": "[parameters('aadClientId')]",
+              "openIdIssuer": "[format('https://sts.windows.net/{0}/v2.0', parameters('aadTenant'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionEngineName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('functionFrontendName')]",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
+        "httpsOnly": true,
+        "siteConfig": {
+          "minTlsVersion": "1.2",
+          "netFrameworkVersion": "v8.0",
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageFunctionName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName')), '2023-01-01').keys[0].value)]"
+            },
+            {
+              "name": "AzureStorageConnection",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageNameWeb'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb')), '2023-01-01').keys[0].value)]"
+            },
+            {
+              "name": "CosmosDBConnection",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};TableEndpoint=https://{2}.table.cosmos.azure.com:443/;', parameters('cosmosDbName'), listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName')), '2020-04-01').primaryMasterKey, parameters('cosmosDbName'))]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', variables('storageFunctionName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName')), '2023-01-01').keys[0].value)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(parameters('functionFrontendName'))]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~4"
+            },
+            {
+              "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightName')), '2020-02-02').ConnectionString]"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet-isolated"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "1"
+            },
+            {
+              "name": "WEBSITE_ENABLE_SYNC_UPDATE_SITE",
+              "value": "true"
+            },
+            {
+              "name": "AzureWebJobsDisableHomepage",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('appInsightName'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('appPlanName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageFunctionName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameWeb'))]"
+      ]
+    },
+    {
+      "condition": "[not(empty(parameters('customDomainName')))]",
+      "type": "Microsoft.Web/sites/hostNameBindings",
+      "apiVersion": "2023-01-01",
+      "name": "[format('{0}/{1}', parameters('functionFrontendName'), parameters('customDomainName'))]",
+      "properties": {
+        "hostNameType": "Verified",
+        "sslState": "SniEnabled",
+        "thumbprint": null
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('functionFrontendName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2022-10-01",
+      "name": "[replace(variables('appInsightName'), 'appi', 'log')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30,
+        "workspaceCapping": {
+          "dailyQuotaGb": 1
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('appInsightName')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', replace(variables('appInsightName'), 'appi', 'log'))]",
+        "IngestionMode": "LogAnalytics",
+        "RetentionInDays": 30,
+        "Application_Type": "web"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', replace(variables('appInsightName'), 'appi', 'log'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2023-11-15",
+      "name": "[parameters('cosmosDbName')]",
+      "kind": "GlobalDocumentDB",
+      "location": "[parameters('location')]",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "locations": [
+          {
+            "failoverPriority": 0,
+            "locationName": "[parameters('location')]",
+            "isZoneRedundant": "[parameters('cosmosDbisZoneRedundant')]"
+          }
+        ],
+        "backupPolicy": {
+          "type": "Periodic",
+          "periodicModeProperties": {
+            "backupIntervalInMinutes": 1440,
+            "backupRetentionIntervalInHours": 48,
+            "backupStorageRedundancy": "Local"
+          }
+        },
+        "isVirtualNetworkFilterEnabled": false,
+        "virtualNetworkRules": [],
+        "ipRules": [],
+        "enableMultipleWriteLocations": false,
+        "capabilities": [
+          {
+            "name": "EnableTable"
+          }
+        ],
+        "enableFreeTier": true
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/tables",
+      "apiVersion": "2023-11-15",
+      "name": "[format('{0}/{1}', parameters('cosmosDbName'), 'metadata')]",
+      "properties": {
+        "resource": {
+          "id": "metadata"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/tables",
+      "apiVersion": "2023-11-15",
+      "name": "[format('{0}/{1}', parameters('cosmosDbName'), 'metrics')]",
+      "properties": {
+        "resource": {
+          "id": "metrics"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbName'))]"
+      ]
+    }
+  ]
+}
