@@ -14,6 +14,22 @@ Components used
 
 ## How to run
 
+### Deploy with Azure CLI
+
+```bash
+# Clone the repository
+git clone https://github.com/jhueppauff/ServerlessBlog.git
+cd ServerlessBlog/Templates
+
+# Deploy using Bicep
+az deployment group create \
+  --resource-group <your-resource-group> \
+  --template-file resources.bicep \
+  --parameters resources.parameters.json
+```
+
+Or use the Deploy to Azure button (requires the resources.json to be present):
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2Fjhueppauff%2FServerlessBlog%2Fblob%2Fmain%2FTemplates%2Fresources.json)
 
 ### Custom Domain Configuration
