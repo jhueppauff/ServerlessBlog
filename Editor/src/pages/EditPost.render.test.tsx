@@ -43,8 +43,30 @@ describe('EditPost page', () => {
 
     expect(await screen.findByDisplayValue('My Post')).toBeInTheDocument();
     expect(screen.getByDisplayValue('# Hello')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Post details' }));
+
     expect(screen.getByDisplayValue('azure;serverless')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('A preview text')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Search image' })).toBeInTheDocument();
+  });
+
+  it('switches between the editor and the rendered preview', async () => {
+    renderEditor({
+      getBlogPost: vi.fn().mockResolvedValue(post),
+      getBlogPostMarkdown: vi.fn().mockResolvedValue('# Hello'),
+    });
+
+    expect(await screen.findByDisplayValue('# Hello')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Preview only' }));
+
+    expect(screen.queryByDisplayValue('# Hello')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Hello' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Editor only' }));
+
+    expect(screen.getByDisplayValue('# Hello')).toBeInTheDocument();
   });
 
   it('saves the post with the edited markdown', async () => {
