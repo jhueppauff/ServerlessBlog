@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom';
 import {
   AppBar,
@@ -13,6 +13,8 @@ import {
   ListItemText,
   Toolbar,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import CameraIcon from '@mui/icons-material/Camera';
 import HomeIcon from '@mui/icons-material/Home';
@@ -29,10 +31,19 @@ const navItems = [
 ];
 
 export const Layout = () => {
-  const [open, setOpen] = useState(true);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [open, setOpen] = useState(!isMobile);
   const location = useLocation();
   const { instance, accounts } = useMsal();
   const account = accounts[0];
+
+  // Close the drawer when navigating on small screens, where it covers the content.
+  useEffect(() => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  }, [isMobile, location.pathname]);
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -44,7 +55,9 @@ export const Layout = () => {
           <Box sx={{ flexGrow: 1 }} />
           {account && (
             <>
-              <Typography sx={{ mr: 2 }}>Hello, {account.name ?? account.username}!</Typography>
+              <Typography noWrap sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
+                Hello, {account.name ?? account.username}!
+              </Typography>
               <Button color="inherit" onClick={() => void instance.logoutRedirect()}>
                 Log out
               </Button>
@@ -53,10 +66,12 @@ export const Layout = () => {
         </Toolbar>
       </AppBar>
       <Drawer
-        variant="persistent"
+        variant={isMobile ? 'temporary' : 'persistent'}
         open={open}
+        onClose={() => setOpen(false)}
+        ModalProps={{ keepMounted: true }}
         sx={{
-          width: open ? drawerWidth : 0,
+          width: open && !isMobile ? drawerWidth : 0,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
         }}
@@ -79,9 +94,9 @@ export const Layout = () => {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{ flexGrow: 1, minWidth: 0, p: { xs: 1, sm: 2, md: 3 } }}>
         <Toolbar />
-        <Container maxWidth={false} sx={{ mt: 2 }}>
+        <Container maxWidth={false} disableGutters sx={{ mt: 2 }}>
           <Outlet />
         </Container>
       </Box>

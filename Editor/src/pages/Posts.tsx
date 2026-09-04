@@ -6,6 +6,7 @@ import {
   Chip,
   CircularProgress,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -24,6 +25,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useBlogClient } from '../api/BlogClientProvider';
 import type { PostMetadata } from '../api/models';
 import { DeletePostDialog } from '../components/DeletePostDialog';
+import { hideBelow, truncate } from '../components/tableStyles';
 import { PublishDialog } from '../components/PublishDialog';
 import { useNotification } from '../components/NotificationProvider';
 
@@ -92,7 +94,7 @@ export const Posts = () => {
   return (
     <>
       <TableContainer component={Paper}>
-        <Toolbar>
+        <Toolbar sx={{ flexWrap: 'wrap', gap: 1, py: 1 }}>
           <Typography variant="h6">Blog Posts</Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Button
@@ -109,20 +111,19 @@ export const Posts = () => {
             color="info"
             startIcon={<RefreshIcon />}
             onClick={() => void refresh()}
-            sx={{ ml: 1 }}
           >
             Refresh
           </Button>
         </Toolbar>
-        <Table>
+        <Table size="small" sx={{ minWidth: 320 }}>
           <TableHead>
             <TableRow>
               <TableCell>Public</TableCell>
               <TableCell>Title</TableCell>
-              <TableCell>Tags</TableCell>
-              <TableCell>Created on</TableCell>
-              <TableCell>Views</TableCell>
-              <TableCell>Intro</TableCell>
+              <TableCell sx={hideBelow('md')}>Tags</TableCell>
+              <TableCell sx={hideBelow('lg')}>Created on</TableCell>
+              <TableCell sx={hideBelow('sm')}>Views</TableCell>
+              <TableCell sx={hideBelow('lg')}>Intro</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -144,8 +145,8 @@ export const Posts = () => {
                       <PublicOffIcon color="error" titleAccess="Not public" />
                     )}
                   </TableCell>
-                  <TableCell>{post.title}</TableCell>
-                  <TableCell>
+                  <TableCell sx={{ minWidth: 140 }}>{post.title}</TableCell>
+                  <TableCell sx={hideBelow('md')}>
                     {(post.tags ?? '')
                       .split(';')
                       .filter((tag) => tag.length > 0)
@@ -153,39 +154,46 @@ export const Posts = () => {
                         <Chip key={tag} label={tag} size="small" sx={{ mr: 0.5 }} />
                       ))}
                   </TableCell>
-                  <TableCell>{post.published}</TableCell>
-                  <TableCell>{post.views}</TableCell>
-                  <TableCell>{post.preview}</TableCell>
+                  <TableCell sx={hideBelow('lg')}>{post.published}</TableCell>
+                  <TableCell sx={hideBelow('sm')}>{post.views}</TableCell>
+                  <TableCell sx={{ ...hideBelow('lg'), maxWidth: 320 }}>
+                    <Typography variant="body2" sx={truncate}>
+                      {post.preview}
+                    </Typography>
+                  </TableCell>
                   <TableCell>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => setPostToDelete(post)}
-                    >
-                      Delete
-                    </Button>
-                    {!post.isPublic && (
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
                       <Button
+                        size="small"
+                        variant="contained"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => setPostToDelete(post)}
+                      >
+                        Delete
+                      </Button>
+                      {!post.isPublic && (
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          startIcon={<PublicIcon />}
+                          onClick={() => setPostToPublish(post)}
+                        >
+                          Publish
+                        </Button>
+                      )}
+                      <Button
+                        size="small"
+                        component={RouterLink}
+                        to={`/edit/${encodeURIComponent(post.slug)}`}
                         variant="contained"
                         color="success"
-                        startIcon={<PublicIcon />}
-                        sx={{ ml: 1 }}
-                        onClick={() => setPostToPublish(post)}
+                        startIcon={<EditIcon />}
                       >
-                        Publish
+                        Edit
                       </Button>
-                    )}
-                    <Button
-                      component={RouterLink}
-                      to={`/edit/${encodeURIComponent(post.slug)}`}
-                      variant="contained"
-                      color="success"
-                      startIcon={<EditIcon />}
-                      sx={{ ml: 1 }}
-                    >
-                      Edit
-                    </Button>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}

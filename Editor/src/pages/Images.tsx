@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Link,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -24,6 +25,7 @@ import PreviewIcon from '@mui/icons-material/Preview';
 import { useBlogClient } from '../api/BlogClientProvider';
 import type { Blob } from '../api/models';
 import { useNotification } from '../components/NotificationProvider';
+import { breakAnywhere, hideBelow } from '../components/tableStyles';
 
 const defaultStatus = 'Drop a file here to upload it, or click to choose a file';
 const maxFileSize = 200 * 1024 * 1024;
@@ -93,7 +95,7 @@ export const Images = () => {
   return (
     <>
       <TableContainer component={Paper}>
-        <Toolbar>
+        <Toolbar sx={{ flexWrap: 'wrap', gap: 1, py: 1 }}>
           <Typography variant="h6">Images</Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Button
@@ -105,11 +107,11 @@ export const Images = () => {
             Upload new image
           </Button>
         </Toolbar>
-        <Table>
+        <Table size="small" sx={{ minWidth: 320 }}>
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
-              <TableCell>Url</TableCell>
+              <TableCell sx={hideBelow('md')}>Url</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
@@ -124,26 +126,31 @@ export const Images = () => {
             {!loading &&
               blobs.map((blob) => (
                 <TableRow key={blob.name} hover>
-                  <TableCell>{blob.name}</TableCell>
-                  <TableCell>{blob.url}</TableCell>
+                  <TableCell sx={{ ...breakAnywhere, minWidth: 120 }}>{blob.name}</TableCell>
+                  <TableCell sx={{ ...hideBelow('md'), ...breakAnywhere, maxWidth: 420 }}>
+                    {blob.url}
+                  </TableCell>
                   <TableCell>
-                    <Button
-                      variant="contained"
-                      color="info"
-                      startIcon={<PreviewIcon />}
-                      onClick={() => setPreviewUrl(blob.url)}
-                    >
-                      Preview
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      sx={{ ml: 1 }}
-                      onClick={() => void deleteBlob(blob)}
-                    >
-                      Delete
-                    </Button>
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="info"
+                        startIcon={<PreviewIcon />}
+                        onClick={() => setPreviewUrl(blob.url)}
+                      >
+                        Preview
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => void deleteBlob(blob)}
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}
@@ -157,7 +164,7 @@ export const Images = () => {
           <input type="file" ref={fileInput} aria-label="File to upload" />
           <Typography sx={{ mt: 1 }}>{status}</Typography>
           {link && (
-            <Link href={link} target="_blank" rel="noopener noreferrer">
+            <Link href={link} target="_blank" rel="noopener noreferrer" sx={breakAnywhere}>
               {link}
             </Link>
           )}

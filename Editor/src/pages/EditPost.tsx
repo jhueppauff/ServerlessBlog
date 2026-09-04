@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Box, Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import DOMPurify from 'dompurify';
@@ -10,6 +20,7 @@ import { useBlogClient } from '../api/BlogClientProvider';
 import { emptyPost, type PostMetadata } from '../api/models';
 import { ImageSelectDialog } from '../components/ImageSelectDialog';
 import { Loading } from '../components/Loading';
+import { MarkdownPreview } from '../components/MarkdownPreview';
 import { useNotification } from '../components/NotificationProvider';
 
 export const renderMarkdown = (markdown: string): string =>
@@ -56,7 +67,6 @@ export const EditPost = () => {
   }, [client, notify, slug]);
 
   const preview = useMemo(() => renderMarkdown(body), [body]);
-  const lines = useMemo(() => Math.max(body.split('\n').length, 20), [body]);
 
   if (!post) {
     return <Loading />;
@@ -89,74 +99,26 @@ export const EditPost = () => {
 
   return (
     <>
-      <Typography variant="h4" gutterBottom>
-        {slug ?? 'New Post'}
-      </Typography>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <Paper sx={{ p: 2, flex: 1 }}>
-          <Stack spacing={2}>
-            <TextField
-              label="Title"
-              required
-              value={post.title ?? ''}
-              onChange={(event) => update({ title: event.target.value })}
-            />
-            <TextField
-              label="Content"
-              required
-              multiline
-              minRows={Math.min(lines, 50)}
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-            />
-          </Stack>
-        </Paper>
-        <Paper sx={{ p: 2, flex: 1 }}>
-          <Typography variant="subtitle2">Preview</Typography>
-          <Box dangerouslySetInnerHTML={{ __html: preview }} />
-        </Paper>
-      </Stack>
-
-      <Stack spacing={2} sx={{ mt: 2 }}>
-        <Paper sx={{ p: 2 }}>
-          <Stack spacing={2}>
-            <TextField
-              label="Preview Text"
-              required
-              multiline
-              minRows={3}
-              value={post.preview ?? ''}
-              onChange={(event) => update({ preview: event.target.value })}
-            />
-            <TextField
-              label="Tags"
-              required
-              value={post.tags ?? ''}
-              onChange={(event) => update({ tags: event.target.value })}
-            />
-          </Stack>
-        </Paper>
-        <Paper sx={{ p: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <TextField
-              label="Image Url"
-              required
-              fullWidth
-              value={post.imageUrl ?? ''}
-              onChange={(event) => update({ imageUrl: event.target.value })}
-            />
-            <Button
-              id="button-search-image"
-              variant="contained"
-              color="success"
-              aria-label="Search image"
-              onClick={() => setImageDialogOpen(true)}
-            >
-              <SearchIcon />
-            </Button>
-          </Stack>
-        </Paper>
-        <Paper sx={{ p: 2 }}>
+      <Paper
+        sx={{
+          p: 2,
+          mb: 2,
+          position: 'sticky',
+          top: (theme) => theme.spacing(8),
+          zIndex: 2,
+        }}
+      >
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1 }}
+        >
+          <IconButton component={RouterLink} to="/" aria-label="Back to posts">
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h6" noWrap sx={{ flexGrow: 1, minWidth: 0 }}>
+            {slug ?? 'New Post'}
+          </Typography>
           <Button
             variant="contained"
             color="primary"
@@ -165,8 +127,97 @@ export const EditPost = () => {
           >
             Save
           </Button>
+        </Stack>
+      </Paper>
+
+      <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} sx={{ alignItems: 'stretch' }}>
+        <Paper
+          sx={{
+            p: 2,
+            flex: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <TextField
+            label="Title"
+            required
+            fullWidth
+            value={post.title ?? ''}
+            onChange={(event) => update({ title: event.target.value })}
+          />
+          <TextField
+            label="Content"
+            required
+            fullWidth
+            multiline
+            minRows={12}
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            sx={{
+              flex: 1,
+              '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start' },
+              '& textarea': { height: '100% !important', overflow: 'auto !important' },
+            }}
+          />
+        </Paper>
+
+        <Paper sx={{ p: 2, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Preview
+          </Typography>
+          <Box sx={{ flex: 1, overflow: 'auto', maxHeight: { lg: '70vh' } }}>
+            <MarkdownPreview html={preview} />
+          </Box>
         </Paper>
       </Stack>
+
+      <Paper sx={{ p: 2, mt: 2 }}>
+        <Stack spacing={2}>
+          <TextField
+            label="Preview Text"
+            required
+            fullWidth
+            multiline
+            minRows={3}
+            value={post.preview ?? ''}
+            onChange={(event) => update({ preview: event.target.value })}
+          />
+          <TextField
+            label="Tags"
+            required
+            fullWidth
+            helperText="Separate multiple tags with a semicolon"
+            value={post.tags ?? ''}
+            onChange={(event) => update({ tags: event.target.value })}
+          />
+          <TextField
+            label="Image Url"
+            required
+            fullWidth
+            value={post.imageUrl ?? ''}
+            onChange={(event) => update({ imageUrl: event.target.value })}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      id="button-search-image"
+                      aria-label="Search image"
+                      edge="end"
+                      onClick={() => setImageDialogOpen(true)}
+                    >
+                      <SearchIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </Stack>
+      </Paper>
 
       <ImageSelectDialog
         open={imageDialogOpen}
