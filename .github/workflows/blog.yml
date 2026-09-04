@@ -17,6 +17,8 @@ jobs:
 
   editor:
     uses: ./.github/workflows/editor.yml
+    permissions:
+      contents: read
 
 #  frontend:
 #    uses: ./.github/workflows/frontend.yml

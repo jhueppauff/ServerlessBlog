@@ -11,6 +11,7 @@ import {
 import { useBlogClient } from '../api/BlogClientProvider';
 import type { Blob } from '../api/models';
 import { Loading } from './Loading';
+import { useNotification } from './NotificationProvider';
 
 export const ImageSelectDialog = ({
   open,
@@ -22,6 +23,7 @@ export const ImageSelectDialog = ({
   onSelect: (url: string) => void;
 }) => {
   const client = useBlogClient();
+  const notify = useNotification();
   const [images, setImages] = useState<Blob[]>();
 
   useEffect(() => {
@@ -30,8 +32,14 @@ export const ImageSelectDialog = ({
     }
 
     setImages(undefined);
-    void client.getBlobs().then(setImages);
-  }, [client, open]);
+    client
+      .getBlobs()
+      .then(setImages)
+      .catch((error: Error) => {
+        notify(`An error occured: ${error.message}`, 'error');
+        setImages([]);
+      });
+  }, [client, notify, open]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
