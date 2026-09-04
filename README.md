@@ -10,7 +10,14 @@ Components used
 - Azure Functions
 - Azure Storage (Blob, Table and Queues)
 - Azure CDN
+- Azure Static Web Apps
 - Application Insights
+
+## Projects
+
+- `Engine` - Azure Functions backend (API, rendering and scheduling)
+- `Frontend` - Azure Functions serving the public blog pages
+- `Editor` - React + TypeScript admin portal hosted in Azure Static Web Apps, see [Editor/README.md](Editor/README.md)
 
 ## How to run
 

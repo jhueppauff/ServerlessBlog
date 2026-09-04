@@ -30,9 +30,9 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
     repositoryUrl: 'https://github.com/jhueppauff/ServerlessBlog'
     branch: 'main'
     buildProperties: {
-      appLocation: 'EditorNG'
+      appLocation: 'Editor'
       apiLocation: ''
-      appArtifactLocation: 'wwwroot'
+      appArtifactLocation: 'dist'
     }
   }
   sku: {
