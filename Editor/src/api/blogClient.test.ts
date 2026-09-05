@@ -28,13 +28,14 @@ describe('BlogClient', () => {
 
   it('maps PascalCase responses to camelCase models', async () => {
     fetchMock.mockResolvedValue(
-      response([{ PartitionKey: 'my-post', Title: 'My Post', IsPublic: true }]),
+      response([{ PartitionKey: 'my-post', Title: 'My Post', PageUrl: '/my-post', IsPublic: true }]),
     );
 
     const posts = await client.getBlogPosts();
 
     expect(posts[0].partitionKey).toBe('my-post');
     expect(posts[0].title).toBe('My Post');
+    expect(posts[0].pageUrl).toBe('/my-post');
     expect(posts[0].isPublic).toBe(true);
   });
 

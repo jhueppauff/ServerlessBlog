@@ -105,11 +105,13 @@ export const EditPost = () => {
     }
 
     const slugToSave = slug ?? createSlug(post.title);
+    const pageUrl = post.pageUrl?.trim();
     const postToSave: PostMetadata = {
       ...post,
       slug: slugToSave,
       partitionKey: slugToSave,
       rowKey: slugToSave,
+      pageUrl: pageUrl ? (pageUrl.startsWith('/') ? pageUrl : `/${pageUrl}`) : '',
     };
 
     try {
@@ -238,6 +240,13 @@ export const EditPost = () => {
               helperText="Separate multiple tags with a semicolon"
               value={post.tags ?? ''}
               onChange={(event) => update({ tags: event.target.value })}
+            />
+            <TextField
+              label="Page Url"
+              fullWidth
+              helperText="Optional. Set a custom page route (for example /about or / for the main page)."
+              value={post.pageUrl ?? ''}
+              onChange={(event) => update({ pageUrl: event.target.value })}
             />
             <TextField
               label="Image Url"
