@@ -20,3 +20,33 @@ export const breakAnywhere = {
   overflowWrap: 'anywhere',
   wordBreak: 'break-all',
 };
+
+/**
+ * Shared look for the data tables: a subtly tinted, sticky header, roomier
+ * cells and no divider under the last row.
+ */
+export const dataTable = {
+  '& thead th': {
+    backgroundColor: 'action.hover',
+    fontWeight: 600,
+    whiteSpace: 'nowrap',
+  },
+  '& tbody td': {
+    py: 1.25,
+    borderColor: 'divider',
+  },
+  '& tbody tr:last-of-type td': {
+    borderBottom: 0,
+  },
+};
+
+/** Formats an ISO or date like string for display, falling back to the raw value. */
+export const formatDate = (value?: string): string => {
+  if (!value) {
+    return '—';
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+};

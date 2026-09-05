@@ -50,6 +50,18 @@ describe('Posts page', () => {
     );
   });
 
+  it('shows the publication status as a chip', async () => {
+    renderPosts({
+      getBlogPosts: vi
+        .fn()
+        .mockResolvedValue([post, { ...post, partitionKey: 'other', slug: 'other', isPublic: true }]),
+      getPageViews: vi.fn().mockResolvedValue([]),
+    });
+
+    expect(await screen.findByText('Draft')).toBeInTheDocument();
+    expect(screen.getByText('Published')).toBeInTheDocument();
+  });
+
   it('only offers publishing for posts that are not public yet', async () => {
     renderPosts({
       getBlogPosts: vi.fn().mockResolvedValue([{ ...post, isPublic: true }]),

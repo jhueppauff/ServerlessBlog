@@ -22,13 +22,13 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import PublicIcon from '@mui/icons-material/Public';
-import PublicOffIcon from '@mui/icons-material/PublicOff';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useBlogClient } from '../api/BlogClientProvider';
 import type { PostMetadata } from '../api/models';
 import { DeletePostDialog } from '../components/DeletePostDialog';
+import { PostStatusChip } from '../components/PostStatusChip';
 import { RowActionsMenu } from '../components/RowActionsMenu';
-import { hideBelow, truncate } from '../components/tableStyles';
+import { dataTable, formatDate, hideBelow, truncate } from '../components/tableStyles';
 import { PublishDialog } from '../components/PublishDialog';
 import { useNotification } from '../components/NotificationProvider';
 
@@ -97,8 +97,13 @@ export const Posts = () => {
   return (
     <>
       <TableContainer component={Paper}>
-        <Toolbar sx={{ flexWrap: 'wrap', gap: 1, py: 1 }}>
-          <Typography variant="h6">Blog Posts</Typography>
+        <Toolbar sx={{ flexWrap: 'wrap', gap: 1, py: 1.5 }}>
+          <Box>
+            <Typography variant="h6">Blog Posts</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {loading ? 'Loading…' : `${posts.length} post${posts.length === 1 ? '' : 's'}`}
+            </Typography>
+          </Box>
           <Box sx={{ flexGrow: 1 }} />
           <Button
             component={RouterLink}
@@ -118,14 +123,16 @@ export const Posts = () => {
             Refresh
           </Button>
         </Toolbar>
-        <Table size="small" sx={{ minWidth: 320 }}>
+        <Table size="small" sx={{ minWidth: 320, ...dataTable }}>
           <TableHead>
             <TableRow>
-              <TableCell>Public</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Title</TableCell>
               <TableCell sx={hideBelow('md')}>Tags</TableCell>
               <TableCell sx={hideBelow('lg')}>Created on</TableCell>
-              <TableCell sx={hideBelow('sm')}>Views</TableCell>
+              <TableCell align="right" sx={hideBelow('sm')}>
+                Views
+              </TableCell>
               <TableCell sx={hideBelow('lg')}>Intro</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -133,8 +140,17 @@ export const Posts = () => {
           <TableBody>
             {loading && (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                   <CircularProgress />
+                </TableCell>
+              </TableRow>
+            )}
+            {!loading && posts.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                  <Typography color="text.secondary">
+                    No posts yet. Use “Add” to write the first one.
+                  </Typography>
                 </TableCell>
               </TableRow>
             )}
@@ -142,23 +158,32 @@ export const Posts = () => {
               posts.map((post) => (
                 <TableRow key={post.partitionKey} hover>
                   <TableCell>
-                    {post.isPublic ? (
-                      <PublicIcon color="success" titleAccess="Public" />
-                    ) : (
-                      <PublicOffIcon color="error" titleAccess="Not public" />
-                    )}
+                    <PostStatusChip isPublic={post.isPublic} published={post.published} />
                   </TableCell>
-                  <TableCell sx={{ minWidth: 140 }}>{post.title}</TableCell>
+                  <TableCell sx={{ minWidth: 140 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {post.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={hideBelow('lg')}>
+                      {post.slug}
+                    </Typography>
+                  </TableCell>
                   <TableCell sx={hideBelow('md')}>
-                    {(post.tags ?? '')
-                      .split(';')
-                      .filter((tag) => tag.length > 0)
-                      .map((tag) => (
-                        <Chip key={tag} label={tag} size="small" sx={{ mr: 0.5 }} />
-                      ))}
+                    <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                      {(post.tags ?? '')
+                        .split(';')
+                        .filter((tag) => tag.length > 0)
+                        .map((tag) => (
+                          <Chip key={tag} label={tag} size="small" variant="outlined" />
+                        ))}
+                    </Stack>
                   </TableCell>
-                  <TableCell sx={hideBelow('lg')}>{post.published}</TableCell>
-                  <TableCell sx={hideBelow('sm')}>{post.views}</TableCell>
+                  <TableCell sx={{ ...hideBelow('lg'), whiteSpace: 'nowrap' }}>
+                    {formatDate(post.published)}
+                  </TableCell>
+                  <TableCell align="right" sx={{ ...hideBelow('sm'), fontVariantNumeric: 'tabular-nums' }}>
+                    {post.views}
+                  </TableCell>
                   <TableCell sx={{ ...hideBelow('lg'), maxWidth: 320 }}>
                     <Typography variant="body2" sx={truncate}>
                       {post.preview}

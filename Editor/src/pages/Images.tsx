@@ -30,7 +30,7 @@ import { useBlogClient } from '../api/BlogClientProvider';
 import type { Blob } from '../api/models';
 import { useNotification } from '../components/NotificationProvider';
 import { RowActionsMenu } from '../components/RowActionsMenu';
-import { breakAnywhere, hideBelow } from '../components/tableStyles';
+import { breakAnywhere, dataTable, hideBelow } from '../components/tableStyles';
 
 const defaultStatus = 'Drop a file here to upload it, or click to choose a file';
 const maxFileSize = 200 * 1024 * 1024;
@@ -109,8 +109,13 @@ export const Images = () => {
   return (
     <>
       <TableContainer component={Paper}>
-        <Toolbar sx={{ flexWrap: 'wrap', gap: 1, py: 1 }}>
-          <Typography variant="h6">Images</Typography>
+        <Toolbar sx={{ flexWrap: 'wrap', gap: 1, py: 1.5 }}>
+          <Box>
+            <Typography variant="h6">Images</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {loading ? 'Loading…' : `${blobs.length} image${blobs.length === 1 ? '' : 's'}`}
+            </Typography>
+          </Box>
           <Box sx={{ flexGrow: 1 }} />
           <Button
             variant="contained"
@@ -121,7 +126,7 @@ export const Images = () => {
             Upload new image
           </Button>
         </Toolbar>
-        <Table size="small" sx={{ minWidth: 320 }}>
+        <Table size="small" sx={{ minWidth: 320, ...dataTable }}>
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -132,17 +137,54 @@ export const Images = () => {
           <TableBody>
             {loading && (
               <TableRow>
-                <TableCell colSpan={3} align="center">
+                <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
                   <CircularProgress />
+                </TableCell>
+              </TableRow>
+            )}
+            {!loading && blobs.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
+                  <Typography color="text.secondary">
+                    No images yet. Upload one to use it in a post.
+                  </Typography>
                 </TableCell>
               </TableRow>
             )}
             {!loading &&
               blobs.map((blob) => (
                 <TableRow key={blob.name} hover>
-                  <TableCell sx={{ ...breakAnywhere, minWidth: 120 }}>{blob.name}</TableCell>
-                  <TableCell sx={{ ...hideBelow('md'), ...breakAnywhere, maxWidth: 420 }}>
-                    {blob.url}
+                  <TableCell sx={{ ...breakAnywhere, minWidth: 160 }}>
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                      <Box
+                        component="img"
+                        src={blob.url}
+                        alt=""
+                        loading="lazy"
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          objectFit: 'cover',
+                          borderRadius: 1,
+                          flexShrink: 0,
+                          bgcolor: 'action.hover',
+                        }}
+                      />
+                      <Typography variant="body2" sx={breakAnywhere}>
+                        {blob.name}
+                      </Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell sx={{ ...hideBelow('md'), maxWidth: 420 }}>
+                    <Link
+                      href={blob.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="body2"
+                      sx={breakAnywhere}
+                    >
+                      {blob.url}
+                    </Link>
                   </TableCell>
                   <TableCell align="right">
                     <Stack
