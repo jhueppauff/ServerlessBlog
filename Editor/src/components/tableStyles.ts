@@ -50,3 +50,18 @@ export const formatDate = (value?: string): string => {
 
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
 };
+
+/**
+ * Toolbar buttons that shrink to icon only on phones, where the label would
+ * otherwise push the actions onto a second line.
+ */
+export const compactButton = {
+  minWidth: 0,
+  px: { xs: 1, sm: 2 },
+  '& .MuiButton-startIcon': { mr: { xs: 0, sm: 1 }, ml: 0 },
+};
+
+/** The label of a `compactButton`, hidden on phones. */
+export const compactButtonLabel = {
+  display: { xs: 'none', sm: 'inline' },
+};

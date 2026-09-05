@@ -1,6 +1,4 @@
-import { Chip, Tooltip } from '@mui/material';
-import PublicIcon from '@mui/icons-material/Public';
-import PublicOffIcon from '@mui/icons-material/PublicOff';
+import { Box, Tooltip, Typography } from '@mui/material';
 import { formatDate } from './tableStyles';
 
 type PostStatusChipProps = {
@@ -9,22 +7,40 @@ type PostStatusChipProps = {
   published?: string;
 };
 
+/**
+ * Compact publication indicator: a coloured dot on phones, dot plus label from
+ * the `sm` breakpoint upwards, so the status column stays narrow.
+ */
 export const PostStatusChip = ({ isPublic, published }: PostStatusChipProps) => {
   const label = isPublic ? 'Published' : 'Draft';
-  const tooltip = isPublic
-    ? `Published on ${formatDate(published)}`
-    : 'Not visible on the blog yet';
+  const color = isPublic ? 'success.main' : 'text.disabled';
 
   return (
-    <Tooltip title={tooltip}>
-      <Chip
-        size="small"
-        variant={isPublic ? 'filled' : 'outlined'}
-        color={isPublic ? 'success' : 'default'}
-        icon={isPublic ? <PublicIcon /> : <PublicOffIcon />}
-        label={label}
-        sx={{ fontWeight: 500 }}
-      />
+    <Tooltip title={isPublic ? `Published on ${formatDate(published)}` : 'Not visible on the blog yet'}>
+      <Box
+        component="span"
+        aria-label={label}
+        sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
+      >
+        <Box
+          component="span"
+          sx={{
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            flexShrink: 0,
+            bgcolor: isPublic ? color : 'transparent',
+            border: 2,
+            borderColor: color,
+          }}
+        />
+        <Typography
+          variant="caption"
+          sx={{ display: { xs: 'none', sm: 'inline' }, color, whiteSpace: 'nowrap' }}
+        >
+          {label}
+        </Typography>
+      </Box>
     </Tooltip>
   );
 };

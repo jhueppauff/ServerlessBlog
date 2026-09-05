@@ -30,7 +30,13 @@ import { useBlogClient } from '../api/BlogClientProvider';
 import type { Blob } from '../api/models';
 import { useNotification } from '../components/NotificationProvider';
 import { RowActionsMenu } from '../components/RowActionsMenu';
-import { breakAnywhere, dataTable, hideBelow } from '../components/tableStyles';
+import {
+  breakAnywhere,
+  compactButton,
+  compactButtonLabel,
+  dataTable,
+  hideBelow,
+} from '../components/tableStyles';
 
 const defaultStatus = 'Drop a file here to upload it, or click to choose a file';
 const maxFileSize = 200 * 1024 * 1024;
@@ -109,22 +115,30 @@ export const Images = () => {
   return (
     <>
       <TableContainer component={Paper}>
-        <Toolbar sx={{ flexWrap: 'wrap', gap: 1, py: 1.5 }}>
-          <Box>
-            <Typography variant="h6">Images</Typography>
-            <Typography variant="body2" color="text.secondary">
+        <Toolbar sx={{ gap: 1, py: 1.5 }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h6" noWrap>
+              Images
+            </Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
               {loading ? 'Loading…' : `${blobs.length} image${blobs.length === 1 ? '' : 's'}`}
             </Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => setUploadOpen(true)}
-          >
-            Upload new image
-          </Button>
+          <Tooltip title="Upload new image">
+            <Button
+              variant="contained"
+              color="primary"
+              aria-label="Upload new image"
+              startIcon={<AddIcon />}
+              onClick={() => setUploadOpen(true)}
+              sx={compactButton}
+            >
+              <Box component="span" sx={compactButtonLabel}>
+                Upload
+              </Box>
+            </Button>
+          </Tooltip>
         </Toolbar>
         <Table size="small" sx={{ minWidth: 320, ...dataTable }}>
           <TableHead>

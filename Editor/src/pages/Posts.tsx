@@ -28,7 +28,14 @@ import type { PostMetadata } from '../api/models';
 import { DeletePostDialog } from '../components/DeletePostDialog';
 import { PostStatusChip } from '../components/PostStatusChip';
 import { RowActionsMenu } from '../components/RowActionsMenu';
-import { dataTable, formatDate, hideBelow, truncate } from '../components/tableStyles';
+import {
+  compactButton,
+  compactButtonLabel,
+  dataTable,
+  formatDate,
+  hideBelow,
+  truncate,
+} from '../components/tableStyles';
 import { PublishDialog } from '../components/PublishDialog';
 import { useNotification } from '../components/NotificationProvider';
 
@@ -97,31 +104,45 @@ export const Posts = () => {
   return (
     <>
       <TableContainer component={Paper}>
-        <Toolbar sx={{ flexWrap: 'wrap', gap: 1, py: 1.5 }}>
-          <Box>
-            <Typography variant="h6">Blog Posts</Typography>
-            <Typography variant="body2" color="text.secondary">
+        <Toolbar sx={{ gap: 1, py: 1.5 }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h6" noWrap>
+              Blog Posts
+            </Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
               {loading ? 'Loading…' : `${posts.length} post${posts.length === 1 ? '' : 's'}`}
             </Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
-          <Button
-            component={RouterLink}
-            to="/add"
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-          >
-            Add
-          </Button>
-          <Button
-            variant="contained"
-            color="info"
-            startIcon={<RefreshIcon />}
-            onClick={() => void refresh()}
-          >
-            Refresh
-          </Button>
+          <Tooltip title="Refresh">
+            <Button
+              variant="text"
+              color="inherit"
+              aria-label="Refresh"
+              startIcon={<RefreshIcon />}
+              onClick={() => void refresh()}
+              sx={compactButton}
+            >
+              <Box component="span" sx={compactButtonLabel}>
+                Refresh
+              </Box>
+            </Button>
+          </Tooltip>
+          <Tooltip title="Add post">
+            <Button
+              component={RouterLink}
+              to="/add"
+              variant="contained"
+              color="primary"
+              aria-label="Add post"
+              startIcon={<AddIcon />}
+              sx={compactButton}
+            >
+              <Box component="span" sx={compactButtonLabel}>
+                Add
+              </Box>
+            </Button>
+          </Tooltip>
         </Toolbar>
         <Table size="small" sx={{ minWidth: 320, ...dataTable }}>
           <TableHead>
