@@ -26,6 +26,8 @@
 
         public string ImageUrl { get; set; }
 
+        public string PageUrl { get; set; }
+
         public bool IsPublic { get; set; }
     }
 }

@@ -7,6 +7,7 @@ export interface PostMetadata {
   tags: string;
   preview: string;
   imageUrl: string;
+  pageUrl?: string;
   views: number;
   isPublic: boolean;
 }
@@ -36,6 +37,7 @@ export const emptyPost = (): PostMetadata => ({
   tags: '',
   preview: '',
   imageUrl: '',
+  pageUrl: '',
   views: 0,
   isPublic: false,
 });
