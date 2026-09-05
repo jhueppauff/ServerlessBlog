@@ -49,7 +49,7 @@ describe('AppRoutes', () => {
   it('renders the images page', async () => {
     renderApp('/images');
 
-    expect(await screen.findByRole('button', { name: 'Upload new image' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Upload image' })).toBeInTheDocument();
   });
 
   it('renders a message for unknown routes', () => {

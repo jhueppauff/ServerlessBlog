@@ -8,5 +8,24 @@ export const theme = createTheme({
   },
   typography: {
     fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
+    button: {
+      textTransform: 'none',
+      fontWeight: 600,
+      letterSpacing: 0,
+    },
+  },
+  shape: { borderRadius: 8 },
+  components: {
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: {
+        root: { borderRadius: 8 },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: { backgroundImage: 'none' },
+      },
+    },
   },
 });

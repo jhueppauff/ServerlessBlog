@@ -30,13 +30,8 @@ import { useBlogClient } from '../api/BlogClientProvider';
 import type { Blob } from '../api/models';
 import { useNotification } from '../components/NotificationProvider';
 import { RowActionsMenu } from '../components/RowActionsMenu';
-import {
-  breakAnywhere,
-  compactButton,
-  compactButtonLabel,
-  dataTable,
-  hideBelow,
-} from '../components/tableStyles';
+import { ToolbarAction } from '../components/ToolbarAction';
+import { breakAnywhere, dataTable, hideBelow } from '../components/tableStyles';
 
 const defaultStatus = 'Drop a file here to upload it, or click to choose a file';
 const maxFileSize = 200 * 1024 * 1024;
@@ -125,20 +120,12 @@ export const Images = () => {
             </Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
-          <Tooltip title="Upload new image">
-            <Button
-              variant="contained"
-              color="primary"
-              aria-label="Upload new image"
-              startIcon={<AddIcon />}
-              onClick={() => setUploadOpen(true)}
-              sx={compactButton}
-            >
-              <Box component="span" sx={compactButtonLabel}>
-                Upload
-              </Box>
-            </Button>
-          </Tooltip>
+          <ToolbarAction
+            label="Upload image"
+            icon={<AddIcon />}
+            onClick={() => setUploadOpen(true)}
+            primary
+          />
         </Toolbar>
         <Table size="small" sx={{ minWidth: 320, ...dataTable }}>
           <TableHead>

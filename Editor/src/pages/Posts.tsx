@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
-  Button,
   Chip,
   IconButton,
   CircularProgress,
@@ -28,14 +27,8 @@ import type { PostMetadata } from '../api/models';
 import { DeletePostDialog } from '../components/DeletePostDialog';
 import { PostStatusChip } from '../components/PostStatusChip';
 import { RowActionsMenu } from '../components/RowActionsMenu';
-import {
-  compactButton,
-  compactButtonLabel,
-  dataTable,
-  formatDate,
-  hideBelow,
-  truncate,
-} from '../components/tableStyles';
+import { ToolbarAction } from '../components/ToolbarAction';
+import { dataTable, formatDate, hideBelow, truncate } from '../components/tableStyles';
 import { PublishDialog } from '../components/PublishDialog';
 import { useNotification } from '../components/NotificationProvider';
 
@@ -114,35 +107,8 @@ export const Posts = () => {
             </Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
-          <Tooltip title="Refresh">
-            <Button
-              variant="text"
-              color="inherit"
-              aria-label="Refresh"
-              startIcon={<RefreshIcon />}
-              onClick={() => void refresh()}
-              sx={compactButton}
-            >
-              <Box component="span" sx={compactButtonLabel}>
-                Refresh
-              </Box>
-            </Button>
-          </Tooltip>
-          <Tooltip title="Add post">
-            <Button
-              component={RouterLink}
-              to="/add"
-              variant="contained"
-              color="primary"
-              aria-label="Add post"
-              startIcon={<AddIcon />}
-              sx={compactButton}
-            >
-              <Box component="span" sx={compactButtonLabel}>
-                Add
-              </Box>
-            </Button>
-          </Tooltip>
+          <ToolbarAction label="Refresh" icon={<RefreshIcon />} onClick={() => void refresh()} />
+          <ToolbarAction label="Add post" icon={<AddIcon />} to="/add" primary />
         </Toolbar>
         <Table size="small" sx={{ minWidth: 320, ...dataTable }}>
           <TableHead>
