@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   CircularProgress,
+  IconButton,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,14 +18,18 @@ import {
   TableHead,
   TableRow,
   Toolbar,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PreviewIcon from '@mui/icons-material/Preview';
 import { useBlogClient } from '../api/BlogClientProvider';
 import type { Blob } from '../api/models';
 import { useNotification } from '../components/NotificationProvider';
+import { RowActionsMenu } from '../components/RowActionsMenu';
 import { breakAnywhere, hideBelow } from '../components/tableStyles';
 
 const defaultStatus = 'Drop a file here to upload it, or click to choose a file';
@@ -79,6 +84,15 @@ export const Images = () => {
     }
   };
 
+  const copyUrl = async (blob: Blob) => {
+    try {
+      await navigator.clipboard.writeText(blob.url);
+      notify('Url copied to the clipboard', 'success');
+    } catch {
+      notify('The url could not be copied to the clipboard', 'error');
+    }
+  };
+
   const deleteBlob = async (blob: Blob) => {
     if (!window.confirm(`Are you sure you want to delete the post '${blob.name}'?`)) {
       return;
@@ -112,7 +126,7 @@ export const Images = () => {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell sx={hideBelow('md')}>Url</TableCell>
-              <TableCell>Action</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -130,26 +144,48 @@ export const Images = () => {
                   <TableCell sx={{ ...hideBelow('md'), ...breakAnywhere, maxWidth: 420 }}>
                     {blob.url}
                   </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="info"
-                        startIcon={<PreviewIcon />}
-                        onClick={() => setPreviewUrl(blob.url)}
-                      >
-                        Preview
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="error"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => void deleteBlob(blob)}
-                      >
-                        Delete
-                      </Button>
+                  <TableCell align="right">
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      sx={{ justifyContent: 'flex-end', alignItems: 'center' }}
+                    >
+                      <Tooltip title="Preview image">
+                        <IconButton
+                          size="small"
+                          color="info"
+                          aria-label={`Preview ${blob.name}`}
+                          onClick={() => setPreviewUrl(blob.url)}
+                        >
+                          <PreviewIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <RowActionsMenu
+                        title={blob.name}
+                        actions={[
+                          {
+                            label: 'Preview',
+                            icon: <PreviewIcon fontSize="small" />,
+                            onClick: () => setPreviewUrl(blob.url),
+                          },
+                          {
+                            label: 'Copy url',
+                            icon: <ContentCopyIcon fontSize="small" />,
+                            onClick: () => void copyUrl(blob),
+                          },
+                          {
+                            label: 'Open in new tab',
+                            icon: <OpenInNewIcon fontSize="small" />,
+                            onClick: () => window.open(blob.url, '_blank', 'noopener,noreferrer'),
+                          },
+                          {
+                            label: 'Delete',
+                            icon: <DeleteIcon fontSize="small" />,
+                            onClick: () => void deleteBlob(blob),
+                            destructive: true,
+                          },
+                        ]}
+                      />
                     </Stack>
                   </TableCell>
                 </TableRow>

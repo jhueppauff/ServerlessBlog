@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Chip,
+  IconButton,
   CircularProgress,
   Paper,
   Stack,
@@ -14,6 +15,7 @@ import {
   TableHead,
   TableRow,
   Toolbar,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -25,6 +27,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useBlogClient } from '../api/BlogClientProvider';
 import type { PostMetadata } from '../api/models';
 import { DeletePostDialog } from '../components/DeletePostDialog';
+import { RowActionsMenu } from '../components/RowActionsMenu';
 import { hideBelow, truncate } from '../components/tableStyles';
 import { PublishDialog } from '../components/PublishDialog';
 import { useNotification } from '../components/NotificationProvider';
@@ -124,7 +127,7 @@ export const Posts = () => {
               <TableCell sx={hideBelow('lg')}>Created on</TableCell>
               <TableCell sx={hideBelow('sm')}>Views</TableCell>
               <TableCell sx={hideBelow('lg')}>Intro</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -161,38 +164,48 @@ export const Posts = () => {
                       {post.preview}
                     </Typography>
                   </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="error"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => setPostToDelete(post)}
-                      >
-                        Delete
-                      </Button>
-                      {!post.isPublic && (
-                        <Button
+                  <TableCell align="right">
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      sx={{ justifyContent: 'flex-end', alignItems: 'center' }}
+                    >
+                      <Tooltip title="Edit post">
+                        <IconButton
                           size="small"
-                          variant="contained"
-                          color="success"
-                          startIcon={<PublicIcon />}
-                          onClick={() => setPostToPublish(post)}
+                          color="primary"
+                          component={RouterLink}
+                          to={`/edit/${encodeURIComponent(post.slug)}`}
+                          aria-label={`Edit ${post.title}`}
                         >
-                          Publish
-                        </Button>
-                      )}
-                      <Button
-                        size="small"
-                        component={RouterLink}
-                        to={`/edit/${encodeURIComponent(post.slug)}`}
-                        variant="contained"
-                        color="success"
-                        startIcon={<EditIcon />}
-                      >
-                        Edit
-                      </Button>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <RowActionsMenu
+                        title={post.title ?? post.slug}
+                        actions={[
+                          {
+                            label: 'Edit',
+                            icon: <EditIcon fontSize="small" />,
+                            to: `/edit/${encodeURIComponent(post.slug)}`,
+                          },
+                          ...(post.isPublic
+                            ? []
+                            : [
+                                {
+                                  label: 'Publish',
+                                  icon: <PublicIcon fontSize="small" />,
+                                  onClick: () => setPostToPublish(post),
+                                },
+                              ]),
+                          {
+                            label: 'Delete',
+                            icon: <DeleteIcon fontSize="small" />,
+                            onClick: () => setPostToDelete(post),
+                            destructive: true,
+                          },
+                        ]}
+                      />
                     </Stack>
                   </TableCell>
                 </TableRow>

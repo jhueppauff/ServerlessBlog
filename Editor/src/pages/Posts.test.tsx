@@ -44,6 +44,24 @@ describe('Posts page', () => {
     expect(screen.getByText('7')).toBeInTheDocument();
     expect(screen.getByText('azure')).toBeInTheDocument();
     expect(screen.getByText('serverless')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Edit My Post' })).toHaveAttribute(
+      'href',
+      '/edit/my-post',
+    );
+  });
+
+  it('only offers publishing for posts that are not public yet', async () => {
+    renderPosts({
+      getBlogPosts: vi.fn().mockResolvedValue([{ ...post, isPublic: true }]),
+      getPageViews: vi.fn().mockResolvedValue([]),
+    });
+
+    await screen.findByText('My Post');
+    await userEvent.click(screen.getByRole('button', { name: 'Actions for My Post' }));
+
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Publish' })).not.toBeInTheDocument();
   });
 
   it('deletes a post after the confirmation dialog is accepted', async () => {
@@ -56,7 +74,8 @@ describe('Posts page', () => {
     });
 
     await screen.findByText('My Post');
-    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Actions for My Post' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Delete' }));
     await userEvent.click(screen.getByRole('button', { name: 'Delete Post' }));
 
     await waitFor(() => expect(deleteBlogPost).toHaveBeenCalledWith(post));
@@ -72,7 +91,8 @@ describe('Posts page', () => {
     });
 
     await screen.findByText('My Post');
-    await userEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Actions for My Post' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Publish' }));
     await userEvent.click(screen.getByRole('button', { name: 'Publish' }));
 
     await waitFor(() => expect(publishPost).toHaveBeenCalled());
