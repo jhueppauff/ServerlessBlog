@@ -12,7 +12,7 @@ services:
   blogeditor:
     container_name: blog-editor
     build:
-      context: ./EditorNG/
+      context: ./Editor/
       dockerfile: dockerfile
     ports:
       - 8080:80
