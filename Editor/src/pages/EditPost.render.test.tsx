@@ -16,6 +16,7 @@ const post = {
   tags: 'azure;serverless',
   preview: 'A preview text',
   imageUrl: 'https://blob/image.png',
+  pageUrl: '/my-post',
   views: 0,
   isPublic: false,
 };
@@ -48,6 +49,7 @@ describe('EditPost page', () => {
 
     expect(screen.getByDisplayValue('azure;serverless')).toBeInTheDocument();
     expect(screen.getByDisplayValue('A preview text')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('/my-post')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Search image' })).toBeInTheDocument();
   });
 
@@ -84,6 +86,26 @@ describe('EditPost page', () => {
 
     await waitFor(() => expect(saveBlogPost).toHaveBeenCalled());
     expect(saveBlogPost.mock.calls[0][1]).toBe('# Hello!');
+  });
+
+  it('normalizes custom page urls while saving', async () => {
+    const saveBlogPost = vi.fn().mockResolvedValue(undefined);
+
+    renderEditor({
+      getBlogPost: vi.fn().mockResolvedValue(post),
+      getBlogPostMarkdown: vi.fn().mockResolvedValue('# Hello'),
+      saveBlogPost,
+    });
+
+    await screen.findByDisplayValue('/my-post');
+    await userEvent.click(screen.getByRole('button', { name: 'Post details' }));
+    const pageUrl = screen.getByLabelText('Page Url');
+    await userEvent.clear(pageUrl);
+    await userEvent.type(pageUrl, 'custom/path');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(saveBlogPost).toHaveBeenCalled());
+    expect(saveBlogPost.mock.calls[0][0].pageUrl).toBe('/custom/path');
   });
 
   it('reports missing required fields instead of saving', async () => {

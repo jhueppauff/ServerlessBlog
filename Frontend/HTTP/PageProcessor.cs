@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Globalization;
 using Azure.Data.Tables;
+using Azure.Storage.Blobs;
 using System.Collections.Generic;
 using Azure;
 using ServerlessBlog.Frontend.Model;
@@ -19,12 +20,13 @@ namespace ServerlessBlog.Frontend.HTTP
     public class PageProcessor(ILoggerFactory loggerFactory)
     {
         private readonly TableClient _tableClient = new(Environment.GetEnvironmentVariable("CosmosDBConnection"), "metadata");
+        private readonly BlobContainerClient _blobPublishedContainerClient = new(Environment.GetEnvironmentVariable("AzureStorageConnection"), "published");
         private readonly string _executionDirectory = Environment.CurrentDirectory;
         private readonly ILogger<PageProcessor> _logger = loggerFactory.CreateLogger<PageProcessor>();
 
         [Function(nameof(GetStaticContent))]
         public async Task<IActionResult> GetStaticContent(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{filename}")] HttpRequest req, string filename)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{filename:regex(^.+\\..+$)}")] HttpRequest req, string filename)
         {
             _logger.LogInformation("Get Static Content");
             string path = Path.Combine(_executionDirectory, $"statics/{filename}");
@@ -84,6 +86,12 @@ namespace ServerlessBlog.Frontend.HTTP
         {
             _logger.LogInformation("Get Blog Home");
 
+            var mainPage = await GetPostByPageUrlAsync("/");
+            if (mainPage != null)
+            {
+                return await RenderPostPageAsync(mainPage.PartitionKey);
+            }
+
             string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, "statics/index.html"), Encoding.UTF8).ConfigureAwait(false);
 
             var posts = await GetPostsAsync();
@@ -110,14 +118,15 @@ namespace ServerlessBlog.Frontend.HTTP
                 stringBuilder.AppendLine("<div class='card-body'>");
                 stringBuilder.AppendLine($"<div style='opacity: 0.8; height: 250px; width: 100%; background-size: cover; background-image: url({post.ImageUrl}); background-repeat: no-repeat; heigth: 250px;'>");
                 stringBuilder.AppendLine("</div>");
-                stringBuilder.AppendLine($"<h2 class='card-title' style='margin-bottom: 0;'><a href='Post/{post.PartitionKey}'>{post.Title}</a></h2>");
+                string pageUrl = GetPostPageUrl(post);
+                stringBuilder.AppendLine($"<h2 class='card-title' style='margin-bottom: 0;'><a href='{pageUrl}'>{post.Title}</a></h2>");
                 stringBuilder.AppendLine($"<p class='card-text' style='color: gray; margin-top: -4px;'>{publishDate.ToString("dd.MM.yyyy")}</p>");
                 stringBuilder.AppendLine($"<p class='card-text' style='color: white;'>{post.Preview}</p>");
                 stringBuilder.AppendLine("<div class='tags'>");
                 stringBuilder.AppendLine(tags);
                 stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</br>");
-                stringBuilder.AppendLine($"<a href='Post/{post.PartitionKey}' class='btn btn-primary'>Read More &rarr;</a>");
+                stringBuilder.AppendLine($"<a href='{pageUrl}' class='btn btn-primary'>Read More &rarr;</a>");
                 stringBuilder.AppendLine("</div>");
                 stringBuilder.AppendLine("</div>");
 
@@ -151,6 +160,7 @@ namespace ServerlessBlog.Frontend.HTTP
                         RowKey = qEntity.RowKey,
                         Title = qEntity.GetString("Title"),
                         ImageUrl = qEntity.GetString("ImageUrl"),
+                        PageUrl = qEntity.GetString("PageUrl"),
                         Tags = qEntity.GetString("Tags"),
                         Published = qEntity.GetString("Published"),
                         Preview = qEntity.GetString("Preview"),
@@ -182,21 +192,115 @@ namespace ServerlessBlog.Frontend.HTTP
             [BlobInput("published/{slug}.html", Connection = "AzureStorageConnection")] string postContent)
         {
             _logger.LogInformation("Get Blob Post Page");
-            var postMetadata = await _tableClient.GetEntityAsync<TableEntity>(slug, slug);
+            return await RenderPostPageAsync(slug, postContent);
+        }
 
-            string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, "statics/post.html"), Encoding.UTF8).ConfigureAwait(false);
-            content = content.Replace("$content$", postContent);
-            content = content.Replace("$date$", postMetadata.Value.GetString("Published"));
-            content = content.Replace("$titel$", postMetadata.Value.GetString("Title"));
-            content = content.Replace("$description$", postMetadata.Value.GetString("Preview"));
-            content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
-
-            return new ContentResult
+        [Function(nameof(DynamicPage))]
+        public async Task<IActionResult> DynamicPage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{*pagePath}")] HttpRequest req, string pagePath)
+        {
+            if (string.IsNullOrWhiteSpace(pagePath))
             {
-            Content = content,
-            ContentType = "text/html; charset=utf-8",
-            StatusCode = (int)HttpStatusCode.OK
-            };
+                return new NotFoundResult();
+            }
+
+            var post = await GetPostByPageUrlAsync(ToAbsolutePath(pagePath));
+            if (post == null)
+            {
+                return new NotFoundResult();
+            }
+
+            return await RenderPostPageAsync(post.PartitionKey);
+        }
+
+        private async Task<IActionResult> RenderPostPageAsync(string slug, string? postContent = null)
+        {
+            if (string.IsNullOrWhiteSpace(postContent))
+            {
+                var blob = _blobPublishedContainerClient.GetBlobClient($"{slug}.html");
+                if (!await blob.ExistsAsync().ConfigureAwait(false))
+                {
+                    return new NotFoundResult();
+                }
+
+                postContent = (await blob.DownloadContentAsync().ConfigureAwait(false)).Value.Content.ToString();
+            }
+
+            try
+            {
+                var postMetadata = await _tableClient.GetEntityAsync<TableEntity>(slug, slug).ConfigureAwait(false);
+                string content = await File.ReadAllTextAsync(Path.Combine(_executionDirectory, "statics/post.html"), Encoding.UTF8).ConfigureAwait(false);
+                content = content.Replace("$content$", postContent);
+                content = content.Replace("$date$", postMetadata.Value.GetString("Published"));
+                content = content.Replace("$titel$", postMetadata.Value.GetString("Title"));
+                content = content.Replace("$description$", postMetadata.Value.GetString("Preview"));
+                content = content.Replace("$slug$", slug);
+                content = content.Replace("$appikey$", Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"));
+
+                return new ContentResult
+                {
+                    Content = content,
+                    ContentType = "text/html; charset=utf-8",
+                    StatusCode = (int)HttpStatusCode.OK
+                };
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return new NotFoundResult();
+            }
+        }
+
+        private async Task<PostMetadata?> GetPostByPageUrlAsync(string pageUrl)
+        {
+            if (string.IsNullOrWhiteSpace(pageUrl))
+            {
+                return null;
+            }
+
+            string escapedPageUrl = pageUrl.Replace("'", "''");
+            var results = _tableClient.QueryAsync<TableEntity>(filter: $"IsPublic eq true and PageUrl eq '{escapedPageUrl}'", maxPerPage: 1);
+
+            await foreach (Page<TableEntity> page in results.AsPages())
+            {
+                if (page.Values.Count == 0)
+                {
+                    break;
+                }
+                TableEntity entity = page.Values[0];
+
+                return new PostMetadata()
+                {
+                    PartitionKey = entity.PartitionKey,
+                    RowKey = entity.RowKey,
+                    PageUrl = entity.GetString("PageUrl"),
+                    IsPublic = entity.GetBoolean("IsPublic") ?? false
+                };
+            }
+
+            return null;
+        }
+
+        private static string GetPostPageUrl(PostMetadata post)
+        {
+            if (!string.IsNullOrWhiteSpace(post.PageUrl))
+            {
+                return ToAbsolutePath(post.PageUrl);
+            }
+
+            return $"/Post/{post.PartitionKey}";
+        }
+
+        private static string ToAbsolutePath(string pagePath)
+        {
+            if (string.IsNullOrWhiteSpace(pagePath))
+            {
+                return "/";
+            }
+
+            string normalized = pagePath.Trim();
+            normalized = normalized.Trim('/');
+
+            return normalized.Length == 0 ? "/" : "/" + normalized;
         }
 
         private static bool VerifyPathUnderRoot(string pathToVerify, string rootPath = ".")
