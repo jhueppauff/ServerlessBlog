@@ -18,6 +18,13 @@ Components used
 - `Engine` - Azure Functions backend (API, rendering and scheduling)
 - `Frontend` - Azure Functions serving the public blog pages
 - `Editor` - React + TypeScript admin portal hosted in Azure Static Web Apps, see [Editor/README.md](Editor/README.md)
+- `McpServer` - stdio MCP server for reading published blog posts
+
+## MCP server
+
+The MCP server exposes two read-only tools: `list_blog_posts` returns published post metadata, and `get_blog_post` returns a published post's metadata and Markdown. It uses the existing Engine API and does not expose draft content.
+
+Configure an MCP client to launch the server with `dotnet run --project /path/to/ServerlessBlog/McpServer/ServerlessBlog.McpServer.csproj`. Set `SERVERLESSBLOG_API_URL` to override the Engine API base URL; the default is the production blog API. If the API requires a bearer token, set `SERVERLESSBLOG_API_TOKEN`.
 
 ## How to run
 
